@@ -1,0 +1,963 @@
+- node: 0
+  recv_table:
+    - node: 1
+      pkt_count: 3540
+    - node: 16
+      pkt_count: 2116
+    - node: 19
+      pkt_count: 15497
+    - node: 2
+      pkt_count: 9787
+    - node: 25
+      pkt_count: 46138
+    - node: 8
+      pkt_count: 3276
+    - node: 9
+      pkt_count: 4976
+  state: WORK
+  x: 0
+  y: 0
+  role: central
+- node: 1
+  routing_table:
+    - node: 0
+      pathid: 0
+      pkt_count: 3585
+      ack_count: 3540
+  state: WORK
+  x: 22.857142857142858
+  y: 0
+  role: internal
+- node: 2
+  recv_table:
+    - node: 10
+      pkt_count: 4357
+    - node: 3
+      pkt_count: 4376
+  routing_table:
+    - node: 0
+      pathid: 0
+      pkt_count: 12318
+      ack_count: 9601
+  state: WORK
+  x: 45.714285714285715
+  y: 0
+  role: internal
+- node: 3
+  recv_table:
+    - node: 4
+      pkt_count: 1151
+    - node: 5
+      pkt_count: 1627
+  routing_table:
+    - node: 2
+      pathid: 0
+      pkt_count: 6363
+      ack_count: 3998
+  state: WORK
+  x: 68.571428571428569
+  y: 0
+  role: border
+- node: 4
+  routing_table:
+    - node: 12
+      pathid: 12
+      pkt_count: 1178
+      ack_count: 761
+    - node: 18
+      pathid: 18
+      pkt_count: 1250
+      ack_count: 387
+    - node: 3
+      pathid: 3
+      pkt_count: 1157
+      ack_count: 1151
+  state: WORK
+  x: 91.428571428571431
+  y: 0
+  role: external
+- node: 5
+  recv_table:
+    - node: 6
+      pkt_count: 1156
+  routing_table:
+    - node: 12
+      pathid: 12
+      pkt_count: 1260
+      ack_count: 305
+    - node: 26
+      pathid: 26
+      pkt_count: 1172
+      ack_count: 557
+    - node: 3
+      pathid: 3
+      pkt_count: 2308
+      ack_count: 1554
+  state: WORK
+  x: 114.28571428571429
+  y: 0
+  role: external
+- node: 6
+  recv_table:
+    - node: 7
+      pkt_count: 3194
+  routing_table:
+    - node: 14
+      pathid: 20
+      pkt_count: 1221
+      ack_count: 766
+    - node: 21
+      pathid: 12
+      pkt_count: 4377
+      ack_count: 365
+    - node: 5
+      pathid: 3
+      pkt_count: 1180
+      ack_count: 1156
+  state: WORK
+  x: 137.14285714285714
+  y: 0
+  role: external
+- node: 7
+  routing_table:
+    - node: 6
+      pathid: 12
+      pkt_count: 3585
+      ack_count: 3189
+  state: WORK
+  x: 160
+  y: 0
+  role: external
+- node: 8
+  routing_table:
+    - node: 0
+      pathid: 0
+      pkt_count: 3585
+      ack_count: 3254
+  state: WORK
+  x: 0
+  y: 22.857142857142858
+  role: internal
+- node: 9
+  recv_table:
+    - node: 18
+      pkt_count: 1621
+  routing_table:
+    - node: 0
+      pathid: 0
+      pkt_count: 5205
+      ack_count: 4944
+  state: WORK
+  x: 22.857142857142858
+  y: 22.857142857142858
+  role: internal
+- node: 10
+  recv_table:
+    - node: 13
+      pkt_count: 437
+    - node: 28
+      pkt_count: 546
+    - node: 32
+      pkt_count: 643
+  routing_table:
+    - node: 2
+      pathid: 0
+      pkt_count: 5210
+      ack_count: 4269
+  state: WORK
+  x: 45.714285714285715
+  y: 22.857142857142858
+  role: border
+- node: 11
+  routing_table:
+    - node: 19
+      pathid: 0
+      pkt_count: 3585
+      ack_count: 3112
+  state: WORK
+  x: 68.571428571428569
+  y: 22.857142857142858
+  role: border
+- node: 12
+  recv_table:
+    - node: 13
+      pkt_count: 4212
+    - node: 21
+      pkt_count: 7692
+    - node: 4
+      pkt_count: 785
+    - node: 5
+      pkt_count: 318
+  routing_table:
+    - node: 19
+      pathid: 0
+      pkt_count: 16591
+      ack_count: 15723
+  state: WORK
+  x: 91.428571428571431
+  y: 22.857142857142858
+  role: border
+- node: 13
+  recv_table:
+    - node: 15
+      pkt_count: 1236
+    - node: 23
+      pkt_count: 1209
+  routing_table:
+    - node: 10
+      pathid: 10
+      pkt_count: 1781
+      ack_count: 411
+    - node: 12
+      pathid: 12
+      pkt_count: 4249
+      ack_count: 4204
+  state: WORK
+  x: 114.28571428571429
+  y: 22.857142857142858
+  role: external
+- node: 14
+  recv_table:
+    - node: 15
+      pkt_count: 1626
+    - node: 23
+      pkt_count: 498
+    - node: 6
+      pkt_count: 796
+  routing_table:
+    - node: 20
+      pathid: 20
+      pkt_count: 6505
+      ack_count: 2369
+  state: WORK
+  x: 137.14285714285714
+  y: 22.857142857142858
+  role: external
+- node: 15
+  routing_table:
+    - node: 13
+      pathid: 12
+      pkt_count: 1821
+      ack_count: 1191
+    - node: 14
+      pathid: 20
+      pkt_count: 1764
+      ack_count: 1625
+  state: WORK
+  x: 160
+  y: 22.857142857142858
+  role: external
+- node: 16
+  routing_table:
+    - node: 0
+      pathid: 0
+      pkt_count: 3584
+      ack_count: 1916
+  state: WORK
+  x: 0
+  y: 45.714285714285715
+  role: internal
+- node: 17
+  state: INIT
+  x: 22.857142857142858
+  y: 45.714285714285715
+  role: external
+- node: 18
+  recv_table:
+    - node: 4
+      pkt_count: 428
+  routing_table:
+    - node: 19
+      pathid: 0
+      pkt_count: 0
+      ack_count: 0
+    - node: 2
+      pathid: 0
+      pkt_count: 0
+      ack_count: 0
+    - node: 9
+      pathid: 0
+      pkt_count: 4013
+      ack_count: 1334
+  state: WORK
+  x: 45.714285714285715
+  y: 45.714285714285715
+  role: border
+- node: 19
+  recv_table:
+    - node: 11
+      pkt_count: 3113
+    - node: 12
+      pkt_count: 15750
+    - node: 27
+      pkt_count: 10408
+  routing_table:
+    - node: 0
+      pathid: 0
+      pkt_count: 32856
+      ack_count: 14424
+  state: WORK
+  x: 68.571428571428569
+  y: 45.714285714285715
+  role: internal
+- node: 20
+  recv_table:
+    - node: 14
+      pkt_count: 2560
+    - node: 22
+      pkt_count: 3363
+    - node: 47
+      pkt_count: 7236
+  routing_table:
+    - node: 19
+      pathid: 0
+      pkt_count: 0
+      ack_count: 0
+    - node: 25
+      pathid: 0
+      pkt_count: 16743
+      ack_count: 9270
+  state: WORK
+  x: 91.428571428571431
+  y: 45.714285714285715
+  role: border
+- node: 21
+  recv_table:
+    - node: 29
+      pkt_count: 3161
+    - node: 30
+      pkt_count: 595
+    - node: 6
+      pkt_count: 528
+  routing_table:
+    - node: 12
+      pathid: 12
+      pkt_count: 7868
+      ack_count: 7686
+  state: WORK
+  x: 114.28571428571429
+  y: 45.714285714285715
+  role: external
+- node: 22
+  recv_table:
+    - node: 30
+      pkt_count: 1081
+    - node: 45
+      pkt_count: 2855
+  routing_table:
+    - node: 20
+      pathid: 20
+      pkt_count: 7521
+      ack_count: 3305
+  state: WORK
+  x: 137.14285714285714
+  y: 45.714285714285715
+  role: external
+- node: 23
+  routing_table:
+    - node: 13
+      pathid: 12
+      pkt_count: 1807
+      ack_count: 1175
+    - node: 14
+      pathid: 20
+      pkt_count: 1778
+      ack_count: 479
+  state: WORK
+  x: 160
+  y: 45.714285714285715
+  role: external
+- node: 24
+  recv_table:
+    - node: 32
+      pkt_count: 1208
+    - node: 40
+      pkt_count: 2957
+  routing_table:
+    - node: 16
+      pathid: 0
+      pkt_count: 0
+      ack_count: 0
+    - node: 25
+      pathid: 0
+      pkt_count: 7749
+      ack_count: 7578
+  state: WORK
+  x: 0
+  y: 68.571428571428569
+  role: border
+- node: 25
+  recv_table:
+    - node: 20
+      pkt_count: 9616
+    - node: 24
+      pkt_count: 7579
+    - node: 26
+      pkt_count: 6971
+    - node: 33
+      pkt_count: 20468
+    - node: 34
+      pkt_count: 6684
+  routing_table:
+    - node: 0
+      pathid: 0
+      pkt_count: 54902
+      ack_count: 44561
+  state: WORK
+  x: 22.857142857142858
+  y: 68.571428571428569
+  role: internal
+- node: 26
+  recv_table:
+    - node: 28
+      pkt_count: 1458
+    - node: 36
+      pkt_count: 2758
+    - node: 5
+      pkt_count: 577
+  routing_table:
+    - node: 1
+      pathid: 0
+      pkt_count: 0
+      ack_count: 0
+    - node: 25
+      pathid: 0
+      pkt_count: 8377
+      ack_count: 6655
+  state: WORK
+  x: 45.714285714285715
+  y: 68.571428571428569
+  role: border
+- node: 27
+  recv_table:
+    - node: 36
+      pkt_count: 347
+    - node: 38
+      pkt_count: 8127
+  routing_table:
+    - node: 19
+      pathid: 0
+      pkt_count: 12059
+      ack_count: 10215
+  state: WORK
+  x: 68.571428571428569
+  y: 68.571428571428569
+  role: border
+- node: 28
+  routing_table:
+    - node: 10
+      pathid: 10
+      pkt_count: 1743
+      ack_count: 508
+    - node: 26
+      pathid: 26
+      pkt_count: 1841
+      ack_count: 1438
+  state: WORK
+  x: 91.428571428571431
+  y: 68.571428571428569
+  role: external
+- node: 29
+  routing_table:
+    - node: 21
+      pathid: 12
+      pkt_count: 3584
+      ack_count: 3122
+  state: WORK
+  x: 114.28571428571429
+  y: 68.571428571428569
+  role: external
+- node: 30
+  routing_table:
+    - node: 21
+      pathid: 12
+      pkt_count: 1193
+      ack_count: 555
+    - node: 22
+      pathid: 20
+      pkt_count: 1167
+      ack_count: 1068
+    - node: 38
+      pathid: 27
+      pkt_count: 1224
+      ack_count: 1219
+  state: WORK
+  x: 137.14285714285714
+  y: 68.571428571428569
+  role: external
+- node: 31
+  routing_table:
+    - node: 38
+      pathid: 27
+      pkt_count: 3585
+      ack_count: 3233
+  state: WORK
+  x: 160
+  y: 68.571428571428569
+  role: external
+- node: 32
+  recv_table:
+    - node: 49
+      pkt_count: 1061
+    - node: 57
+      pkt_count: 296
+  routing_table:
+    - node: 10
+      pathid: 10
+      pkt_count: 1183
+      ack_count: 625
+    - node: 24
+      pathid: 24
+      pkt_count: 1220
+      ack_count: 1208
+    - node: 33
+      pathid: 33
+      pkt_count: 2539
+      ack_count: 2484
+  state: WORK
+  x: 0
+  y: 91.428571428571431
+  role: external
+- node: 33
+  recv_table:
+    - node: 32
+      pkt_count: 2484
+    - node: 35
+      pkt_count: 1380
+    - node: 41
+      pkt_count: 4981
+    - node: 42
+      pkt_count: 3382
+    - node: 50
+      pkt_count: 7875
+  routing_table:
+    - node: 25
+      pathid: 0
+      pkt_count: 23686
+      ack_count: 20327
+  state: WORK
+  x: 22.857142857142858
+  y: 91.428571428571431
+  role: border
+- node: 34
+  recv_table:
+    - node: 35
+      pkt_count: 1496
+    - node: 36
+      pkt_count: 117
+    - node: 51
+      pkt_count: 4376
+  routing_table:
+    - node: 25
+      pathid: 0
+      pkt_count: 9573
+      ack_count: 6553
+  state: WORK
+  x: 45.714285714285715
+  y: 91.428571428571431
+  role: border
+- node: 35
+  routing_table:
+    - node: 33
+      pathid: 33
+      pkt_count: 1800
+      ack_count: 1365
+    - node: 34
+      pathid: 34
+      pkt_count: 1784
+      ack_count: 1493
+  state: WORK
+  x: 68.571428571428569
+  y: 91.428571428571431
+  role: external
+- node: 36
+  recv_table:
+    - node: 44
+      pkt_count: 3565
+    - node: 46
+      pkt_count: 659
+  routing_table:
+    - node: 26
+      pathid: 26
+      pkt_count: 5363
+      ack_count: 2638
+    - node: 27
+      pathid: 27
+      pkt_count: 1233
+      ack_count: 292
+    - node: 34
+      pathid: 34
+      pkt_count: 1212
+      ack_count: 67
+  state: WORK
+  x: 91.428571428571431
+  y: 91.428571428571431
+  role: external
+- node: 37
+  routing_table:
+    - node: 38
+      pathid: 27
+      pkt_count: 3585
+      ack_count: 3506
+  state: WORK
+  x: 114.28571428571429
+  y: 91.428571428571431
+  role: external
+- node: 38
+  recv_table:
+    - node: 30
+      pkt_count: 1219
+    - node: 31
+      pkt_count: 3247
+    - node: 37
+      pkt_count: 3510
+    - node: 39
+      pkt_count: 2799
+    - node: 46
+      pkt_count: 839
+    - node: 53
+      pkt_count: 1147
+    - node: 54
+      pkt_count: 2067
+  routing_table:
+    - node: 27
+      pathid: 27
+      pkt_count: 18413
+      ack_count: 8053
+  state: WORK
+  x: 137.14285714285714
+  y: 91.428571428571431
+  role: external
+- node: 39
+  routing_table:
+    - node: 38
+      pathid: 27
+      pkt_count: 3585
+      ack_count: 2691
+  state: WORK
+  x: 160
+  y: 91.428571428571431
+  role: external
+- node: 40
+  recv_table:
+    - node: 48
+      pkt_count: 1256
+  routing_table:
+    - node: 24
+      pathid: 24
+      pkt_count: 4840
+      ack_count: 2771
+  state: WORK
+  x: 0
+  y: 114.28571428571429
+  role: external
+- node: 41
+  recv_table:
+    - node: 48
+      pkt_count: 248
+    - node: 58
+      pkt_count: 1341
+  routing_table:
+    - node: 33
+      pathid: 33
+      pkt_count: 5173
+      ack_count: 4979
+  state: WORK
+  x: 22.857142857142858
+  y: 114.28571428571429
+  role: external
+- node: 42
+  routing_table:
+    - node: 33
+      pathid: 33
+      pkt_count: 3584
+      ack_count: 3378
+  state: WORK
+  x: 45.714285714285715
+  y: 114.28571428571429
+  role: external
+- node: 43
+  routing_table:
+    - node: 50
+      pathid: 33
+      pkt_count: 1786
+      ack_count: 1360
+    - node: 51
+      pathid: 34
+      pkt_count: 1798
+      ack_count: 1609
+  state: WORK
+  x: 68.571428571428569
+  y: 114.28571428571429
+  role: external
+- node: 44
+  routing_table:
+    - node: 36
+      pathid: 26
+      pkt_count: 3585
+      ack_count: 3565
+  state: WORK
+  x: 91.428571428571431
+  y: 114.28571428571429
+  role: external
+- node: 45
+  recv_table:
+    - node: 59
+      pkt_count: 643
+  routing_table:
+    - node: 22
+      pathid: 20
+      pkt_count: 4228
+      ack_count: 2629
+  state: WORK
+  x: 114.28571428571429
+  y: 114.28571428571429
+  role: external
+- node: 46
+  routing_table:
+    - node: 36
+      pathid: 26
+      pkt_count: 1194
+      ack_count: 647
+    - node: 38
+      pathid: 27
+      pkt_count: 1198
+      ack_count: 706
+    - node: 47
+      pathid: 20
+      pkt_count: 1192
+      ack_count: 1167
+  state: WORK
+  x: 137.14285714285714
+  y: 114.28571428571429
+  role: external
+- node: 47
+  recv_table:
+    - node: 46
+      pkt_count: 1167
+    - node: 54
+      pkt_count: 1789
+    - node: 55
+      pkt_count: 5354
+  routing_table:
+    - node: 20
+      pathid: 20
+      pkt_count: 11895
+      ack_count: 7168
+  state: WORK
+  x: 160
+  y: 114.28571428571429
+  role: external
+- node: 48
+  routing_table:
+    - node: 40
+      pathid: 24
+      pkt_count: 1853
+      ack_count: 1218
+    - node: 41
+      pathid: 33
+      pkt_count: 1731
+      ack_count: 208
+  state: WORK
+  x: 0
+  y: 137.14285714285714
+  role: external
+- node: 49
+  routing_table:
+    - node: 32
+      pathid: 33
+      pkt_count: 3584
+      ack_count: 827
+  state: WORK
+  x: 22.857142857142858
+  y: 137.14285714285714
+  role: external
+- node: 50
+  recv_table:
+    - node: 43
+      pkt_count: 1412
+    - node: 56
+      pkt_count: 1145
+    - node: 60
+      pkt_count: 4422
+  routing_table:
+    - node: 33
+      pathid: 33
+      pkt_count: 10564
+      ack_count: 7717
+  state: WORK
+  x: 45.714285714285715
+  y: 137.14285714285714
+  role: external
+- node: 51
+  recv_table:
+    - node: 43
+      pkt_count: 1657
+    - node: 52
+      pkt_count: 3148
+    - node: 57
+      pkt_count: 605
+    - node: 61
+      pkt_count: 1363
+  routing_table:
+    - node: 34
+      pathid: 34
+      pkt_count: 10357
+      ack_count: 4185
+  state: WORK
+  x: 68.571428571428569
+  y: 137.14285714285714
+  role: external
+- node: 52
+  routing_table:
+    - node: 51
+      pathid: 34
+      pkt_count: 3584
+      ack_count: 3061
+  state: WORK
+  x: 91.428571428571431
+  y: 137.14285714285714
+  role: external
+- node: 53
+  routing_table:
+    - node: 38
+      pathid: 27
+      pkt_count: 3585
+      ack_count: 851
+  state: WORK
+  x: 114.28571428571429
+  y: 137.14285714285714
+  role: external
+- node: 54
+  recv_table:
+    - node: 62
+      pkt_count: 835
+    - node: 63
+      pkt_count: 1633
+  routing_table:
+    - node: 38
+      pathid: 27
+      pkt_count: 4232
+      ack_count: 1968
+    - node: 47
+      pathid: 20
+      pkt_count: 1821
+      ack_count: 1788
+  state: WORK
+  x: 137.14285714285714
+  y: 137.14285714285714
+  role: external
+- node: 55
+  recv_table:
+    - node: 62
+      pkt_count: 1524
+    - node: 63
+      pkt_count: 1760
+  routing_table:
+    - node: 47
+      pathid: 20
+      pkt_count: 6868
+      ack_count: 5287
+  state: WORK
+  x: 160
+  y: 137.14285714285714
+  role: external
+- node: 56
+  routing_table:
+    - node: 50
+      pathid: 33
+      pkt_count: 3584
+      ack_count: 1037
+  state: WORK
+  x: 0
+  y: 160
+  role: external
+- node: 57
+  routing_table:
+    - node: 32
+      pathid: 33
+      pkt_count: 1755
+      ack_count: 243
+    - node: 51
+      pathid: 34
+      pkt_count: 1830
+      ack_count: 578
+  state: WORK
+  x: 22.857142857142858
+  y: 160
+  role: external
+- node: 58
+  routing_table:
+    - node: 41
+      pathid: 33
+      pkt_count: 3584
+      ack_count: 1232
+  state: WORK
+  x: 45.714285714285715
+  y: 160
+  role: external
+- node: 59
+  routing_table:
+    - node: 45
+      pathid: 20
+      pkt_count: 1840
+      ack_count: 612
+    - node: 60
+      pathid: 33
+      pkt_count: 1745
+      ack_count: 1722
+  state: WORK
+  x: 68.571428571428569
+  y: 160
+  role: external
+- node: 60
+  recv_table:
+    - node: 59
+      pkt_count: 1722
+  routing_table:
+    - node: 50
+      pathid: 33
+      pkt_count: 5306
+      ack_count: 4386
+  state: WORK
+  x: 91.428571428571431
+  y: 160
+  role: external
+- node: 61
+  routing_table:
+    - node: 51
+      pathid: 34
+      pkt_count: 3585
+      ack_count: 1205
+  state: WORK
+  x: 114.28571428571429
+  y: 160
+  role: external
+- node: 62
+  routing_table:
+    - node: 54
+      pathid: 27
+      pkt_count: 1763
+      ack_count: 780
+    - node: 55
+      pathid: 20
+      pkt_count: 1821
+      ack_count: 1474
+  state: WORK
+  x: 137.14285714285714
+  y: 160
+  role: external
+- node: 63
+  routing_table:
+    - node: 54
+      pathid: 27
+      pkt_count: 1765
+      ack_count: 1633
+    - node: 55
+      pathid: 20
+      pkt_count: 1819
+      ack_count: 1758
+  state: WORK
+  x: 160
+  y: 160
+  role: external
