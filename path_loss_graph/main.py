@@ -169,6 +169,20 @@ def role_to_color(role):
     return 'tab:grey'
 
 
+def graph_to_yaml(G):
+    root = list()
+    Grev = G.reverse()
+    for i in Grev:
+        routes = list()
+        print("Node "+str(i)+": ")
+        for j in Grev[i]:
+            print("Route to node "+str(j))
+            routes.append({'node': str(j), 'pathid': '0'})
+        root.append({'node': str(i), 'routes': routes})
+    with open('routes.yaml', 'w') as file:
+        yaml.dump(root, file)
+
+
 if __name__ == '__main__':
     stream = open('loc_pdr.yaml', 'r')
     loader = yaml.safe_load(stream)
