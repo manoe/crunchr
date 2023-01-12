@@ -222,7 +222,7 @@ if __name__ == '__main__':
         for t in T[s]:
             print("%d-%d-%f" % (s, t,T[s][t]))
 
-    E = nx.algorithms.tree.Edmonds(G)
+    E = nx.algorithms.tree.Edmonds(G.reverse())
 
     B = E.find_optimum()
     print(str(B[0]) + ' vs ' + str(T[0]))
