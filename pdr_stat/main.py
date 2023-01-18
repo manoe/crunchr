@@ -1,28 +1,27 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+#!/bin/python3
+import errno
 
 import yaml
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import networkx
-#import scipy as sp
+# import scipy as sp
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
     import sys
     if len(sys.argv) > 1:
         stream = open(sys.argv[1], 'r')
     else:
-        stream = open('shmrp.yaml', 'r')
+        try:
+            stream = open('shmrp.yaml', 'r')
+        except IOError as e:
+            print(e)
+            exit(e.errno)
+        except Exception as e:
+            print(e)
+            exit(2)
 
     loader = yaml.safe_load(stream)
 
@@ -35,7 +34,7 @@ if __name__ == '__main__':
         run['avg_pdr'] = np.average(pdr_arr)
         run['std_pdr'] = np.std(pdr_arr)
         run['disconn'] = pdr_arr.count(0)
-        #print(run['std_pdr'])
+        # print(run['std_pdr'])
 
         loc_pdr = []
         for i in run['loc_pdr']:
