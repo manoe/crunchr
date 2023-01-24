@@ -1,4 +1,5 @@
 #!/bin/python3
+import argparse
 import errno
 
 import yaml
@@ -10,18 +11,14 @@ import networkx
 
 
 if __name__ == '__main__':
-    import sys
-    if len(sys.argv) > 1:
-        stream = open(sys.argv[1], 'r')
-    else:
-        try:
-            stream = open('shmrp_meas_rreq_5.yaml', 'r')
-        except IOError as e:
-            print(e)
-            exit(e.errno)
-        except Exception as e:
-            print(e)
-            exit(2)
+    parser = argparse.ArgumentParser(prog= 'pdr_hop_stat', description='Parse protocol logs and calculate pdr', epilog=':-(')
+    parser.add_argument('-i', '--image',
+                        action='store_true', dest='image')
+    parser.add_argument('filename')
+
+    args = parser.parse_args()
+
+    stream = open(args.filename, 'r')
 
     loader = yaml.safe_load(stream)
 
@@ -49,9 +46,11 @@ if __name__ == '__main__':
                                     pdr = l['pkt_count']/j['pkt_count']
                                     loc_pdr.append(pdr)
                                     if not j['hop'] in loc_pdr_per_hop_hist:
-                                        loc_pdr_per_hop_hist.update({j['hop']: []})
-                                    loc_pdr_per_hop_hist[j['hop']].append(pdr)
-
+                                        loc_pdr_per_hop_hist.update({j['hop']: {'pdr': [], 'meas_pdr': []}})
+                                    loc_pdr_per_hop_hist[j['hop']]['pdr'].append(pdr)
+                                    meas=next((item for item in i['rreq_table'] if item['node'] == j['node']), None)
+                                    loc_pdr_per_hop_hist[j['hop']]['meas_pdr'].append(
+                                        meas['ack_count'] / meas['pkt_count'])
         run['avg_loc_pdr'] = np.average(loc_pdr)
         loc_pdr_hist.extend(loc_pdr)
 
@@ -71,10 +70,16 @@ if __name__ == '__main__':
     print('Average loc pdr: ' + str(np.average(avg_loc_pdr)))
 
     values = []
-    bins = np.arange(0, 1.1, 0.1)
+    bins = np.arange(-1.1, 1.1, 0.1)
     for i in loc_pdr_per_hop_hist:
         plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
-        plt.hist(loc_pdr_per_hop_hist[i], bins)
+        plt.hist( [ p-mp for (p, mp) in zip(loc_pdr_per_hop_hist[i]['pdr'], loc_pdr_per_hop_hist[i]['meas_pdr'])], bins)
+        # plt.hist(loc_pdr_per_hop_hist[i]['pdr'], bins)
         plt.title('Hop:'+str(i))
-        print('Hop: '+str(i)+' PDR: '+str(np.average(loc_pdr_per_hop_hist[i])))
-    # plt.show()
+        print('Hop: '+str(i)+' PDR: '+str(np.average(loc_pdr_per_hop_hist[i]['pdr'])))
+
+    plt.tight_layout()
+    if args.image:
+        plt.savefig(args.filename.replace('yaml','png'), bbox_inches='tight')
+    else:
+        plt.show()
