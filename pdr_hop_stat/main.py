@@ -27,6 +27,7 @@ if __name__ == '__main__':
 
     runs = loader['runs']
     loc_pdr_hist = []
+    loc_pdr_per_hop_hist = {}
 
     for run in runs:
         # print(run['seed'])
@@ -47,6 +48,9 @@ if __name__ == '__main__':
                                 if l['node'] == i['node']:
                                     pdr = l['pkt_count']/j['pkt_count']
                                     loc_pdr.append(pdr)
+                                    if not j['hop'] in loc_pdr_per_hop_hist:
+                                        loc_pdr_per_hop_hist.update({j['hop']: []})
+                                    loc_pdr_per_hop_hist[j['hop']].append(pdr)
 
         run['avg_loc_pdr'] = np.average(loc_pdr)
         loc_pdr_hist.extend(loc_pdr)
@@ -66,6 +70,11 @@ if __name__ == '__main__':
     print('Average disconn: ' + str(np.average(disconn)))
     print('Average loc pdr: ' + str(np.average(avg_loc_pdr)))
 
+    values = []
     bins = np.arange(0, 1.1, 0.1)
-    plt.hist(loc_pdr_hist, bins)
-    plt.show()
+    for i in loc_pdr_per_hop_hist:
+        plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
+        plt.hist(loc_pdr_per_hop_hist[i], bins)
+        plt.title('Hop:'+str(i))
+        print('Hop: '+str(i)+' PDR: '+str(np.average(loc_pdr_per_hop_hist[i])))
+    # plt.show()
