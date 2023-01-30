@@ -80,6 +80,6 @@ if __name__ == '__main__':
 
     plt.tight_layout()
     if args.image:
-        plt.savefig(args.filename.replace('yaml','png'), bbox_inches='tight')
+        plt.savefig(args.filename.replace('yaml', 'png'), bbox_inches='tight')
     else:
         plt.show()
