@@ -79,7 +79,21 @@ if __name__ == '__main__':
         print('Hop: '+str(i)+' PDR: '+str(np.average(loc_pdr_per_hop_hist[i]['pdr'])))
 
     plt.tight_layout()
+
     if args.image:
-        plt.savefig(args.filename.replace('yaml', 'png'), bbox_inches='tight')
+        plt.savefig(args.filename.replace('yaml', '_diff.png'), bbox_inches='tight')
+    else:
+        plt.show()
+
+    bins = np.arange(0, 1.1, 0.1)
+    for i in loc_pdr_per_hop_hist:
+        plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
+        plt.hist(loc_pdr_per_hop_hist[i]['pdr'], bins)
+        plt.title('Hop:'+str(i))
+        print('Hop: '+str(i)+' PDR: '+str(np.average(loc_pdr_per_hop_hist[i]['pdr'])))
+    plt.tight_layout()
+
+    if args.image:
+        plt.savefig(args.filename.replace('yaml', '_pdr.png'), bbox_inches='tight')
     else:
         plt.show()
