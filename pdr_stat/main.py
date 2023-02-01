@@ -15,7 +15,7 @@ if __name__ == '__main__':
         stream = open(sys.argv[1], 'r')
     else:
         try:
-            stream = open('shmrp.yaml', 'r')
+            stream = open('shmrp_meas_rreq_5.yaml', 'r')
         except IOError as e:
             print(e)
             exit(e.errno)
