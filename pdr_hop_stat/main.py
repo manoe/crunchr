@@ -25,7 +25,7 @@ if __name__ == '__main__':
     runs = loader['runs']
     loc_pdr_hist = []
     loc_pdr_per_hop_hist = {}
-
+    paths = []
     for run in runs:
         # print(run['seed'])
         pdr_arr = list(run['pdr'].values())[1:]
@@ -37,6 +37,8 @@ if __name__ == '__main__':
         loc_pdr = []
         for i in run['loc_pdr']:
             if 'routing_table' in i:
+                if i['role'] == 'external':
+                    paths.append(len(i['routing_table']))
                 for j in i['routing_table']:
                     pdr = 0
                     for k in run['loc_pdr']:
@@ -68,6 +70,7 @@ if __name__ == '__main__':
     print('Average std:     ' + str(np.average(std_pdr)))
     print('Average disconn: ' + str(np.average(disconn)))
     print('Average loc pdr: ' + str(np.average(avg_loc_pdr)))
+    print('Average paths:   ' + str(np.average(paths)))
 
     values = []
     bins = np.arange(-1.1, 1.1, 0.1)
@@ -84,7 +87,7 @@ if __name__ == '__main__':
         plt.savefig(args.filename.replace('yaml', '_diff.png'), bbox_inches='tight')
     else:
         plt.show()
-
+    plt.close()
     bins = np.arange(0, 1.1, 0.1)
     for i in loc_pdr_per_hop_hist:
         plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
