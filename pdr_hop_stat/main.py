@@ -25,6 +25,7 @@ if __name__ == '__main__':
     runs = loader['runs']
     loc_pdr_hist = []
     loc_pdr_per_hop_hist = {}
+    pdr_per_hop_hist = {}
     paths = []
     for run in runs:
         # print(run['seed'])
@@ -36,6 +37,11 @@ if __name__ == '__main__':
 
         loc_pdr = []
         for i in run['loc_pdr']:
+            if run['pdr'][i['node']]:
+                if i['hop'] not in pdr_per_hop_hist:
+                    pdr_per_hop_hist[i['hop']] = [run['pdr'][i['node']]]
+                else:
+                    pdr_per_hop_hist[i['hop']].append(run['pdr'][i['node']])
             if 'routing_table' in i:
                 if i['role'] == 'external':
                     paths.append(len(i['routing_table']))
@@ -80,8 +86,10 @@ if __name__ == '__main__':
         # plt.hist(loc_pdr_per_hop_hist[i]['pdr'], bins)
         plt.title('Hop:'+str(i))
         print('Hop: '+str(i)+' PDR: '+str(np.average(loc_pdr_per_hop_hist[i]['pdr'])))
-
     plt.tight_layout()
+
+    for i in pdr_per_hop_hist:
+        print('Hop '+str(i)+' e2e PDR: '+str(np.average(pdr_per_hop_hist[i])))
 
     if args.image:
         plt.savefig(args.filename.replace('yaml', '_diff.png'), bbox_inches='tight')
@@ -93,7 +101,6 @@ if __name__ == '__main__':
         plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
         plt.hist(loc_pdr_per_hop_hist[i]['pdr'], bins)
         plt.title('Hop:'+str(i))
-        print('Hop: '+str(i)+' PDR: '+str(np.average(loc_pdr_per_hop_hist[i]['pdr'])))
     plt.tight_layout()
 
     if args.image:
