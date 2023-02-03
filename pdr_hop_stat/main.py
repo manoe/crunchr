@@ -9,6 +9,13 @@ import sys
 import networkx
 # import scipy as sp
 
+def calc_rx_stat(radio_stat):
+    rx_stat = {}
+    rx_stat['rx_ok'] = radio_stat['RX_ok_no_interf']+radio_stat['RX_ok_interf']
+    rx_stat['rx_fail'] = radio_stat['RX_fail_no_interf']+radio_stat['RX_fail_interf']+radio_stat['RX_fail_below_sensitivity']+radio_stat['RX_fail_not_rx_state']
+    rx_stat['rx_interf'] = radio_stat['RX_fail_interf']+radio_stat['RX_ok_interf']
+    rx_stat['rx_fail_interf'] = radio_stat['RX_fail_interf']
+    return rx_stat
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog= 'pdr_hop_stat', description='Parse protocol logs and calculate pdr', epilog=':-(')
@@ -27,6 +34,8 @@ if __name__ == '__main__':
     loc_pdr_per_hop_hist = {}
     pdr_per_hop_hist = {}
     paths = []
+    radio_stat = []
+
     for run in runs:
         # print(run['seed'])
         pdr_arr = list(run['pdr'].values())[1:]
@@ -37,11 +46,17 @@ if __name__ == '__main__':
 
         loc_pdr = []
         for i in run['loc_pdr']:
+            if 'hop' not in i:
+                radio_stat.append({'hop': 0, 'radio': i['radio'], 'pdr': 0})
+            else:
+                radio_stat.append({'hop': i['hop'], 'radio': i['radio'], 'pdr': 0})
             if run['pdr'][i['node']]:
                 if i['hop'] not in pdr_per_hop_hist:
                     pdr_per_hop_hist[i['hop']] = [run['pdr'][i['node']]]
                 else:
                     pdr_per_hop_hist[i['hop']].append(run['pdr'][i['node']])
+                radio_stat[-1]['pdr'] = run['pdr'][i['node']]
+
             if 'routing_table' in i:
                 if i['role'] == 'external':
                     paths.append(len(i['routing_table']))
@@ -66,6 +81,21 @@ if __name__ == '__main__':
     std_pdr = []
     disconn = []
     avg_loc_pdr = []
+
+    for i in radio_stat:
+        i['rx_stat'] = calc_rx_stat(i['radio'])
+
+#    radio_stat.sort(key=lambda x: x['rx_stat']['rx_ok']/(x['rx_stat']['rx_fail']+x['rx_stat']['rx_ok']))
+    radio_stat.sort(key=lambda x: x['rx_stat']['rx_ok'] / (x['rx_stat']['rx_fail'] + x['rx_stat']['rx_ok']))
+
+    rx_rate = []
+    hop_arr = []
+    for i in radio_stat:
+        rx_rate.append(i['rx_stat']['rx_ok']/(i['rx_stat']['rx_fail']+i['rx_stat']['rx_ok']))
+        hop_arr.append(i['hop'])
+
+
+
 
     for run in runs:
         avg_pdr.append(run['avg_pdr'])
@@ -107,3 +137,14 @@ if __name__ == '__main__':
         plt.savefig(args.filename.replace('yaml', '_pdr.png'), bbox_inches='tight')
     else:
         plt.show()
+
+    plt.close()
+    plt.plot(rx_rate)
+    plt.plot(hop_arr)
+    plt.show()
+
+    np_rx = np.array(rx_rate)
+    np_hop = np.array(hop_arr)
+
+    m = np.row_stack((np_rx, np_hop))
+    ret = np.corrcoef(m)
