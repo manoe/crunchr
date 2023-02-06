@@ -18,10 +18,14 @@ def calc_rx_stat(radio_stat):
     return rx_stat
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog= 'pdr_hop_stat', description='Parse protocol logs and calculate pdr', epilog=':-(')
+    parser = argparse.ArgumentParser(prog='pdr_hop_stat', description='Parse protocol logs and calculate pdr', epilog=':-(')
     parser.add_argument('-i', '--image',
                         action='store_true', dest='image')
+    parser.add_argument('-d', '--data',
+                        action='store_true', dest='data')
     parser.add_argument('filename')
+
+
 
     args = parser.parse_args()
 
@@ -121,11 +125,12 @@ if __name__ == '__main__':
     for i in pdr_per_hop_hist:
         print('Hop '+str(i)+' e2e PDR: '+str(np.average(pdr_per_hop_hist[i])))
 
-    if args.image:
-        plt.savefig(args.filename.replace('yaml', '_diff.png'), bbox_inches='tight')
-    else:
-        plt.show()
-    plt.close()
+    if not args.data:
+        if args.image:
+            plt.savefig(args.filename.replace('yaml', '_diff.png'), bbox_inches='tight')
+        else:
+            plt.show()
+        plt.close()
     bins = np.arange(0, 1.1, 0.1)
     for i in loc_pdr_per_hop_hist:
         plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
@@ -133,15 +138,17 @@ if __name__ == '__main__':
         plt.title('Hop:'+str(i))
     plt.tight_layout()
 
-    if args.image:
-        plt.savefig(args.filename.replace('yaml', '_pdr.png'), bbox_inches='tight')
-    else:
-        plt.show()
+    if not args.data:
+        if args.image:
+            plt.savefig(args.filename.replace('yaml', '_pdr.png'), bbox_inches='tight')
+        else:
+            plt.show()
 
     plt.close()
-    plt.plot(rx_rate)
-    plt.plot(hop_arr)
-    plt.show()
+    if not args.data:
+        plt.plot(rx_rate)
+        plt.plot(hop_arr)
+        plt.show()
 
     np_rx = np.array(rx_rate)
     np_hop = np.array(hop_arr)
