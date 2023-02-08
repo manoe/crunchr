@@ -23,12 +23,14 @@ if __name__ == '__main__':
                         action='store_true', dest='image')
     parser.add_argument('-d', '--data',
                         action='store_true', dest='data')
+    parser.add_argument('-n', '--no-header',
+                        action='store_true', dest='no_header')
+    parser.add_argument('-g', '--gap', dest='gap')
+    parser.add_argument('-s', '--sheet',
+                        action='store_true', dest='sheet')
     parser.add_argument('filename')
 
-
-
     args = parser.parse_args()
-
     stream = open(args.filename, 'r')
 
     loader = yaml.safe_load(stream)
@@ -106,24 +108,49 @@ if __name__ == '__main__':
         std_pdr.append(run['std_pdr'])
         disconn.append(run['disconn'])
         avg_loc_pdr.append(run['avg_loc_pdr'])
-    print('Average pdr:     ' + str(np.average(avg_pdr)))
-    print('Average std:     ' + str(np.average(std_pdr)))
-    print('Average disconn: ' + str(np.average(disconn)))
-    print('Average loc pdr: ' + str(np.average(avg_loc_pdr)))
-    print('Average paths:   ' + str(np.average(paths)))
+
+    header = 'file#'
+    data = str(args.filename)+'#'
+
+    if args.sheet:
+        header += 'avg.pdr#avg.std#avg.disconn#avg.loc.pdr#avg.path'
+        data += str(np.average(avg_pdr))+'#'+str(np.average(std_pdr))+'#'+str(np.average(disconn))+'#'+str(np.average(avg_loc_pdr))+'#'+str(np.average(paths))
+    #    exit(0)
+    else:
+        print('Average pdr:     ' + str(np.average(avg_pdr)))
+        print('Average std:     ' + str(np.average(std_pdr)))
+        print('Average disconn: ' + str(np.average(disconn)))
+        print('Average loc pdr: ' + str(np.average(avg_loc_pdr)))
+        print('Average paths:   ' + str(np.average(paths)))
 
     values = []
     bins = np.arange(-1.1, 1.1, 0.1)
+    loc_pdr_per_hop_hist = dict(sorted(loc_pdr_per_hop_hist.items()))
+
     for i in loc_pdr_per_hop_hist:
         plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
         plt.hist( [ p-mp for (p, mp) in zip(loc_pdr_per_hop_hist[i]['pdr'], loc_pdr_per_hop_hist[i]['meas_pdr'])], bins)
         # plt.hist(loc_pdr_per_hop_hist[i]['pdr'], bins)
         plt.title('Hop:'+str(i))
-        print('Hop: '+str(i)+' PDR: '+str(np.average(loc_pdr_per_hop_hist[i]['pdr'])))
-    plt.tight_layout()
+        if args.sheet:
+            header += '#hop.'+str(i)+'.pdr'
+            data += '#' + str(np.average(loc_pdr_per_hop_hist[i]['pdr']))
+        else:
+            print('Hop: '+str(i)+' PDR: '+str(np.average(loc_pdr_per_hop_hist[i]['pdr'])))
 
+    gap = int(args.gap) - len(loc_pdr_per_hop_hist)
+    for i in range(0,gap):
+        header += ' # '
+        data += ' # '
+    plt.tight_layout()
+    pdr_per_hop_hist = dict(sorted(pdr_per_hop_hist.items()))
     for i in pdr_per_hop_hist:
-        print('Hop '+str(i)+' e2e PDR: '+str(np.average(pdr_per_hop_hist[i])))
+        if args.sheet:
+            header += '#e2e.hop.'+str(i)+'.pdr'
+            data += '#' + str(np.average(pdr_per_hop_hist[i]))
+        else:
+            print('Hop '+str(i)+' e2e PDR: '+str(np.average(pdr_per_hop_hist[i])))
+
 
     if not args.data:
         if args.image:
@@ -155,3 +182,8 @@ if __name__ == '__main__':
 
     m = np.row_stack((np_rx, np_hop))
     ret = np.corrcoef(m)
+
+    if args.sheet:
+        if not args.no_header:
+            print(header)
+        print(data)
