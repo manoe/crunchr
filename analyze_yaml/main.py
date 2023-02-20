@@ -96,17 +96,34 @@ if __name__ == '__main__':
         e2e_report_pdr_per_hop = merge_dicts_of_arrays(e2e_report_pdr_per_hop,
                                                        get_run_e2e_pdr_per_hop(run, 'report_pdr'))
 
-    print('e2e event avg.pdr: '+str(np.average(e2e_event_pdr)))
-    print('e2e report avg.pdr: ' + str(np.average(e2e_report_pdr)))
+    header = ''
+    data = args.filename
+    header += '#e2e event avg.pdr'
+    data += '#' + str(np.average(e2e_event_pdr))
+
+    header += '#e2e report avg.pdr'
+    data += '#' + str(np.average(e2e_report_pdr))
 
     e2e_event_pdr_per_hop = dict(sorted(e2e_event_pdr_per_hop.items()))
     e2e_report_pdr_per_hop = dict(sorted(e2e_report_pdr_per_hop.items()))
 
     for i in list(e2e_event_pdr_per_hop.keys()):
-        print('Hop '+str(i)+' event pdr: '+str(np.average(e2e_event_pdr_per_hop[i])))
+        header += '#hop ' +str(i)+' event pdr'
+        data += '#' + str(np.average(e2e_event_pdr_per_hop[i]))
+
+    if args.gap:
+        gap = int(args.gap) - len(e2e_event_pdr_per_hop)
+        for i in range(0,gap):
+            header += ' # '
+            data += ' # '
 
     for i in list(e2e_report_pdr_per_hop.keys()):
-        print('Hop '+str(i)+' report pdr: '+str(np.average(e2e_report_pdr_per_hop[i])))
+        header += '#hop ' +str(i)+' report pdr'
+        data += '#' + str(np.average(e2e_report_pdr_per_hop[i]))
+
+    if not args.no_header:
+        print(header)
+    print(data)
 
     # print(run['seed'])
 #        pdr_arr = list(run['pdr'].values())[1:]
