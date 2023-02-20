@@ -26,8 +26,6 @@ def configure_cmd_parser():
     parser.add_argument('-n', '--no-header',
                         action='store_true', dest='no_header')
     parser.add_argument('-g', '--gap', dest='gap')
-    parser.add_argument('-s', '--sheet',
-                        action='store_true', dest='sheet')
     parser.add_argument('filename')
     return parser
 
@@ -37,12 +35,42 @@ def load_yaml(filename):
     return yaml.safe_load(stream)
 
 
-def get_run_e2e_event_pdr(run):
-    e2e_event_pdr = []
+def add_e2e_pdr_to_node(run, pdr_token):
     for i in run['pdr']:
-        if i['event_pdr']:
-            e2e_event_pdr.append(i['event_pdr'])
-    return e2e_event_pdr
+        if pdr_token in i:
+            for j in run['loc_pdr']:
+                if j['node'] == i['node']:
+                    j[pdr_token] = i[pdr_token]
+    return run
+
+
+def get_run_e2e_pdr(run, token):
+    e2e_pdr = []
+    for i in run['loc_pdr']:
+        if token in i:
+            e2e_pdr.append(i[token])
+    return e2e_pdr
+
+
+def get_run_e2e_pdr_per_hop(run, token):
+    e2e_pdr_per_hop = {}
+    for i in run['loc_pdr']:
+        if token in i:
+            if i['hop'] in e2e_pdr_per_hop:
+                e2e_pdr_per_hop[i['hop']] += [i[token]]
+            else:
+                e2e_pdr_per_hop[i['hop']] = [i[token]]
+    return e2e_pdr_per_hop
+
+
+def merge_dicts_of_arrays(dict1, dict2):
+    for i in list(dict2.keys()):
+        if i in dict1:
+            dict1[i] += (dict2[i])
+        else:
+            dict1[i] = dict2[i]
+    return dict1
+
 
 if __name__ == '__main__':
     parser = configure_cmd_parser()
@@ -53,12 +81,34 @@ if __name__ == '__main__':
     runs = loader['runs']
 
     e2e_event_pdr = []
+    e2e_report_pdr = []
+    e2e_event_pdr_per_hop = {}
+    e2e_report_pdr_per_hop = {}
 
     for run in runs:
-        e2e_event_pdr.append(get_run_e2e_event_pdr(run))
+        run = add_e2e_pdr_to_node(run, 'event_pdr')
+        run = add_e2e_pdr_to_node(run, 'report_pdr')
+        e2e_event_pdr += get_run_e2e_pdr(run, 'event_pdr')
+        e2e_report_pdr += e2e_report_pdr + get_run_e2e_pdr(run, 'report_pdr')
+
+        e2e_event_pdr_per_hop = merge_dicts_of_arrays(e2e_event_pdr_per_hop,
+                                                      get_run_e2e_pdr_per_hop(run, 'event_pdr'))
+        e2e_report_pdr_per_hop = merge_dicts_of_arrays(e2e_report_pdr_per_hop,
+                                                       get_run_e2e_pdr_per_hop(run, 'report_pdr'))
 
     print('e2e event avg.pdr: '+str(np.average(e2e_event_pdr)))
-        # print(run['seed'])
+    print('e2e report avg.pdr: ' + str(np.average(e2e_report_pdr)))
+
+    e2e_event_pdr_per_hop = dict(sorted(e2e_event_pdr_per_hop.items()))
+    e2e_report_pdr_per_hop = dict(sorted(e2e_report_pdr_per_hop.items()))
+
+    for i in list(e2e_event_pdr_per_hop.keys()):
+        print('Hop '+str(i)+' event pdr: '+str(np.average(e2e_event_pdr_per_hop[i])))
+
+    for i in list(e2e_report_pdr_per_hop.keys()):
+        print('Hop '+str(i)+' report pdr: '+str(np.average(e2e_report_pdr_per_hop[i])))
+
+    # print(run['seed'])
 #        pdr_arr = list(run['pdr'].values())[1:]
 #        run['avg_pdr'] = np.average(pdr_arr)
 #        run['std_pdr'] = np.std(pdr_arr)
