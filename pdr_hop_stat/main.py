@@ -41,10 +41,14 @@ if __name__ == '__main__':
     pdr_per_hop_hist = {}
     paths = []
     radio_stat = []
-
+    path_per_hop_hist = {}
     for run in runs:
         # print(run['seed'])
         pdr_arr = list(run['pdr'].values())[1:]
+        new_pdr_arr = []
+        for i in pdr_arr:
+            new_pdr_arr.append(i['pkt_recv']/i['pkt_sent'])
+        pdr_arr=new_pdr_arr
         run['avg_pdr'] = np.average(pdr_arr)
         run['std_pdr'] = np.std(pdr_arr)
         run['disconn'] = pdr_arr.count(0)
@@ -59,8 +63,13 @@ if __name__ == '__main__':
             if run['pdr'][i['node']]:
                 if i['hop'] not in pdr_per_hop_hist:
                     pdr_per_hop_hist[i['hop']] = [run['pdr'][i['node']]]
+                    path_per_hop_hist[i['hop']] = [len(i['routing_table'])]
                 else:
                     pdr_per_hop_hist[i['hop']].append(run['pdr'][i['node']])
+                    if 'routing_table' in i:
+                        path_per_hop_hist[i['hop']].append(len(i['routing_table']))
+                    else:
+                        print('No routing table present: ' +str(i['node']))
                 radio_stat[-1]['pdr'] = run['pdr'][i['node']]
 
             if 'routing_table' in i:
@@ -77,9 +86,9 @@ if __name__ == '__main__':
                                     if not j['hop'] in loc_pdr_per_hop_hist:
                                         loc_pdr_per_hop_hist.update({j['hop']: {'pdr': [], 'meas_pdr': []}})
                                     loc_pdr_per_hop_hist[j['hop']]['pdr'].append(pdr)
-                                    meas=next((item for item in i['rreq_table'] if item['node'] == j['node']), None)
-                                    loc_pdr_per_hop_hist[j['hop']]['meas_pdr'].append(
-                                        meas['ack_count'] / meas['pkt_count'])
+#                                    meas=next((item for item in i['rreq_table'] if item['node'] == j['node']), None)
+#                                    loc_pdr_per_hop_hist[j['hop']]['meas_pdr'].append(
+#                                        meas['ack_count'] / meas['pkt_count'])
         run['avg_loc_pdr'] = np.average(loc_pdr)
         loc_pdr_hist.extend(loc_pdr)
 
@@ -128,29 +137,50 @@ if __name__ == '__main__':
     loc_pdr_per_hop_hist = dict(sorted(loc_pdr_per_hop_hist.items()))
 
     for i in loc_pdr_per_hop_hist:
-        plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
-        plt.hist( [ p-mp for (p, mp) in zip(loc_pdr_per_hop_hist[i]['pdr'], loc_pdr_per_hop_hist[i]['meas_pdr'])], bins)
+#        plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
+#        plt.hist( [ p-mp for (p, mp) in zip(loc_pdr_per_hop_hist[i]['pdr'], loc_pdr_per_hop_hist[i]['meas_pdr'])], bins)
         # plt.hist(loc_pdr_per_hop_hist[i]['pdr'], bins)
-        plt.title('Hop:'+str(i))
+#        plt.title('Hop:'+str(i))
         if args.sheet:
             header += '#hop.'+str(i)+'.pdr'
             data += '#' + str(np.average(loc_pdr_per_hop_hist[i]['pdr']))
         else:
             print('Hop: '+str(i)+' PDR: '+str(np.average(loc_pdr_per_hop_hist[i]['pdr'])))
 
-    gap = int(args.gap) - len(loc_pdr_per_hop_hist)
-    for i in range(0,gap):
-        header += ' # '
-        data += ' # '
-    plt.tight_layout()
+    if args.gap:
+        gap = int(args.gap) - len(loc_pdr_per_hop_hist)
+        for i in range(0,gap):
+            header += ' # '
+            data += ' # '
+#    plt.tight_layout()
+    new_pdr_per_hop_hist = []
+
+
     pdr_per_hop_hist = dict(sorted(pdr_per_hop_hist.items()))
+
     for i in pdr_per_hop_hist:
+        arr = []
+        for j in pdr_per_hop_hist[i]:
+            arr.append(j['pkt_recv'] / j['pkt_sent'])
         if args.sheet:
             header += '#e2e.hop.'+str(i)+'.pdr'
-            data += '#' + str(np.average(pdr_per_hop_hist[i]))
+            data += '#' + str(np.average(arr))
         else:
-            print('Hop '+str(i)+' e2e PDR: '+str(np.average(pdr_per_hop_hist[i])))
+            print('Hop '+str(i)+' e2e PDR: '+str(np.average(arr)))
 
+    if args.gap:
+        gap = int(args.gap) - len(pdr_per_hop_hist)
+        for i in range(0, gap):
+            header += ' # '
+            data += ' # '
+    path_per_hop_hist = dict(sorted(path_per_hop_hist.items()))
+
+    for i in path_per_hop_hist:
+        if args.sheet:
+            header += '#hop.'+str(i)+'.path'
+            data += '#' + str(np.average(path_per_hop_hist[i]))
+        else:
+            print('Hop '+str(i)+' avg.path: '+str(np.average(path_per_hop_hist[i])))
 
     if not args.data:
         if args.image:
@@ -158,30 +188,30 @@ if __name__ == '__main__':
         else:
             plt.show()
         plt.close()
-    bins = np.arange(0, 1.1, 0.1)
-    for i in loc_pdr_per_hop_hist:
-        plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
-        plt.hist(loc_pdr_per_hop_hist[i]['pdr'], bins)
-        plt.title('Hop:'+str(i))
-    plt.tight_layout()
+#    bins = np.arange(0, 1.1, 0.1)
+#    for i in loc_pdr_per_hop_hist:
+#        plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
+#        plt.hist(loc_pdr_per_hop_hist[i]['pdr'], bins)
+#        plt.title('Hop:'+str(i))
+#    plt.tight_layout()
 
     if not args.data:
         if args.image:
             plt.savefig(args.filename.replace('yaml', '_pdr.png'), bbox_inches='tight')
-        else:
-            plt.show()
+ #       else:
+#            plt.show()
 
-    plt.close()
-    if not args.data:
-        plt.plot(rx_rate)
-        plt.plot(hop_arr)
-        plt.show()
+#    plt.close()
+#    if not args.data:
+#        plt.plot(rx_rate)
+#        plt.plot(hop_arr)
+#        plt.show()
 
-    np_rx = np.array(rx_rate)
-    np_hop = np.array(hop_arr)
+#    np_rx = np.array(rx_rate)
+#    np_hop = np.array(hop_arr)
 
-    m = np.row_stack((np_rx, np_hop))
-    ret = np.corrcoef(m)
+#    m = np.row_stack((np_rx, np_hop))
+#    ret = np.corrcoef(m)
 
     if args.sheet:
         if not args.no_header:
