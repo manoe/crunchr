@@ -9,6 +9,10 @@ import sys
 import networkx
 # import scipy as sp
 
+
+def reject_outliers(data, m=2):
+    return data[abs(data - np.mean(data)) < m * np.std(data)]
+
 def calc_rx_stat(radio_stat):
     rx_stat = {}
     rx_stat['rx_ok'] = radio_stat['RX_ok_no_interf']+radio_stat['RX_ok_interf']
@@ -28,6 +32,9 @@ if __name__ == '__main__':
     parser.add_argument('-g', '--gap', dest='gap')
     parser.add_argument('-s', '--sheet',
                         action='store_true', dest='sheet')
+    parser.add_argument('-r', '--remove-outlier',
+                        action='store_true', dest='remove_outlier')
+
     parser.add_argument('filename')
 
     args = parser.parse_args()
@@ -49,7 +56,7 @@ if __name__ == '__main__':
         for i in pdr_arr:
             new_pdr_arr.append(i['pkt_recv']/i['pkt_sent'])
         pdr_arr=new_pdr_arr
-        run['avg_pdr'] = np.average(pdr_arr)
+        run['avg_pdr'] = np.average(np.array(pdr_arr))
         run['std_pdr'] = np.std(pdr_arr)
         run['disconn'] = pdr_arr.count(0)
         # print(run['std_pdr'])
