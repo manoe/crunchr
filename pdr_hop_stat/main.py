@@ -63,7 +63,10 @@ if __name__ == '__main__':
             if run['pdr'][i['node']]:
                 if i['hop'] not in pdr_per_hop_hist:
                     pdr_per_hop_hist[i['hop']] = [run['pdr'][i['node']]]
-                    path_per_hop_hist[i['hop']] = [len(i['routing_table'])]
+                    if 'routing_table' in i: # dunno if this really works
+                        path_per_hop_hist[i['hop']] = [len(i['routing_table'])]
+                    else:
+                        print('No routing table present: ' + str(i['node']))
                 else:
                     pdr_per_hop_hist[i['hop']].append(run['pdr'][i['node']])
                     if 'routing_table' in i:
@@ -139,7 +142,7 @@ if __name__ == '__main__':
     for i in loc_pdr_per_hop_hist:
 #        plt.subplot(2, int(np.ceil(len(loc_pdr_per_hop_hist.keys()) / 2)), i+1)
 #        plt.hist( [ p-mp for (p, mp) in zip(loc_pdr_per_hop_hist[i]['pdr'], loc_pdr_per_hop_hist[i]['meas_pdr'])], bins)
-        # plt.hist(loc_pdr_per_hop_hist[i]['pdr'], bins)
+     # plt.hist(loc_pdr_per_hop_hist[i]['pdr'], bins)
 #        plt.title('Hop:'+str(i))
         if args.sheet:
             header += '#hop.'+str(i)+'.pdr'
