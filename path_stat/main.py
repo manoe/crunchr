@@ -46,11 +46,31 @@ if __name__ == '__main__':
 
     path_arr = []
 
+    path_per_hop = {}
+
     for run in runs:
         for i in run['loc_pdr']:
             if i['state'] != 'INIT' and 'hop' in i and i['role'] == 'external':
                 path_arr.append(len(i['routing_table']))
-    print(np.average(path_arr))
+                if i['hop'] not in path_per_hop:
+                    path_per_hop[i['hop']] = []
+                path_per_hop[i['hop']].append(len(i['routing_table']))
+
+    print('Average path/node: '+str(np.average(path_arr)))
+
+    if args.image:
+        bins = np.arange(0, np.max(path_arr), 1)
+        j = 1
+        for i in path_per_hop:
+            plt.subplot(int(np.ceil(len(path_per_hop)/2)), 2, j)
+            plt.hist(path_per_hop[i], bins)
+            j = j+1
+            plt.title('Hop:' + str(i))
+
+#        plt.hist(path_arr, bins)
+        plt.tight_layout()
+        plt.show()
+
 #                if i['hop'] not in pdr_per_hop_hist:
 #                    pdr_per_hop_hist[i['hop']] = [run['pdr'][i['node']]]
 #                    if 'routing_table' in i: # dunno if this really works
