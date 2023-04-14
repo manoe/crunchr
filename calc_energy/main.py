@@ -49,3 +49,7 @@ if __name__ == '__main__':
     print('avg.nrg: ' + str(np.average(spent_nrg)))
     print('std.nrg: ' + str(np.std(spent_nrg)))
 
+    if args.image:
+        bins = np.arange(np.min(spent_nrg), np.max(spent_nrg), 5)
+        plt.hist(spent_nrg, bins)
+        plt.show()
