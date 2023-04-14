@@ -67,7 +67,7 @@ if __name__ == '__main__':
                 radio_stat.append({'hop': 0, 'radio': i['radio'], 'pdr': 0})
             else:
                 radio_stat.append({'hop': i['hop'], 'radio': i['radio'], 'pdr': 0})
-            if run['pdr'][i['node']]:
+            if run['pdr'][i['node']] and i['state'] != 'INIT':
                 if i['hop'] not in pdr_per_hop_hist:
                     pdr_per_hop_hist[i['hop']] = [run['pdr'][i['node']]]
                     if 'routing_table' in i: # dunno if this really works
