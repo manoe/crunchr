@@ -61,13 +61,17 @@ if __name__ == '__main__':
     if args.image:
         bins = np.arange(0, np.max(path_arr), 1)
         j = 1
+        nrows = int(np.ceil((len(path_per_hop)+1)/2))
+        plt.subplot(nrows, 2, j)
+        plt.hist(path_arr, bins)
+        plt.title('Complete network')
+        j = j+1
         for i in path_per_hop:
-            plt.subplot(int(np.ceil(len(path_per_hop)/2)), 2, j)
+            plt.subplot(nrows, 2, j)
             plt.hist(path_per_hop[i], bins)
             j = j+1
             plt.title('Hop:' + str(i))
 
-#        plt.hist(path_arr, bins)
         plt.tight_layout()
         plt.show()
 
