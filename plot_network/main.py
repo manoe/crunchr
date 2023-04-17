@@ -1,16 +1,50 @@
-# This is a sample Python script.
+#!/bin/python3
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+import argparse
+import errno
+import yaml
+import matplotlib.pyplot as plt
+import numpy as np
+import sys
+import networkx as nx
+
+def role_to_color(role):
+    if role == 'central':
+        return 'tab:pink'
+    elif role == 'internal':
+        return 'tab:brown'
+    elif role == 'border':
+        return 'tab:cyan'
+    elif role == 'external':
+        return 'tab:blue'
+    return 'tab:grey'
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    print_hi('PyCharm')
+    parser = argparse.ArgumentParser(prog='plot_network', description='Plot network', epilog=':-(')
+    parser.add_argument('-i', '--image',
+                        action='store_true', dest='image')
+    parser.add_argument('-d', '--data',
+                        action='store_true', dest='data')
+    parser.add_argument('-n', '--no-header',
+                        action='store_true', dest='no_header')
+    parser.add_argument('-g', '--gap', dest='gap')
+    parser.add_argument('-s', '--sheet',
+                        action='store_true', dest='sheet')
+    parser.add_argument('-r', '--remove-outlier',
+                        action='store_true', dest='remove_outlier')
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    parser.add_argument('filename')
+
+    args = parser.parse_args()
+    stream = open(args.filename, 'r')
+
+    loader = yaml.safe_load(stream)
+
+    run = loader['run']
+
+    g_nw = nx.DiGraph()
+
+    for i in run['loc_pdr']:
+        g_nw.add_node(i['node'], role=i['role'])
+
