@@ -8,6 +8,7 @@ import numpy as np
 import sys
 import networkx as nx
 
+
 def role_to_color(role):
     if role == 'central':
         return 'tab:pink'
@@ -53,6 +54,15 @@ if __name__ == '__main__':
                 else:
                     g_nw.add_edge(i['node'], j['node'], secl=j['secl'])
 
-    nx.draw(g_nw, nx.get_node_attributes(g_nw, 'pos'))
-    plt.draw()
+    node_color = [role_to_color(nx.get_node_attributes(g_nw, 'role')[i])
+                  for i in nx.get_node_attributes(g_nw, 'role')]
+
+    nx.draw(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, with_labels=True)
+
+    edge_labels = {}
+    for u, v, e in g_nw.edges.data('pathid'):
+        if e:
+            edge_labels[(u, v)] = str(','.join(str(i) for i in e))
+
+    nx.draw_networkx_edge_labels(g_nw, nx.get_node_attributes(g_nw, 'pos'), edge_labels=edge_labels)
     plt.show()
