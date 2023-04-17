@@ -41,10 +41,15 @@ if __name__ == '__main__':
 
     loader = yaml.safe_load(stream)
 
-    run = loader['run']
-
     g_nw = nx.DiGraph()
 
-    for i in run['loc_pdr']:
-        g_nw.add_node(i['node'], role=i['role'])
+    for i in loader['loc_pdr']:
+        g_nw.add_node(i['node'], role=i['role'], master=i['master'], pos={'x': i['x'], 'y': i['y']})
+        if 'routing_table' in i:
+            for j in i['routing_table']:
+                if i['role'] == 'external':
+                    pathid = [k['pathid'] for k in j['pathid']]
+                    g_nw.add_edge(i['node'], j['node'], pathid=pathid)
+                else:
+                    g_nw.add_edge(i['node'], j['node'])
 
