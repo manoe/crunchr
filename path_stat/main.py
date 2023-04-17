@@ -10,6 +10,7 @@ import networkx
 # import scipy as sp
 
 
+
 def reject_outliers(data, m=2):
     return data[abs(data - np.mean(data)) < m * np.std(data)]
 
