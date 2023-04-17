@@ -9,6 +9,7 @@ import sys
 import networkx as nx
 
 
+# https://matplotlib.org/stable/tutorials/colors/colors.html
 def role_to_color(role):
     if role == 'central':
         return 'tab:pink'
@@ -57,7 +58,11 @@ if __name__ == '__main__':
     node_color = [role_to_color(nx.get_node_attributes(g_nw, 'role')[i])
                   for i in nx.get_node_attributes(g_nw, 'role')]
 
-    nx.draw(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, with_labels=True)
+    node_size = [700 if nx.get_node_attributes(g_nw, 'master')[i] else 400
+                 for i in nx.get_node_attributes(g_nw, 'master')]
+    print(nx.get_node_attributes(g_nw, 'master'))
+    nx.draw(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size, with_labels=True,
+            edgecolors='k', linewidths=2)
 
     edge_labels = {}
     for u, v, e in g_nw.edges.data('pathid'):
@@ -65,4 +70,5 @@ if __name__ == '__main__':
             edge_labels[(u, v)] = str(','.join(str(i) for i in e))
 
     nx.draw_networkx_edge_labels(g_nw, nx.get_node_attributes(g_nw, 'pos'), edge_labels=edge_labels)
+
     plt.show()
