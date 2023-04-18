@@ -23,9 +23,10 @@ def calc_rx_stat(radio_stat):
     return rx_stat
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='path_stat', description='Parse protocol logs and calculate path stuff', epilog=':-(')
+    parser = argparse.ArgumentParser(prog='path_stat', description='Parse protocol logs and calculate path stuff',
+                                     epilog=':-(')
     parser.add_argument('-i', '--image',
-                        action='store_true', dest='image')
+                        choices=['histogram', 'tail', 'path_hop_ratio'], dest='image', default='histogram')
     parser.add_argument('-d', '--data',
                         action='store_true', dest='data')
     parser.add_argument('-n', '--no-header',
@@ -59,7 +60,7 @@ if __name__ == '__main__':
 
     print('Average path/node: '+str(np.average(path_arr)))
 
-    if args.image:
+    if args.image == 'histogram':
         bins = np.arange(0, np.max(path_arr), 1)
         j = 1
         nrows = int(np.ceil((len(path_per_hop)+1)/2))
@@ -72,7 +73,29 @@ if __name__ == '__main__':
             plt.hist(path_per_hop[i], bins)
             j = j+1
             plt.title('Hop:' + str(i))
-
+        plt.tight_layout()
+        plt.show()
+    elif args.image == 'tail':
+        tail = []
+        sizes = []
+        x_bar = list(path_per_hop.keys())
+        for i in path_per_hop:
+            tail.append(len(list(filter(lambda x: x == 1, path_per_hop[i])))/len(path_per_hop[i]))
+            sizes.append(len(path_per_hop[i])/len(list(path_per_hop.values())))
+        plt.subplot(1, 2, 1)
+        plt.plot(x_bar, tail, 'bs')
+        plt.xticks(x_bar)
+        plt.subplot(1, 2, 2)
+        plt.pie(sizes, labels=x_bar, autopct='%1.1f%%')
+        plt.tight_layout()
+        plt.show()
+        # plot node distribution
+    elif args.image == 'path_hop_ratio':
+        x_bar = list(path_per_hop.keys())
+        phr = [np.average(path_per_hop[i])/i for i in path_per_hop]
+        plt.plot(x_bar, phr, 'bs')
+        plt.xticks(x_bar)
+        plt.title('Path-hop ratio')
         plt.tight_layout()
         plt.show()
 
