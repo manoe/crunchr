@@ -27,13 +27,11 @@ if __name__ == '__main__':
                                      epilog=':-(')
     parser.add_argument('-i', '--image',
                         choices=['histogram', 'tail', 'path_hop_ratio'], dest='image', default='histogram')
-    parser.add_argument('-d', '--data',
-                        action='store_true', dest='data')
+    parser.add_argument('-s', '--save-image',
+                        action='store_true', dest='save_image')
     parser.add_argument('-n', '--no-header',
                         action='store_true', dest='no_header')
     parser.add_argument('-g', '--gap', dest='gap')
-    parser.add_argument('-s', '--sheet',
-                        action='store_true', dest='sheet')
     parser.add_argument('-r', '--remove-outlier',
                         action='store_true', dest='remove_outlier')
 
@@ -58,8 +56,6 @@ if __name__ == '__main__':
                     path_per_hop[i['hop']] = []
                 path_per_hop[i['hop']].append(len(i['routing_table']))
 
-    print('Average path/node: '+str(np.average(path_arr)))
-
     if args.image == 'histogram':
         bins = np.arange(0, np.max(path_arr), 1)
         j = 1
@@ -73,8 +69,6 @@ if __name__ == '__main__':
             plt.hist(path_per_hop[i], bins)
             j = j+1
             plt.title('Hop:' + str(i))
-        plt.tight_layout()
-        plt.show()
     elif args.image == 'tail':
         tail = []
         sizes = []
@@ -87,8 +81,6 @@ if __name__ == '__main__':
         plt.xticks(x_bar)
         plt.subplot(1, 2, 2)
         plt.pie(sizes, labels=x_bar, autopct='%1.1f%%')
-        plt.tight_layout()
-        plt.show()
         # plot node distribution
     elif args.image == 'path_hop_ratio':
         x_bar = list(path_per_hop.keys())
@@ -96,8 +88,14 @@ if __name__ == '__main__':
         plt.plot(x_bar, phr, 'bs')
         plt.xticks(x_bar)
         plt.title('Path-hop ratio')
-        plt.tight_layout()
+
+    plt.tight_layout()
+
+    if args.save_image:
+        plt.savefig(args.filename.replace('yaml', 'png'), bbox_inches='tight')
+    else:
         plt.show()
+
 
 #                if i['hop'] not in pdr_per_hop_hist:
 #                    pdr_per_hop_hist[i['hop']] = [run['pdr'][i['node']]]
