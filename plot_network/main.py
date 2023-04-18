@@ -36,10 +36,13 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--remove-outlier',
                         action='store_true', dest='remove_outlier')
 
-    parser.add_argument('filename')
+    parser.add_argument('filename', help='use ``-\'\' for stdin')
 
     args = parser.parse_args()
-    stream = open(args.filename, 'r')
+
+    stream = sys.stdin
+    if args.filename != '-':
+        stream = open(args.filename, 'r')
 
     loader = yaml.safe_load(stream)
 
