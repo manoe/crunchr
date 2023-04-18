@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     node_size = [700 if nx.get_node_attributes(g_nw, 'master')[i] else 400
                  for i in nx.get_node_attributes(g_nw, 'master')]
-    print(nx.get_node_attributes(g_nw, 'master'))
+
     nx.draw(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size, with_labels=True,
             edgecolors='k', linewidths=2)
 
