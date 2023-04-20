@@ -40,7 +40,12 @@ if __name__ == '__main__':
 
     pdr_arr = list(np.nan_to_num(list(pdr.values())))
 
+    plt.subplot(211)
     plt.plot(ts, sp.stats.entropy(pdr_arr, base=2))
+    plt.subplot(212)
+    plt.plot(ts, np.average(pdr_arr,axis=0))
+    plt.fill_between(ts, np.add(np.average(pdr_arr,axis=0), np.std(pdr_arr, axis=0)),
+                     np.subtract(np.average(pdr_arr,axis=0),np.std(pdr_arr, axis=0)), alpha=0.2)
 
     plt.tight_layout()
     plt.show()
