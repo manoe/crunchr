@@ -13,6 +13,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_traffic', description='Plot traffic', epilog=':-(')
     parser.add_argument('-d', '--data',
                         action='store_true', dest='data')
+    parser.add_argument('-s', '--save-image',
+                        action='store_true', dest='save_image')
     parser.add_argument('filename', help='use ``-\'\' for stdin')
     args = parser.parse_args()
 
@@ -42,10 +44,15 @@ if __name__ == '__main__':
 
     plt.subplot(211)
     plt.plot(ts, sp.stats.entropy(pdr_arr, base=2))
+    plt.ylim((5, 6))
     plt.subplot(212)
     plt.plot(ts, np.average(pdr_arr,axis=0))
+    plt.ylim((0, 1))
     plt.fill_between(ts, np.add(np.average(pdr_arr,axis=0), np.std(pdr_arr, axis=0)),
                      np.subtract(np.average(pdr_arr,axis=0),np.std(pdr_arr, axis=0)), alpha=0.2)
 
     plt.tight_layout()
-    plt.show()
+    if args.save_image:
+        plt.savefig(args.filename.replace('yaml', 'png'), bbox_inches='tight', )
+    else:
+        plt.show()
