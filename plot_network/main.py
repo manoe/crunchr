@@ -54,7 +54,12 @@ if __name__ == '__main__':
             for j in i['routing_table']:
                 if i['role'] == 'external':
                     pathid = [k['pathid'] for k in j['pathid']]
-                    g_nw.add_edge(i['node'], j['node'], pathid=pathid, secl=j['secl'])
+                    secl = False
+                    for k in j['pathid']:
+                        if k['secl']:
+                            secl = True
+
+                    g_nw.add_edge(i['node'], j['node'], pathid=pathid, secl=secl)
                 else:
                     g_nw.add_edge(i['node'], j['node'], secl=j['secl'])
 
@@ -63,6 +68,8 @@ if __name__ == '__main__':
 
     node_size = [700 if nx.get_node_attributes(g_nw, 'master')[i] else 400
                  for i in nx.get_node_attributes(g_nw, 'master')]
+
+    plt.subplot(133)
 
     nx.draw(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size, with_labels=True,
             edgecolors='k', linewidths=2)
@@ -73,5 +80,34 @@ if __name__ == '__main__':
             edge_labels[(u, v)] = str(','.join(str(i) for i in e))
 
     nx.draw_networkx_edge_labels(g_nw, nx.get_node_attributes(g_nw, 'pos'), edge_labels=edge_labels)
+    plt.box(False)
+    plt.subplot(132)
 
+    nx.draw_networkx_nodes(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size,
+                           edgecolors='k', linewidths=2)
+    nx.draw_networkx_labels(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'))
+
+    edge_list = []
+
+    for (v, w) in g_nw.edges():
+        if g_nw.get_edge_data(v, w)['secl']:
+            edge_list.append((v, w))
+
+    nx.draw_networkx_edges(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), edgelist=edge_list)
+
+
+    plt.box(False)
+    plt.subplot(131)
+
+    nx.draw_networkx_nodes(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size,
+                           edgecolors='k', linewidths=2)
+    nx.draw_networkx_labels(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'))
+
+    edge_list = []
+    for (v, w) in g_nw.edges():
+        if not g_nw.get_edge_data(v, w)['secl']:
+            edge_list.append((v, w))
+
+    nx.draw_networkx_edges(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), edgelist=edge_list)
+    plt.box(False)
     plt.show()
