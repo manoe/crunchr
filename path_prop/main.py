@@ -8,7 +8,7 @@ import numpy as np
 import sys
 import networkx as nx
 from scipy.stats import entropy
-import matplotlib
+import matplotlib as mpl
 import pydot
 from networkx.drawing.nx_pydot import graphviz_layout
 
@@ -74,7 +74,9 @@ def get_path_stat(loader):
                                                                 for n in SG.nodes() if n != i]),
                                     'avg_leaf_distance': np.average([nx.shortest_path_length(SG, target=i, source=n)
                                                                      for n in SG.nodes() if not SG.in_edges(n)]),
-                                    'edge_entropy': entropy([len(SG.in_edges(n))/len(SG.in_edges()) for n in SG.nodes() if SG.in_edges(n)])/entropy([1/len(SG.in_edges())]*len(SG.in_edges())),
+                                    'edge_entropy': entropy([len(SG.in_edges(n))/len(SG.in_edges()) for n in SG.nodes()
+                                                             if SG.in_edges(n)])/entropy([1/len(SG.in_edges())]*len(SG.in_edges())),
+                                    'edge_arr': [len(SG.in_edges(n)) for n in SG.nodes() if SG.in_edges(n)],
                                     'pdr': pdr})
         else:
             paths_and_nodes.append({'path': i,
@@ -84,6 +86,7 @@ def get_path_stat(loader):
                                     'avg_distance': 0,
                                     'avg_leaf_distance': 0,
                                     'edge_entropy': 1,
+                                    'edge_arr': [len(SG.in_edges(n)) for n in SG.nodes() if SG.in_edges(n)],
                                     'pdr': pdr})
     return paths_and_nodes
 
@@ -97,6 +100,7 @@ def get_all_path_pdr(loader):
                     pdr_arr.append( i['pdr'][j]['pkt_recv']/i['pdr'][j]['pkt_sent'] )
     return np.average(pdr_arr)
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='path_prop', description='Analyze path properties', epilog=':-(')
     parser.add_argument('filename', help='use ``-\'\' for stdin')
@@ -105,6 +109,7 @@ if __name__ == '__main__':
     parser.add_argument('-C', '--correlation', action='store_true', dest='corr')
     parser.add_argument('-S', '--stat', action='store_true', dest='stat')
     parser.add_argument('-R', '--pdr', action='store_true', dest='pdr')
+    parser.add_argument('-E', '--edge', action='store_true', dest='edge')
 
     args = parser.parse_args()
 
@@ -138,6 +143,19 @@ if __name__ == '__main__':
     edge_entr = [i['edge_entropy'] for i in paths_and_nodes]
     pdr = [i['pdr'] for i in paths_and_nodes]
     stat_arr = np.array([node_num, in_edge_num, out_edge_num, distance, leaf_distance, edge_entr, pdr])
+
+    if args.edge:
+        plt.subplot(121)
+        plt.scatter([i['edge_entropy'] for i in paths_and_nodes if i['node_num'] > 2], [i['pdr'] for i in paths_and_nodes if i['node_num'] > 2], c=[i['node_num']/max(node_num) for i in paths_and_nodes if i['node_num'] > 2], cmap=mpl.colormaps['hot'])
+        plt.xlabel('Entropy')
+        plt.ylabel('E2e PDR')
+        plt.subplot(122)
+        plt.scatter([i['node_num'] for i in paths_and_nodes if i['edge_entropy'] == 1 and i['node_num'] > 2],
+                    [i['pdr'] for i in paths_and_nodes if i['edge_entropy'] == 1 and i['node_num'] > 2])
+        plt.xlabel('Node number')
+        plt.ylabel('E2e PDR')
+        plt.show()
+
 
     if args.corr:
         header = [args.filename,'node_num','in_edge_num','out_edge_num','distance','leaf_distance','edge_entr','pdr']
