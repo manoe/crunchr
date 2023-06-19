@@ -1,5 +1,6 @@
 #!/bin/python3
 
+import math
 import argparse
 import errno
 import yaml
@@ -56,12 +57,16 @@ def get_path_stat(loader):
 
     paths_and_nodes = []
 
+    path_nums = []
+
     for i in paths:
         a_l = [(u, v, e) for u, v, e in g_nw.edges(data=True) if 'pathid' in e and i in e['pathid']]
 
         SG = nx.DiGraph()
         SG.add_node(i)
         SG.add_edges_from(a_l)
+
+        path_nums.append(len(SG.nodes()))
 
         pdr = np.average(get_pdr_arr(loader, list(SG.nodes())))
         if len(SG.in_edges()) > 1:
@@ -88,7 +93,10 @@ def get_path_stat(loader):
                                     'edge_entropy': 1,
                                     'edge_arr': [len(SG.in_edges(n)) for n in SG.nodes() if SG.in_edges(n)],
                                     'pdr': pdr})
-    return paths_and_nodes
+
+    print([i for i in path_nums])
+    kl = entropy([i/sum(path_nums) for i in path_nums], [1/len(path_nums) for i in path_nums], base=2)
+    return paths_and_nodes, kl
 
 
 def get_all_path_pdr(loader):
@@ -110,6 +118,7 @@ if __name__ == '__main__':
     parser.add_argument('-S', '--stat', action='store_true', dest='stat')
     parser.add_argument('-R', '--pdr', action='store_true', dest='pdr')
     parser.add_argument('-E', '--edge', action='store_true', dest='edge')
+    parser.add_argument('-K', '--kl', action='store_true', dest='kl', help='Calculate Kullback-Liebler divergence')
 
     args = parser.parse_args()
 
@@ -124,8 +133,13 @@ if __name__ == '__main__':
         exit(0)
 
     paths_and_nodes = []
+    kl_arr = []
     for i in loader['runs']:
-        paths_and_nodes = paths_and_nodes + get_path_stat(i)
+        p_stat, kl = get_path_stat(i)
+        paths_and_nodes = paths_and_nodes + p_stat
+        kl_arr.append(kl)
+    if args.kl:
+        print(kl_arr)
 
     def fun(x): return str(np.average([i[x] for i in paths_and_nodes]))
 
@@ -147,13 +161,27 @@ if __name__ == '__main__':
     if args.edge:
         plt.subplot(121)
         plt.scatter([i['edge_entropy'] for i in paths_and_nodes if i['node_num'] > 2], [i['pdr'] for i in paths_and_nodes if i['node_num'] > 2], c=[i['node_num']/max(node_num) for i in paths_and_nodes if i['node_num'] > 2], cmap=mpl.colormaps['hot'])
-        plt.xlabel('Entropy')
+        num = [i['node_num'] / max(node_num) for i in paths_and_nodes if i['node_num'] > 2]
+        tick = np.linspace(min(num), max(num), 10)
+        cbar = plt.colorbar(ticks=tick)
+        tick2 = [math.ceil(i*max(node_num)) for i in tick]
+        cbar.ax.set_yticklabels(tick2)
+        cbar.ax.set_ylabel("Node number")
+
+
+        plt.xlabel('$m_{h} (x)$')
         plt.ylabel('E2e PDR')
         plt.subplot(122)
-        plt.scatter([i['node_num'] for i in paths_and_nodes if i['edge_entropy'] == 1 and i['node_num'] > 2],
-                    [i['pdr'] for i in paths_and_nodes if i['edge_entropy'] == 1 and i['node_num'] > 2])
+        #plt.title('Paths with $m_{h} (x) = 0,1$')
+        plt.scatter([i['node_num'] for i in paths_and_nodes if i['edge_entropy'] == 1 ],
+                    [i['pdr'] for i in paths_and_nodes if i['edge_entropy'] == 1 ], label='$m_{h} (x) = 1$')
+        plt.scatter([i['node_num'] for i in paths_and_nodes if i['edge_entropy'] == 0],
+                    [i['pdr'] for i in paths_and_nodes if i['edge_entropy'] == 0], label='$m_{h} (x) = 0$')
+        plt.xticks(list(set([i['node_num'] for i in paths_and_nodes if i['edge_entropy'] == 1 or i['edge_entropy'] == 0])))
+        plt.legend()
         plt.xlabel('Node number')
         plt.ylabel('E2e PDR')
+        plt.tight_layout()
         plt.show()
 
 
@@ -174,38 +202,43 @@ if __name__ == '__main__':
     # |  _/ / _ \  _|
     # |_| |_\___/\__|
     if args.plot:
-        plt.subplot(231)
-        plt.title('Node number')
-        bins = np.linspace(np.min(node_num), np.max(node_num), 20)
-        plt.hist(node_num, bins)
-        plt.subplot(232)
-        plt.title('Entropy - all paths')
+        plt.rcParams.update({
+          "text.usetex": True,
+          "font.family": "Helvetica"})
+        #plt.suptitle(args.filename)
+
+        fig, axs = plt.subplots(1, 2)
+
+        axs[0].set_xlabel('$m_{h} (x)$')
+        axs[0].set_ylabel('Occurrence')
         edge_entr = [i['edge_entropy'] for i in paths_and_nodes]
         bins = np.linspace(np.min(edge_entr), np.max(edge_entr), 20)
-        plt.hist(edge_entr, bins)
-        plt.subplot(233)
-        plt.title('Entropy - single nodes excluded')
-        edge_entr = [i['edge_entropy'] for i in paths_and_nodes if i['node_num'] > 1]
-        bins = np.linspace(np.min(edge_entr), np.max(edge_entr), 20)
-        plt.hist(edge_entr, bins)
+        axs[0].hist(edge_entr, bins)
 
-        plt.subplot(234)
-        plt.title('Entropy - single and double nodes excluded')
+        axs[1].set_ylabel('Occurrence')
+        axs[1].set_xlabel('$m_{h}(x)$ - node number $> 2$')
         edge_entr = [i['edge_entropy'] for i in paths_and_nodes if i['node_num'] > 2]
         bins = np.linspace(np.min(edge_entr), np.max(edge_entr), 20)
-        plt.hist(edge_entr, bins)
+        axs[1].hist(edge_entr, bins)
 
-        plt.subplot(235)
+        plt.subplot(131)
+        plt.xlabel('Node number')
+        plt.ylabel('Occurrence')
+        bins = np.linspace(np.min(node_num), np.max(node_num), 20)
+        plt.hist(node_num, bins)
+        plt.subplot(132)
         knots = [i['node_num'] for i in paths_and_nodes if i['edge_entropy'] == 0]
-        plt.title('Knot node number')
+        plt.xlabel('Node number - $m_{h} (x) = 0 $')
+        plt.ylabel('Occurrence')
         plt.hist(knots, np.linspace(np.min(knots), np.max(knots), 10))
 
-        plt.subplot(236)
-        plt.title('Non-knot node number')
+        plt.subplot(133)
+        plt.xlabel('Node number - $m_{h} (x) \\neq 0$')
+        plt.ylabel('Occurrence')
         non_knot = [i['node_num'] for i in paths_and_nodes if i['edge_entropy'] != 0]
         plt.hist(non_knot, np.linspace(np.min(non_knot), np.max(non_knot), 10))
 
-        plt.tight_layout()
+        fig.tight_layout()
         plt.show()
 
         #plt.subplot(312)
