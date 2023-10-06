@@ -18,9 +18,16 @@ if __name__ == '__main__':
 
     loader = yaml.safe_load(stream)
 
-    if_arr = []
-    for i in loader['loc_pdr']:
-        if_arr.append(i['pong_table'])
+    if_arr = [i['pong_table'] for run in loader['runs'] for i in run['loc_pdr']]
+    bins = np.arange(np.min(if_arr), np.max(if_arr), 1)
 
-    print(len(if_arr))
+    plt.subplot(211)
+    plt.hist(if_arr, bins)
+    plt.subplot(212)
+
+    log_if_arr = [ np.log10(i) for i in if_arr ]
+    plt.hist(log_if_arr, np.arange(np.min(log_if_arr), np.max(log_if_arr), 0.05))
+
+    plt.show()
+    plt.tight_layout()
 

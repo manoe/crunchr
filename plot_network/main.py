@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 import networkx as nx
-
+import matplotlib
 
 # https://matplotlib.org/stable/tutorials/colors/colors.html
 def role_to_color(role):
@@ -23,6 +23,13 @@ def role_to_color(role):
 
 
 if __name__ == '__main__':
+
+    matplotlib.rcParams['figure.figsize'] = [6.8, 10]  # for square canvas
+    matplotlib.rcParams['figure.subplot.left'] = 0
+    matplotlib.rcParams['figure.subplot.bottom'] = 0
+    matplotlib.rcParams['figure.subplot.right'] = 1
+    matplotlib.rcParams['figure.subplot.top'] = 0.97
+
     parser = argparse.ArgumentParser(prog='plot_network', description='Plot network', epilog=':-(')
     parser.add_argument('-i', '--image',
                         action='store_true', dest='image')
@@ -66,26 +73,44 @@ if __name__ == '__main__':
     node_color = [role_to_color(nx.get_node_attributes(g_nw, 'role')[i])
                   for i in nx.get_node_attributes(g_nw, 'role')]
 
-    node_size = [700 if nx.get_node_attributes(g_nw, 'master')[i] else 400
+    node_size = [700 if nx.get_node_attributes(g_nw, 'master')[i] else 300
                  for i in nx.get_node_attributes(g_nw, 'master')]
 
-    plt.subplot(133)
+    plt.subplot(212)
+    #plt.gca().set_title('(c)', loc='left')
+    plt.gca().set_axis_off()
+#    nx.draw(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size, with_labels=True,
+#            edgecolors='k', linewidths=1)
 
-    nx.draw(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size, with_labels=True,
-            edgecolors='k', linewidths=2)
+    nodes = []
+    for u, v, e in g_nw.edges(data=True):
+        if 'pathid' in e and 11 in e['pathid']:
+            nodes.append(u)
+            nodes.append(v)
+    nodes = list(set(nodes))
+    sub_g_nw=g_nw.subgraph(nodes)
 
     edge_labels = {}
-    for u, v, e in g_nw.edges.data('pathid'):
+
+    for u, v, e in sub_g_nw.edges.data('pathid'):
         if e:
             edge_labels[(u, v)] = str(','.join(str(i) for i in e))
 
-    nx.draw_networkx_edge_labels(g_nw, nx.get_node_attributes(g_nw, 'pos'), edge_labels=edge_labels)
-    plt.box(False)
-    plt.subplot(132)
+    nx.draw_networkx_edge_labels(sub_g_nw, nx.get_node_attributes(sub_g_nw, 'pos'), edge_labels=edge_labels)
+    plt.gca().set_aspect('equal')
 
+    nx.draw(sub_g_nw)
+#    nx.draw(sub_g_nw, pos=nx.get_node_attributes(sub_g_nw, 'pos'), node_color=node_color, node_size=node_size, with_labels=True,
+#            edgecolors='k', linewidths=1)
+
+    plt.subplot(222)
+    plt.gca().set_title('(b)', loc='left')
+    plt.gca().set_axis_off()
+    node_size = [500 if nx.get_node_attributes(g_nw, 'master')[i] else 200
+                 for i in nx.get_node_attributes(g_nw, 'master')]
     nx.draw_networkx_nodes(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size,
-                           edgecolors='k', linewidths=2)
-    nx.draw_networkx_labels(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'))
+                           edgecolors='k', linewidths=1)
+    nx.draw_networkx_labels(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), font_size=8)
 
     edge_list = []
 
@@ -95,13 +120,15 @@ if __name__ == '__main__':
 
     nx.draw_networkx_edges(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), edgelist=edge_list)
 
+    plt.gca().set_aspect('equal')
 
-    plt.box(False)
-    plt.subplot(131)
+    plt.subplot(221)
+    plt.gca().set_title('(a)', loc='left')
+    plt.gca().set_axis_off()
 
     nx.draw_networkx_nodes(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size,
-                           edgecolors='k', linewidths=2)
-    nx.draw_networkx_labels(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'))
+                           edgecolors='k', linewidths=1)
+    nx.draw_networkx_labels(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), font_size=8)
 
     edge_list = []
     for (v, w) in g_nw.edges():
@@ -109,5 +136,8 @@ if __name__ == '__main__':
             edge_list.append((v, w))
 
     nx.draw_networkx_edges(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), edgelist=edge_list)
-    plt.box(False)
+
+    plt.gca().set_aspect('equal')
+    plt.tight_layout()
+    plt.savefig('graph.pdf', transparent=True, bbox_inches='tight', pad_inches=0)
     plt.show()

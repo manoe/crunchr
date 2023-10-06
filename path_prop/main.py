@@ -95,8 +95,17 @@ def get_path_stat(loader):
                                     'pdr': pdr})
 
     print([i for i in path_nums])
+
     kl = entropy([i/sum(path_nums) for i in path_nums], [1/len(path_nums) for i in path_nums], base=2)
-    return paths_and_nodes, kl
+    n_hat = sum([ i for i in path_nums ]) / len([n for n, u in g_nw.nodes(data=True)
+                                                 if u['role'] == 'border' or u['role'] == 'external'])
+
+    pdr = []
+    for n, u in g_nw.nodes(data=True):
+        if u['role'] == 'border' or u['role'] == 'external':
+            pdr.append(loader['pdr'][n]['pkt_recv']/loader['pdr'][n]['pkt_sent'])
+
+    return paths_and_nodes, kl, n_hat, np.average(pdr)
 
 
 def get_all_path_pdr(loader):
@@ -134,12 +143,24 @@ if __name__ == '__main__':
 
     paths_and_nodes = []
     kl_arr = []
+    n_hat_arr = []
+    pdr_arr = []
     for i in loader['runs']:
-        p_stat, kl = get_path_stat(i)
+        p_stat, kl, n_hat, pdr = get_path_stat(i)
         paths_and_nodes = paths_and_nodes + p_stat
         kl_arr.append(kl)
+        n_hat_arr.append(n_hat)
+        pdr_arr.append(pdr)
+
     if args.kl:
         print(kl_arr)
+        print(n_hat_arr)
+        plt.scatter(n_hat_arr, kl_arr, c = pdr_arr, cmap = mpl.colormaps['hot'])
+        plt.ylabel('Kullback-Leibler divergence')
+        plt.xlabel('Nhat')
+        plt.colorbar()
+        plt.tight_layout()
+        plt.show()
 
     def fun(x): return str(np.average([i[x] for i in paths_and_nodes]))
 

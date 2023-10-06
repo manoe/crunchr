@@ -46,10 +46,10 @@ if __name__ == '__main__':
     plt.plot(ts, sp.stats.entropy(pdr_arr, base=2))
     plt.ylim((5, 6))
     plt.subplot(212)
-    plt.plot(ts, np.average(pdr_arr,axis=0))
+    plt.plot(ts, np.average(pdr_arr, axis=0))
     plt.ylim((0, 1))
-    plt.fill_between(ts, np.add(np.average(pdr_arr,axis=0), np.std(pdr_arr, axis=0)),
-                     np.subtract(np.average(pdr_arr,axis=0),np.std(pdr_arr, axis=0)), alpha=0.2)
+    plt.fill_between(ts, np.add(np.average(pdr_arr, axis=0), np.std(pdr_arr, axis=0)),
+                     np.subtract(np.average(pdr_arr, axis=0), np.std(pdr_arr, axis=0)), alpha=0.2)
 
     plt.tight_layout()
     if args.save_image:
