@@ -25,7 +25,25 @@ if __name__ == '__main__':
 
     loader = yaml.safe_load(stream)
 
-    graph = nx.DiGraph()
+    graph = nx.MultiDiGraph()
 
     for i in loader['loc_pdr']:
-        print(i)
+        graph.add_node(i['node'], pos=[i['x'], i['y']])
+        if 'routing_table' in i:
+            for re in i['routing_table']:
+                #
+                if 'next_hop' in re and re['status'] == 'AVAILABLE':
+                    graph.add_edge(i['node'], re['next_hop'], prio=re['prio'], origin=re['origin'])
+
+    pri_graph = nx.DiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['prio'] == 1))
+
+    sec_graph = nx.DiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['prio'] == 2))
+
+    plt.subplot(131)
+    nx.draw(graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
+    plt.subplot(132)
+    nx.draw(pri_graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
+    plt.subplot(133)
+    nx.draw(sec_graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
+    plt.show()
+
