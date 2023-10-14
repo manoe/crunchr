@@ -5,6 +5,7 @@ import errno
 import yaml
 import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.animation as animation
 import sys
 import networkx as nx
 import matplotlib
@@ -39,11 +40,26 @@ if __name__ == '__main__':
 
     sec_graph = nx.DiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['prio'] == 2))
 
-    plt.subplot(131)
-    nx.draw(graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
-    plt.subplot(132)
+    route_graph = nx.DiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['origin'] == 28))
+
+    fig, ax = plt.subplots(figsize=(6, 4))
+
+    plt.subplot(221)
+    nx.draw(nx.DiGraph(graph), pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
+    plt.subplot(222)
     nx.draw(pri_graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
-    plt.subplot(133)
+    plt.subplot(223)
     nx.draw(sec_graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
+    plt.subplot(224)
+    nx.draw(route_graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
+
+    def update(num):
+        ax = plt.subplot(224)
+        ax.clear()
+        route_graph = nx.DiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['origin'] == num))
+        nx.draw(route_graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
+
+    #ani = animation.FuncAnimation(fig, update, frames=63, interval=5000, repeat=True)
+
     plt.show()
 
