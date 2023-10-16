@@ -20,9 +20,10 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_init', description='Plot protocol init time', epilog=':-(')
     parser.add_argument('-i', '--image',
                         action='store_true', dest='image')
-    parser.add_argument('-n', '--node', action='store', dest='node', default=63)
-    parser.add_argument('-p', '--percent', action='store', dest='percent', default=0.9)
-    parser.add_argument('-c', '--count', action='store', dest='count', default=10)
+    parser.add_argument('-n', '--node', action='store', dest='node', default=63, type=int)
+    parser.add_argument('-p', '--percent', action='store', dest='percent', default=0.9, type=float)
+    parser.add_argument('-c', '--count', action='store', dest='count', default=10, type=int)
+    parser.add_argument('-d', '--data', action='store_true', dest='data')
     parser.add_argument('filename', help='use ``-\'\' for stdin')
 
     args = parser.parse_args()
@@ -41,6 +42,10 @@ if __name__ == '__main__':
         else:
             pkt_list[i['source']] = 1
         if check_status(pkt_list, args.node, args.percent, args.count):
-            print(i['timestamp'])
+            if args.data:
+                print(str(i['timestamp']) + '#' + str(args.percent) + '#' +str(i['energy']))
+            else:
+                print(str(args.percent)+' of active nodes reached at '+str(i['timestamp'])+' with criteria of '+str(args.count)+' packets')
+            exit(0)
 
     print('Init criteria not met')
