@@ -35,17 +35,24 @@ if __name__ == '__main__':
     loader = yaml.safe_load(stream)
 
     pkt_list = {}
+    fail = True
 
-    for i in loader:
-        if i['source'] in pkt_list:
-            pkt_list[i['source']] += 1
-        else:
-            pkt_list[i['source']] = 1
-        if check_status(pkt_list, args.node, args.percent, args.count):
-            if args.data:
-                print(str(i['timestamp']) + '#' + str(args.percent) + '#' +str(i['energy']))
+    for j in loader['runs']:
+        fail = True
+        pkt_list = {}
+        for i in j['pkt_list']:
+            if i['source'] in pkt_list:
+                pkt_list[i['source']] += 1
             else:
-                print(str(args.percent)+' of active nodes reached at '+str(i['timestamp'])+' with criteria of '+str(args.count)+' packets')
-            exit(0)
+                pkt_list[i['source']] = 1
+            if check_status(pkt_list, args.node, args.percent, args.count):
+                fail = False
+                if args.data:
+                    print(str(i['timestamp']) + '#' + str(args.percent) + '#' + str(i['energy']))
+                else:
+                    print(str(args.percent) + ' of active nodes reached at ' + str(i['timestamp'])+' with criteria of '
+                          + str(args.count) + ' packets and ' + str(i['energy']) + ' J of energy')
+                break
 
-    print('Init criteria not met')
+    if fail:
+        print('Init criteria not met')
