@@ -4,6 +4,7 @@ import yaml
 import argparse
 import matplotlib.pyplot as plt
 import sys
+import numpy as np
 
 
 def check_status(stats, node, percent, count):
@@ -21,12 +22,15 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--image',
                         action='store_true', dest='image')
     parser.add_argument('-n', '--node', action='store', dest='node', default=63, type=int)
-    parser.add_argument('-p', '--percent', action='store', dest='percent', default=0.9, type=float)
+    parser.add_argument('-p', '--percent', action='store', dest='percent', default='0.9')
     parser.add_argument('-c', '--count', action='store', dest='count', default=10, type=int)
     parser.add_argument('-d', '--data', action='store_true', dest='data')
     parser.add_argument('filename', help='use ``-\'\' for stdin')
 
     args = parser.parse_args()
+
+    args.percent = [float(x) for x in args.percent.split()]
+    args.percent.sort()
 
     stream = sys.stdin
     if args.filename != '-':
@@ -35,24 +39,38 @@ if __name__ == '__main__':
     loader = yaml.safe_load(stream)
 
     pkt_list = {}
-    fail = True
+    fail = 0
 
-    for j in loader['runs']:
-        fail = True
-        pkt_list = {}
-        for i in j['pkt_list']:
-            if i['source'] in pkt_list:
-                pkt_list[i['source']] += 1
-            else:
-                pkt_list[i['source']] = 1
-            if check_status(pkt_list, args.node, args.percent, args.count):
-                fail = False
-                if args.data:
-                    print(str(i['timestamp']) + '#' + str(args.percent) + '#' + str(i['energy']))
+    data = []
+
+    for k in args.percent:
+        for j in loader['runs']:
+            pkt_list = {}
+            for i in j['pkt_list']:
+                if i['source'] in pkt_list:
+                    pkt_list[i['source']] += 1
                 else:
-                    print(str(args.percent) + ' of active nodes reached at ' + str(i['timestamp'])+' with criteria of '
-                          + str(args.count) + ' packets and ' + str(i['energy']) + ' J of energy')
-                break
+                    pkt_list[i['source']] = 1
+                if check_status(pkt_list, args.node, k, args.count):
+                    data.append({'timestamp': i['timestamp'],
+                                 'energy':    i['energy'],
+                                 'percent':  k})
+                    if args.data:
+                        print(str(i['timestamp']) + '#' + str(l) + '#' + str(i['energy']))
+                    else:
+                        print(str(k) + ' of active nodes reached at ' + str(i['timestamp'])+' with criteria of '
+                              + str(args.count) + ' packets and ' + str(i['energy']) + ' J of energy')
+                    fail -= 1
+                    break
+            fail += 1
 
-    if fail:
+    if fail > 0:
         print('Init criteria not met')
+
+    y_nrg = [np.average([x['energy'] for x in data if x['percent'] == p]) for p in args.percent]
+    y_time = [np.average([x['timestamp'] for x in data if x['percent'] == p]) for p in args.percent]
+
+    plt.bar(args.percent, y_nrg)
+    plt.show()
+    print(y_nrg)
+    print(y_time)
