@@ -18,3 +18,16 @@ if __name__ == '__main__':
         stream = open(args.filename, 'r')
 
     loader = yaml.safe_load(stream)
+
+    arr = np.ndarray(shape=(len(loader['nrg_list']), len(loader['nrg_list'][0]['nodes'])))
+    arr.fill(0.0)
+
+    x = []
+    idx = 0
+    for i in loader['nrg_list']:
+        x.append(i['timestamp'])
+        arr[idx][:] = [e['energy'] for e in i['nodes']]
+        idx += 1
+
+    plt.plot(x, arr)
+    plt.show()
