@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     sec_graph = nx.DiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['prio'] == 2))
 
-    route_graph = nx.DiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['origin'] == 28))
+    route_graph = nx.DiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['origin'] == 30))
 
     fig, ax = plt.subplots(figsize=(6, 4))
 
@@ -59,7 +59,7 @@ if __name__ == '__main__':
         route_graph = nx.DiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['origin'] == num))
         nx.draw(route_graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
 
-    #ani = animation.FuncAnimation(fig, update, frames=63, interval=5000, repeat=True)
+#    ani = animation.FuncAnimation(fig, update, frames=63, interval=2000, repeat=True)
 
     plt.show()
 

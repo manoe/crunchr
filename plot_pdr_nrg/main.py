@@ -40,6 +40,7 @@ if __name__ == '__main__':
 
     plt.plot(timestamp, np.transpose(np.array([nrg_eff_arr, nrg_d_arr])))
     plt.legend(['Efficient energy consumed', 'Total energy consumed'])
+    plt.title(args.filename)
 
     plt.show()
 

@@ -73,12 +73,12 @@ if __name__ == '__main__':
                 fail += 1
 
         if fail > 0:
-            print('Init criteria not met')
+            print('Init criteria not met x'+str(fail)+' times')
 
         y_nrg[filename] = [np.average([x['energy'] for x in data if x['percent'] == p]) for p in args.percent]
         y_time[filename] = [np.average([x['timestamp'] for x in data if x['percent'] == p]) for p in args.percent]
 
-    plt.subplot(211)
+    plt.subplot(2,1,1)
 
     bc = plt.bar([ x - 0.2 for x in range(len(args.percent))], list(y_nrg.values())[0], 0.4, label=list(y_nrg.keys())[0])
     plt.bar_label(bc,label=args.percent)
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     plt.title('Consumed energy vs. initialization percentage')
     plt.xticks(range(len(args.percent)), labels=args.percent)
 
-    plt.subplot(212)
+    plt.subplot(2,1,2)
     bc = plt.bar([ x - 0.2 for x in range(len(args.percent))], list(y_time.values())[0], 0.4, label=list(y_time.keys())[0])
     plt.bar_label(bc,label=args.percent)
     bc = plt.bar([ x + 0.2 for x in range(len(args.percent))], list(y_time.values())[1], 0.4, label=list(y_time.keys())[1])

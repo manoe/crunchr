@@ -30,4 +30,5 @@ if __name__ == '__main__':
         idx += 1
 
     plt.plot(x, arr)
+    plt.ylim([0, 200])
     plt.show()
