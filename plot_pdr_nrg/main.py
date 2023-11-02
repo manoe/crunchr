@@ -14,18 +14,18 @@ def sum_list_prop(list_prop):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_pdr_nrg', description='Plot network pdr and energy over time', epilog=':-(')
-    parser.add_argument('filename', help='use ``-\'\' for stdin')
+    parser.add_argument('filename', help='use ``-\'\' for stdin', nargs='+')
 
     args = parser.parse_args()
 
-    files = args.filename.split()
+    files = args.filename
 
     total_nrg_arr = {}
     eff_nrg_arr = {}
     timestamp = {}
 
     for file in files:
-        stream = open(args.filename, 'r')
+        stream = open(file, 'r')
 
         loader = yaml.safe_load(stream)
 
@@ -49,9 +49,12 @@ if __name__ == '__main__':
     columns = math.ceil(len(files)/2)
     idx = 0
 
+    max_val = max([max(i) for i in total_nrg_arr.values()])
+
     for idx, file in enumerate(files):
         plt.subplot(rows, columns, idx+1)
         plt.plot(timestamp[file], np.transpose(np.array([eff_nrg_arr[file], total_nrg_arr[file]])))
+        plt.grid(True)
         plt.title(file)
     plt.legend(['Efficient energy consumed', 'Total energy consumed'])
 
