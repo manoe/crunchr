@@ -15,6 +15,7 @@ def sum_list_prop(list_prop):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_pdr_nrg', description='Plot network pdr and energy over time', epilog=':-(')
     parser.add_argument('filename', help='use ``-\'\' for stdin', nargs='+')
+    parser.add_argument('-e', '--event', dest='event', type=int)
 
     args = parser.parse_args()
 
@@ -54,10 +55,12 @@ if __name__ == '__main__':
     for idx, file in enumerate(files):
         plt.subplot(rows, columns, idx+1)
         plt.plot(timestamp[file], np.transpose(np.array([eff_nrg_arr[file], total_nrg_arr[file]])))
+        plt.ylim(top=math.ceil(max_val))
+        if args.event is not None:
+            plt.axvline(x=args.event, color='r')
         plt.grid(True)
         plt.title(file)
     plt.legend(['Efficient energy consumed', 'Total energy consumed'])
-
 
     plt.show()
 
