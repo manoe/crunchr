@@ -1,5 +1,6 @@
 #!/bin/python3
 
+import math
 import yaml
 import argparse
 import matplotlib.pyplot as plt
@@ -17,30 +18,43 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    if args.filename == '-':
-        stream = sys.stdin
-    else:
+    files = args.filename.split()
+
+    total_nrg_arr = {}
+    eff_nrg_arr = {}
+    timestamp = {}
+
+    for file in files:
         stream = open(args.filename, 'r')
 
-    loader = yaml.safe_load(stream)
+        loader = yaml.safe_load(stream)
 
-    sent_t_arr = sum_list_prop('report_sent')
-    recv_t_arr = sum_list_prop('report_recv')
-    nrg_t_arr = sum_list_prop('energy')
+        sent_t_arr = sum_list_prop('report_sent')
+        recv_t_arr = sum_list_prop('report_recv')
+        nrg_t_arr = sum_list_prop('energy')
 
-    sent_d_arr = np.subtract(sent_t_arr[1:], sent_t_arr[:-1])
-    recv_d_arr = np.subtract(recv_t_arr[1:], recv_t_arr[:-1])
-    nrg_d_arr = np.subtract(nrg_t_arr[:-1], nrg_t_arr[1:])
+        sent_d_arr = np.subtract(sent_t_arr[1:], sent_t_arr[:-1])
+        recv_d_arr = np.subtract(recv_t_arr[1:], recv_t_arr[:-1])
+        nrg_d_arr = np.subtract(nrg_t_arr[:-1], nrg_t_arr[1:])
 
-    timestamp = [round(i['timestamp'], 0) for i in loader['nrg_list']][:-1]
+        timestamp[file] = [round(i['timestamp'], 0) for i in loader['nrg_list']][:-1]
 
-    pdr_arr = np.divide(recv_d_arr, sent_d_arr)
+        pdr_arr = np.divide(recv_d_arr, sent_d_arr)
+        nrg_eff_arr = np.multiply(pdr_arr, nrg_d_arr)
 
-    nrg_eff_arr = np.multiply(pdr_arr, nrg_d_arr)
+        total_nrg_arr[file] = nrg_d_arr
+        eff_nrg_arr[file] = nrg_eff_arr
 
-    plt.plot(timestamp, np.transpose(np.array([nrg_eff_arr, nrg_d_arr])))
+    rows = 2
+    columns = math.ceil(len(files)/2)
+    idx = 0
+
+    for idx, file in enumerate(files):
+        plt.subplot(rows, columns, idx+1)
+        plt.plot(timestamp[file], np.transpose(np.array([eff_nrg_arr[file], total_nrg_arr[file]])))
+        plt.title(file)
     plt.legend(['Efficient energy consumed', 'Total energy consumed'])
-    plt.title(args.filename)
+
 
     plt.show()
 

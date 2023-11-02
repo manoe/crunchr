@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--count', action='store', dest='count', default=10, type=int)
     parser.add_argument('-p', '--percent', action='store', dest='percent', default='0.8',
                         help='Init percentage', type=float)
-    parser.add_argument('-s', '--size', action='store', dest='size')
+    parser.add_argument('-s', '--size', action='store', dest='size', help='network size, n x n')
     parser.add_argument('-d', '--data', action='store_true', dest='data')
     parser.add_argument('filename', help='filename prefixes')
 
@@ -52,7 +52,7 @@ if __name__ == '__main__':
             stream = open(filename+'_'+str(s)+'.yaml', 'r')
             node = s**2-1
 
-            print('Processing '+filename+' with '+str(s)+' size')
+            print('Processing '+filename+' with size '+str(s))
 
             loader = yaml.safe_load(stream)
 
