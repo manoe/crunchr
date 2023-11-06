@@ -42,12 +42,12 @@ if __name__ == '__main__':
     for idx, file in enumerate(files):
         plt.subplot(rows, columns, idx + 1)
         plt.plot(timestamp[file], arr[file])
-        plt.ylim(top=math.ceil(max_val))
+        plt.ylim(top=math.ceil(max_val/10.0)*10.0, bottom=0.0)
 
         if args.event is not None:
             plt.axvline(x=args.event, color='r')
         plt.grid(True)
-        plt.title(file)
+        plt.title(file.split('/')[-1])
 
     plt.show()
 
