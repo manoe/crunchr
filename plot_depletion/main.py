@@ -8,6 +8,7 @@ import numpy as np
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_depletion', description='Plot node depletion over time', epilog=':-(')
+    parser.add_argument('-e', '--event', action='store', type=int)
     parser.add_argument('filename', help='use ``-\'\' for stdin', nargs='+')
 
     args = parser.parse_args()

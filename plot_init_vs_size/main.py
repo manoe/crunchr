@@ -25,19 +25,21 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--count', action='store', dest='count', default=10, type=int)
     parser.add_argument('-p', '--percent', action='store', dest='percent', default='0.8',
                         help='Init percentage', type=float)
-    parser.add_argument('-s', '--size', action='store', dest='size', help='network size, n x n')
+    parser.add_argument('-s', '--size', action='store', dest='size', help='network size, n x n', nargs='+', type=int)
     parser.add_argument('-d', '--data', action='store_true', dest='data')
-    parser.add_argument('filename', help='filename prefixes')
+    parser.add_argument('-e', '--errorbar', action='store_true')
+    parser.add_argument('filename', help='filename prefixes', nargs='+')
 
     args = parser.parse_args()
 
-    args.size = [int(x) for x in args.size.split()]
     args.size.sort()
 
-    files = args.filename.split()
+    files = args.filename
 
     y_nrg = {}
+    y_nrg_std = {}
     y_time = {}
+    y_time_std = {}
 
     size_arr = args.size+args.size
 
@@ -48,6 +50,9 @@ if __name__ == '__main__':
     for filename in files:
         y_nrg[filename] = {}
         y_time[filename] = {}
+        y_nrg_std[filename] = {}
+        y_time_std[filename] = {}
+
         for s in args.size:
             stream = open(filename+'_'+str(s)+'.yaml', 'r')
             node = s**2-1
@@ -85,7 +90,9 @@ if __name__ == '__main__':
                 print('Init criteria not met x'+str(fail)+' times')
 
             y_nrg[filename][s] = np.average([x['energy'] for x in data if x['percent'] == args.percent])
+            y_nrg_std[filename][s] = np.std([x['energy'] for x in data if x['percent'] == args.percent])
             y_time[filename][s] = np.average([x['timestamp'] for x in data if x['percent'] == args.percent])
+            y_time_std[filename][s] = np.std([x['timestamp'] for x in data if x['percent'] == args.percent])
             idx += 1
 
 #    y_efmrp_nrg=list(y_nrg.values())[:len(args.size)]
@@ -100,10 +107,15 @@ if __name__ == '__main__':
     bar_width = width / len(y_nrg)
 
     idx = 0
-    for i in y_nrg:
-        bc = plt.bar([x + idx*bar_width-width/2 for x in range(len(args.size))] , y_nrg[i].values(), bar_width)
-        plt.bar_label(bc, label=args.size)
-        idx += 1
+    if args.errorbar:
+        for idx, data in enumerate(y_nrg):
+            plt.errorbar([x + idx*bar_width-width/2 for x in range(len(args.size))], list(y_nrg[data].values()),
+                         list(y_nrg_std[data].values()), linestyle='None')
+    else:
+        for i in y_nrg:
+            bc = plt.bar([x + idx*bar_width-width/2 for x in range(len(args.size))] , y_nrg[i].values(), bar_width)
+            plt.bar_label(bc, label=args.size)
+            idx += 1
 
     plt.title('Consumed energy vs. size')
     plt.xticks(range(len(args.size)), labels=args.size)
