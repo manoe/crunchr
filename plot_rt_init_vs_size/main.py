@@ -6,8 +6,6 @@ import matplotlib.pyplot as plt
 import sys
 import numpy as np
 
-#from matplotlib.ticker import FormatStrFormatter
-
 
 def check_status(stats, node, percent):
     if len([x for x in stats.values() if x is True])/node >= percent:
@@ -62,24 +60,22 @@ if __name__ == '__main__':
             fail = 0
             data = []
 
-            for k in [args.percent]:
-                for j in loader['runs']:
-                    state_list = {}
-                    for i in j['state_list']:
-                        if i['state'] is 'WORK':
-                            state_list[i['node']] = True
-                        if check_status(state_list, node, k):
-                            data.append({'timestamp': i['timestamp'],
-                                         'energy':    i['total_energy'],
-                                         'percent':  k})
-                            if args.data:
-                                print(str(i['timestamp']) + '#' + str(l) + '#' + str(i['energy']))
-                            else:
-                                print(str(k) + ' of active nodes reached at ' + str(i['timestamp'])+' with criteria of '
-                                      + str(args.count) + ' packets and ' + str(i['energy']) + ' J of energy')
-                            fail -= 1
-                            break
-                    fail += 1
+            for j in loader['runs']:
+                state_list = {}
+                for i in j['state_list']:
+                    if i['state'] == 'WORK':
+                        state_list[i['node']] = True
+                    if check_status(state_list, node, args.percent):
+                        data.append({'timestamp': i['timestamp'],
+                                     'energy':    i['total_energy'],
+                                     'percent':  args.percent})
+                        if args.data:
+                            print(str(i['timestamp']) + '#' + str(l) + '#' + str(i['energy']))
+                        else:
+                            print(str(args.percent) + ' of active nodes reached at ' + str(i['timestamp'])+' with ' + str(i['energy']) + ' J of energy')
+                        fail -= 1
+                        break
+                fail += 1
 
             if fail > 0:
                 print('Init criteria not met x'+str(fail)+' times')
