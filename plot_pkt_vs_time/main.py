@@ -51,7 +51,7 @@ if __name__ == '__main__':
         if args.event is not None:
             plt.axvline(x=args.event, color='r')
         plt.grid(True)
-        plt.title(file)
+        plt.title(file.split('/')[-1])
     plt.legend(['Sent report pkt', 'Received report pkt'])
 
     plt.show()

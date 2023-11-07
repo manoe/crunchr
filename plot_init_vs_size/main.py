@@ -28,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--size', action='store', dest='size', help='network size, n x n', nargs='+', type=int)
     parser.add_argument('-d', '--data', action='store_true', dest='data')
     parser.add_argument('-e', '--errorbar', action='store_true')
+
     parser.add_argument('filename', help='filename prefixes', nargs='+')
 
     args = parser.parse_args()
