@@ -3,12 +3,12 @@
 import yaml
 import argparse
 import matplotlib.pyplot as plt
-import sys
 import numpy as np
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='plot_nrg_per_pkt_vs_size', description='Plot energy per received packet vs network size', epilog=':-(')
+    parser = argparse.ArgumentParser(prog='plot_nrg_per_pkt_vs_size',
+                                     description='Plot energy per received packet vs network size', epilog=':-(')
     parser.add_argument('-i', '--image',
                         action='store_true', dest='image')
     parser.add_argument('-c', '--count', action='store', dest='count', default=10, type=int)
@@ -18,7 +18,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--data', action='store_true', dest='data')
     parser.add_argument('-e', '--errorbar', action='store_true')
 
-    parser.add_argument('filename', help='filename prefixes', nargs='+')
+    parser.add_argument('-f', '--filename', help='filename prefixes', nargs='+', required=True)
 
     args = parser.parse_args()
 
@@ -61,13 +61,13 @@ if __name__ == '__main__':
                          list(y_nrg_std[data].values()), linestyle='None')
     else:
         for idx, i in enumerate(y_nrg):
-            bc = plt.bar([x + idx*bar_width-width/2 for x in range(len(args.size))] , y_nrg[i].values(), bar_width)
+            bc = plt.bar([x + idx*bar_width-width/2 for x in range(len(args.size))], list(y_nrg[i].values()), bar_width)
             plt.bar_label(bc, label=args.size)
             idx += 1
 
     plt.title('Consumed energy per packet vs. size')
     plt.xticks(range(len(args.size)), labels=args.size)
 
-    plt.legend(y_time.keys())
+    plt.legend(list(y_nrg.keys()))
     plt.show()
     exit(0)
