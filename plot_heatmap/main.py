@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/python3
 
 import argparse
 import errno
