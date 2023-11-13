@@ -65,4 +65,5 @@ if __name__ == '__main__':
 
     node_color = [str(loader['pdr'][i]['report_pdr']) if 'report_pdr' in loader['pdr'][i] else 0 for i in list(g_nw)]
     nx.draw(nx.DiGraph(g_nw), pos=nx.get_node_attributes(g_nw, 'pos'), edgecolors='k', linewidths=1, node_color=node_color)
+    plt.title(args.filename.split('/')[-1])
     plt.show()
