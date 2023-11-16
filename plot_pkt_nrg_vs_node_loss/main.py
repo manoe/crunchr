@@ -16,7 +16,10 @@ def calc_data_whatever(actual, prev):
         sum_nrg += prev['nodes'][idx]['energy'] - i['energy']
         sum_sent_pkt += i['report_sent'] - prev['nodes'][idx]['report_sent']
         sum_recv_pkt += i['report_recv'] - prev['nodes'][idx]['report_recv']
+    if sum_recv_pkt == 0:
+        print(actual)
     return sum_nrg / sum_recv_pkt
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_pkt_nrg_vs_node_loss',
