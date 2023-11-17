@@ -22,13 +22,12 @@ def role_to_color(role):
 def calc_avg_path_num(run):
     pn_arr = []
     for node in run['loc_pdr']:
-        if node['role'] == 'external':
+        if node['role'] == 'external' and 'routing_table' in node:
             pn_arr.append(len(node['routing_table']))
     return np.average(pn_arr)
 
 
 def calc_avg_pdr(run):
-    print(run['pdr'])
     pdr_arr = [node['report_pdr'] for node in run['pdr'] if 'report_pdr' in node]
     return np.average(pdr_arr)
 
@@ -49,8 +48,14 @@ def calc_avg_nw_diameter(run):
                 else:
                     nw.add_edge(i['node'], j['node'], secl=j['secl'])
     outers = [node for node, in_degree in nw.in_degree() if in_degree == 0]
-    print(outers)
-    return np.average([nx.shortest_path_length(nw, source=i, target=0) for i in outers])
+    diameters = []
+    for i in outers:
+        try:
+            diameters.append(nx.shortest_path_length(nw, source=i, target=0))
+        except nx.exception.NetworkXNoPath as exp:
+            print(exp)
+
+    return np.average(diameters)
 
 
 if __name__ == '__main__':
@@ -65,9 +70,9 @@ if __name__ == '__main__':
     # arr [row][column] - inner = column, outer = row
     pdr_arr = [[[] for x in args.qos] for y in args.pos]
     # average path number
-    apn_arr = pdr_arr.copy()
+    apn_arr = [[[] for x in args.qos] for y in args.pos]
     # average network diameter
-    and_arr = pdr_arr.copy()
+    and_arr = [[[] for x in args.qos] for y in args.pos]
 
     for idx_q, q in enumerate(args.qos):
         for idx_p, p in enumerate(args.pos):
@@ -87,25 +92,28 @@ if __name__ == '__main__':
     avg_and_arr = avg_arr(and_arr)
     avg_pdr_arr = avg_arr(pdr_arr)
 
+    print(pdr_arr)
+
     # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_annotated_heatmap.html
 
-    fig, ax = plt.subplots()
-    im = ax.imshow(avg_pdr_arr)
+    fig, ax = plt.subplots(nrows=3)
 
+    for idx, arr in enumerate([avg_pdr_arr, avg_apn_arr, avg_and_arr]):
     # Show all ticks and label them with the respective list entries
-    ax.set_xticks(np.arange(len(args.qos)), labels=args.qos)
-    ax.set_yticks(np.arange(len(args.pos)), labels=args.pos)
+        im = ax[idx].imshow(arr)
+        ax[idx].set_xticks(np.arange(len(args.qos)), labels=args.qos)
+        ax[idx].set_yticks(np.arange(len(args.pos)), labels=args.pos)
 
     # Rotate the tick labels and set their alignment.
-    plt.setp(ax.get_xticklabels(), rotation=45, ha="right",
-             rotation_mode="anchor")
+        plt.setp(ax[idx].get_xticklabels(), rotation=45, ha="right",
+                 rotation_mode="anchor")
 
     # Loop over data dimensions and create text annotations.
-    for i in range(len(args.pos)):
-        for j in range(len(args.qos)):
-            text = ax.text(j, i, avg_pdr_arr[i][j],
-                           ha="center", va="center", color="w")
-
-    ax.set_title("QoS parameter and sink placement")
+        for i in range(len(args.pos)):
+            for j in range(len(args.qos)):
+                text = ax[idx].text(j, i, "{:.2f}".format(arr[i][j]),
+                               ha="center", va="center", color="w")
+    for idx, label in enumerate(['Average Network PDR', 'Average Path Number', 'Average Network Diameter']):
+        ax[idx].set_title(label)
     fig.tight_layout()
     plt.show()
