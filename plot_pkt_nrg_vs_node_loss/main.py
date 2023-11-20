@@ -17,7 +17,7 @@ def calc_data_whatever(actual, prev):
         sum_sent_pkt += i['report_sent'] - prev['nodes'][idx]['report_sent']
         sum_recv_pkt += i['report_recv'] - prev['nodes'][idx]['report_recv']
     if sum_recv_pkt == 0:
-        print(actual)
+        return 0
     return sum_nrg / sum_recv_pkt
 
 
