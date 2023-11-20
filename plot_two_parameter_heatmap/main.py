@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import networkx as nx
 
+
 # https://matplotlib.org/stable/tutorials/colors/colors.html
 def role_to_color(role):
     if role == 'central':

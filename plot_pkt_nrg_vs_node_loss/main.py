@@ -46,7 +46,9 @@ if __name__ == '__main__':
                     y_data[block-1] = calc_data_whatever(j, i['nrg_list'][prev_data])
                     block += 1
                     prev_data = idx
-            y_data[args.node] = calc_data_whatever(i['nrg_list'][-1], i['nrg_list'][prev_data])
+                    print(str(j['timestamp'])+' '+str(block))
+            y_data[block] = calc_data_whatever(i['nrg_list'][-1], i['nrg_list'][prev_data])
+            print('Last : '+str(i['nrg_list'][-1]['timestamp'])+' block: '+str(block))
 
             for i in y_data.keys():
                 if i in y_raw_nrg:
