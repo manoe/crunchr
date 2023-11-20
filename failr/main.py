@@ -22,12 +22,12 @@ if __name__ == '__main__':
     stream = open(args.file, 'r')
     file_loader = yaml.safe_load(stream)
 
-    node_list = {i['node']: i['forw_data_pkt_count'] for i in file_loader if i['hop'] > args.hop and i['state'] == 'live'}
+    node_list = {i['node']: i['forw_data_pkt_count'] for i in file_loader if i['hop'] > args.hop and i['state'] != 'DEAD'}
 
     if args.basefile is not None:
         stream = open(args.basefile, 'r')
         base_loader = yaml.safe_load(stream)
-        base_list = {i['node']: i['forw_data_pkt_count'] for i in base_loader if i['hop'] > args.hop}
+        base_list = {i['node']: i['forw_data_pkt_count'] for i in base_loader if i['hop'] > args.hop and i['node'] in node_list}
 
         for i in base_list.keys():
             node_list[i] = node_list[i]-base_list[i]
