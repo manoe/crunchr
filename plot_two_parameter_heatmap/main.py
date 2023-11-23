@@ -59,6 +59,10 @@ def calc_avg_nw_diameter(run):
     return np.average(diameters)
 
 
+def calc_conn_ratio(run):
+    return float(len([n for n in run['loc_pdr'] if n['state'] == 'WORK'])) / float(len(run['loc_pdr']))
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_two_parameter_heatmap', description='Plot heatmaps, yeah', epilog=':-(')
     parser.add_argument('-q', '--qos', dest='qos', action='store', nargs='+', type=float)
@@ -75,6 +79,9 @@ if __name__ == '__main__':
     # average network diameter
     and_arr = [[[] for x in args.qos] for y in args.pos]
 
+    # ratio of connected nodes
+    con_arr = [[[] for x in args.qos] for y in args.pos]
+
     for idx_q, q in enumerate(args.qos):
         for idx_p, p in enumerate(args.pos):
             filename = args.file.replace('qos', str(q)).replace('pos', str(p))
@@ -85,6 +92,7 @@ if __name__ == '__main__':
                     pdr_arr[idx_p][idx_q].append(calc_avg_pdr(run))
                     apn_arr[idx_p][idx_q].append(calc_avg_path_num(run))
                     and_arr[idx_p][idx_q].append(calc_avg_nw_diameter(run))
+                    con_arr[idx_p][idx_q].append(calc_conn_ratio(run))
 
     def avg_arr(arr):
         return [[np.average(arr[idx_p][idx_q]) for idx_q, q in enumerate(args.qos)] for idx_p, p in enumerate(args.pos)]
@@ -92,14 +100,14 @@ if __name__ == '__main__':
     avg_apn_arr = avg_arr(apn_arr)
     avg_and_arr = avg_arr(and_arr)
     avg_pdr_arr = avg_arr(pdr_arr)
-
-    print(pdr_arr)
+    avg_con_arr = avg_arr(con_arr)
+    print(con_arr)
 
     # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_annotated_heatmap.html
 
-    fig, ax = plt.subplots(nrows=3)
+    fig, ax = plt.subplots(nrows=4)
 
-    for idx, arr in enumerate([avg_pdr_arr, avg_apn_arr, avg_and_arr]):
+    for idx, arr in enumerate([avg_pdr_arr, avg_apn_arr, avg_and_arr, avg_con_arr]):
     # Show all ticks and label them with the respective list entries
         im = ax[idx].imshow(arr)
         ax[idx].set_xticks(np.arange(len(args.qos)), labels=args.qos)
@@ -114,7 +122,7 @@ if __name__ == '__main__':
             for j in range(len(args.qos)):
                 text = ax[idx].text(j, i, "{:.2f}".format(arr[i][j]),
                                ha="center", va="center", color="w")
-    for idx, label in enumerate(['Average Network PDR', 'Average Path Number', 'Average Network Diameter']):
+    for idx, label in enumerate(['Average Network PDR', 'Average Path Number', 'Average Network Diameter', 'Average Connected Node Ratio']):
         ax[idx].set_title(label)
     fig.tight_layout()
     plt.show()

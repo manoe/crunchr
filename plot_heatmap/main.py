@@ -14,7 +14,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_heatmap', description='Plot PDR heatmap', epilog=':-(')
     parser.add_argument('-r', '--routing', dest='routing', choices=['hdmrp', 'efmrp', 'shmrp'],
                         default='shmrp')
-    parser.add_argument('-e','--event', dest='event', action='store_true')
+    parser.add_argument('-e', '--event', dest='event', action='store_true')
     parser.add_argument('filename')
     args = parser.parse_args()
 
@@ -64,7 +64,7 @@ if __name__ == '__main__':
                     if 'next_hop' in re and re['status'] == 'AVAILABLE':
                         g_nw.add_edge(i['node'], re['next_hop'], prio=re['prio'], origin=re['origin'])
 
-    if args.event is not None:
+    if args.event:
         target_pdr = 'event_pdr'
     else:
         target_pdr = 'report_pdr'
@@ -73,6 +73,7 @@ if __name__ == '__main__':
     ax.add_patch(Rectangle((70, 70), 66, 66))
 
     node_color = [float(loader['pdr'][i][target_pdr]) if target_pdr in loader['pdr'][i] else 0 for i in list(g_nw)]
+    print(node_color)
     for i in loader['loc_pdr']:
         if i['state'] == 'DEAD':
             node_color[i['node']] = 0
