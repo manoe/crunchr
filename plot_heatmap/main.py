@@ -70,7 +70,7 @@ if __name__ == '__main__':
         target_pdr = 'report_pdr'
 
     ax = plt.gca()
-    ax.add_patch(Rectangle((70, 70), 66, 66))
+    ax.add_patch(Rectangle((47, 47), 66, 66))
 
     node_color = [float(loader['pdr'][i][target_pdr]) if target_pdr in loader['pdr'][i] else 0 for i in list(g_nw)]
     print(node_color)
