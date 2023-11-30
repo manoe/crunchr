@@ -29,11 +29,13 @@ def calc_avg_path_num(run):
 
 
 def calc_avg_pdr(run):
-    pdr_arr = [node['report_pdr'] for node in run['pdr'] if 'report_pdr' in node and node['node'] not in args.exclude]
-    for node in run['pdr']:
-        print(type(node['node']))
-        print(type(args.exclude[0]))
-
+    dead_nodes = []
+    if args.no_dead:
+        dead_nodes = [i['node'] for i in run['loc_pdr'] if i['state'] == 'DEAD']
+        print(dead_nodes)
+    pdr_arr = [node['report_pdr'] for node in run['pdr'] if 'report_pdr' in node
+               and node['node'] not in dead_nodes]
+    print(pdr_arr)
     return np.average(pdr_arr)
 
 
@@ -72,6 +74,7 @@ if __name__ == '__main__':
     parser.add_argument('-q', '--qos', dest='qos', action='store', nargs='+', type=float)
     parser.add_argument('-p', '--pos', dest='pos', action='store', nargs='+', type=str)
     parser.add_argument('-x', '--exclude', dest='exclude', nargs='+', type=int, help='Exclude nodes from calculation')
+    parser.add_argument('-d', '--no_dead', dest='no_dead', action='store_true')
     parser.add_argument('-f', '--file', dest='file', help='use the pattern blabla_qos_pos_babla.yaml')
     args = parser.parse_args()
 
