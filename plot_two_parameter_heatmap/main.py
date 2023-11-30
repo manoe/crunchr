@@ -29,7 +29,11 @@ def calc_avg_path_num(run):
 
 
 def calc_avg_pdr(run):
-    pdr_arr = [node['report_pdr'] for node in run['pdr'] if 'report_pdr' in node]
+    pdr_arr = [node['report_pdr'] for node in run['pdr'] if 'report_pdr' in node and node['node'] not in args.exclude]
+    for node in run['pdr']:
+        print(type(node['node']))
+        print(type(args.exclude[0]))
+
     return np.average(pdr_arr)
 
 
@@ -67,8 +71,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_two_parameter_heatmap', description='Plot heatmaps, yeah', epilog=':-(')
     parser.add_argument('-q', '--qos', dest='qos', action='store', nargs='+', type=float)
     parser.add_argument('-p', '--pos', dest='pos', action='store', nargs='+', type=str)
-
-    # shmrp_0.0_center_pdr.yaml
+    parser.add_argument('-x', '--exclude', dest='exclude', nargs='+', type=int, help='Exclude nodes from calculation')
     parser.add_argument('-f', '--file', dest='file', help='use the pattern blabla_qos_pos_babla.yaml')
     args = parser.parse_args()
 
