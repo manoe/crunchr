@@ -15,6 +15,7 @@ if __name__ == '__main__':
                         help='Select node based on receive-table, works only with ShMRP/HDMRP')
     parser.add_argument('-tt', '--traffic-table', dest='table', const='traffic_table', action='store_const',
                         help='Select node based on traffic-table, works only with ShMRP/HDMRP')
+    parser.add_argument('-n', '--node-num', dest='node_num', default=1, type=int)
     parser.add_argument('-d', '--debug', dest='debug', default=False, action='store_true')
     parser.add_argument('-r', '--random', dest='random', default=False, action='store_true')
     parser.add_argument('-s', '--seed', dest='seed', type=int)
@@ -49,4 +50,6 @@ if __name__ == '__main__':
         random.shuffle(n_l)
         print(n_l[0])
     else:
-        print(max(node_list.items(), key=operator.itemgetter(1))[0])
+        for i in list(dict(sorted(node_list.items(), reverse=True, key=lambda item: item[1])).keys())[0:args.node_num]:
+            print(i)
+        
