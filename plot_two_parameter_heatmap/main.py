@@ -33,13 +33,19 @@ def calc_avg_pdr(run):
     if args.no_dead:
         dead_nodes = [i['node'] for i in run['loc_pdr'] if i['state'] == 'DEAD']
         print(dead_nodes)
-    pdr_arr = [node['report_pdr'] for node in run['pdr'] if 'report_pdr' in node
-               and node['node'] not in dead_nodes]
+
+    pdr_arr = []
+    if args.event:
+        pdr_arr = [node['event_pdr'] for node in run['pdr'] if 'event_pdr' in node
+                   and node['node'] not in dead_nodes]
+    else:
+        pdr_arr = [node['report_pdr'] for node in run['pdr'] if 'report_pdr' in node
+                   and node['node'] not in dead_nodes]
     print(pdr_arr)
     return np.average(pdr_arr)
 
 
-def calc_avg_nw_diameter(run):
+def construct_graph(run):
     nw = nx.DiGraph()
     for i in run['loc_pdr']:
         nw.add_node(i['node'], role=i['role'], master=i['master'], pos=[i['x'], i['y']], state=i['state'])
@@ -54,6 +60,10 @@ def calc_avg_nw_diameter(run):
                     nw.add_edge(i['node'], j['node'], pathid=pathid, secl=secl)
                 else:
                     nw.add_edge(i['node'], j['node'], secl=j['secl'])
+    return nw
+
+def calc_avg_nw_diameter(run):
+    nw = construct_graph(run)
     outers = [node for node, in_degree in nw.in_degree() if in_degree == 0]
     diameters = []
     for i in outers:
@@ -66,7 +76,20 @@ def calc_avg_nw_diameter(run):
 
 
 def calc_conn_ratio(run):
-    return float(len([n for n in run['loc_pdr'] if n['state'] == 'WORK'])) / float(len(run['loc_pdr']))
+    if args.no_dead:
+        dead_nodes = [i['node'] for i in run['loc_pdr'] if i['state'] == 'DEAD']
+        nw = construct_graph(run)
+        nw.remove_nodes_from(dead_nodes)
+        conn = []
+        for i in nw.nodes():
+            try:
+                conn.append(nx.shortest_path_length(nw, source=i, target=0))
+            except nx.exception.NetworkXNoPath as exp:
+                print('No path '+str(exp))
+        print(len(conn)/len(nw.nodes()))
+        return float(len(conn)) / float(len(nw.nodes()))
+    else:
+        return float(len([n for n in run['loc_pdr'] if n['state'] == 'WORK'])) / float(len(run['loc_pdr']))
 
 
 if __name__ == '__main__':
@@ -75,6 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--pos', dest='pos', action='store', nargs='+', type=str)
     parser.add_argument('-x', '--exclude', dest='exclude', nargs='+', type=int, help='Exclude nodes from calculation')
     parser.add_argument('-d', '--no_dead', dest='no_dead', action='store_true')
+    parser.add_argument('-e', '--event', dest='event', action='store_true')
     parser.add_argument('-f', '--file', dest='file', help='use the pattern blabla_qos_pos_babla.yaml')
     args = parser.parse_args()
 
