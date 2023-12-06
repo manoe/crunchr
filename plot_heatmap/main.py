@@ -15,15 +15,20 @@ if __name__ == '__main__':
     parser.add_argument('-r', '--routing', dest='routing', choices=['hdmrp', 'efmrp', 'shmrp'],
                         default='shmrp')
     parser.add_argument('-e', '--event', dest='event', action='store_true')
+    parser.add_argument('-nd', '--no-dead', dest='no_dead', action='store_true')
     parser.add_argument('filename')
     args = parser.parse_args()
 
     stream = open(args.filename, 'r')
     loader = yaml.safe_load(stream)
-    size = int(math.sqrt(len(loader['pdr'])))
+    if 'runs' in loader:
+        data_source = loader['runs'][0]
+    else:
+        data_source = loader
+    size = int(math.sqrt(len(data_source['pdr'])))
 
     pdr_map = np.ndarray(shape=(size*size, 1))
-    for i in loader['pdr']:
+    for i in data_source['pdr']:
         if 'report_pdr' in i:
             pdr_map[i['node']] = i['report_pdr']
         else:
@@ -40,7 +45,7 @@ if __name__ == '__main__':
     g_nw = nx.DiGraph()
 
     if args.routing == 'shmrp' or args.routing == 'hdmrp':
-        for i in loader['loc_pdr']:
+        for i in data_source['loc_pdr']:
             g_nw.add_node(i['node'], role=i['role'], master=i['master'], pos=[i['x'], i['y']], state=i['state'])
             if 'routing_table' in i:
                 for j in i['routing_table']:
@@ -54,9 +59,11 @@ if __name__ == '__main__':
                         g_nw.add_edge(i['node'], j['node'], pathid=pathid, secl=secl)
                     else:
                         g_nw.add_edge(i['node'], j['node'], secl=j['secl'])
+        if args.no_dead:
+            rm_nodes = [ node for node,data in g_nw.nodes(data=True) if data['state'] != 'DEAD' ]
     elif args.routing == 'efmrp':
         g_nw = nx.MultiDiGraph()
-        for i in loader['loc_pdr']:
+        for i in data_source['loc_pdr']:
             g_nw.add_node(i['node'], pos=[i['x'], i['y']])
             if 'routing_table' in i:
                 for re in i['routing_table']:
@@ -69,15 +76,15 @@ if __name__ == '__main__':
     else:
         target_pdr = 'report_pdr'
 
-    ax = plt.gca()
-    ax.add_patch(Rectangle((47, 47), 66, 66))
+    #ax = plt.gca()
+    #ax.add_patch(Rectangle((47, 47), 66, 66))
 
-    node_color = [float(loader['pdr'][i][target_pdr]) if target_pdr in loader['pdr'][i] else 0 for i in list(g_nw)]
+    node_color = [float(data_source['pdr'][i][target_pdr]) if target_pdr in data_source['pdr'][i] else 0 for i in list(g_nw)]
     print(node_color)
-    for i in loader['loc_pdr']:
+    for i in data_source['loc_pdr']:
         if i['state'] == 'DEAD':
             node_color[i['node']] = 0
-    nx.draw(nx.DiGraph(g_nw), pos=nx.get_node_attributes(g_nw, 'pos'), edgecolors='k', linewidths=1, node_color=node_color)
+    nx.draw(nx.DiGraph(g_nw), pos=nx.get_node_attributes(g_nw, 'pos'), edgecolors='k', linewidths=1, node_color=node_color, with_labels=True)
 
 
     plt.title(args.filename.split('/')[-1])
