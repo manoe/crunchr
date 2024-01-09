@@ -5,7 +5,34 @@ import yaml
 import matplotlib.pyplot as plt
 import numpy as np
 import networkx as nx
+import pickle
+import shelve
+import os.path
+import copy
 
+def shelve_out(filename, keys):
+    my_shelf = shelve.open(filename, 'n')  # 'n' for new
+    for key in keys:
+        print('key: '+str(key))
+        try:
+            my_shelf[key] = globals()[key]
+        except TypeError:
+            #
+            # __builtins__, my_shelf, and imported modules can not be shelved.
+            #
+            print('ERROR shelving: {0}'.format(key))
+        except KeyError:
+            print('ERROR shelving: {0}'.format(key))
+        except:
+            print('ERROR')
+    my_shelf.close()
+
+
+def shelve_in(filename):
+    my_shelf = shelve.open(filename)
+    for key in my_shelf:
+        globals()[key] = my_shelf[key]
+    my_shelf.close()
 
 # https://matplotlib.org/stable/tutorials/colors/colors.html
 def role_to_color(role):
@@ -126,6 +153,13 @@ def calc_avg_pdr_from_nrg(run):
     return np.average(arr)
 
 
+def to_color(p, th=0.6):
+    if p < th:
+        return 0.7
+    if p >= th:
+        return 0
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_two_parameter_heatmap', description='Plot heatmaps, yeah', epilog=':-(')
     parser.add_argument('-px', '--param-x', dest='param_x', action='store', nargs='+', type=float)
@@ -142,64 +176,75 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--nrg-file', dest='nrg_file', help='use the pattern blabla_px_py_babla.yaml')
     args = parser.parse_args()
 
-    # arr [row][column] - inner = column, outer = row
-    pdr_arr = [[[] for x in args.param_x] for y in args.param_y]
-    # average path number
-    apn_arr = [[[] for x in args.param_x] for y in args.param_y]
-    # average network diameter
-    and_arr = [[[] for x in args.param_x] for y in args.param_y]
+    if os.path.isfile(args.file):
+        print('Shelved file present, reading in')
+        shelve_in(args.file)
+    else:
+        # arr [row][column] - inner = column, outer = row
+        pdr_arr = [[[] for x in args.param_x] for y in args.param_y]
+        # average path number
+        apn_arr = [[[] for x in args.param_x] for y in args.param_y]
+        # average network diameter
+        and_arr = [[[] for x in args.param_x] for y in args.param_y]
 
-    # ratio of connected nodes
-    con_arr = [[[] for x in args.param_x] for y in args.param_y]
+        # ratio of connected nodes
+        con_arr = [[[] for x in args.param_x] for y in args.param_y]
 
-    for idx_q, q in enumerate(args.param_x):
-        for idx_p, p in enumerate(args.param_y):
-            filename = args.file.replace('px', str(q)).replace('py', str(p))
-            print('Opening file: ' + filename)
-            loader = yaml.safe_load(open(filename, 'r'))
+        for idx_q, q in enumerate(args.param_x):
+            for idx_p, p in enumerate(args.param_y):
+                filename = args.file.replace('px', str(q)).replace('py', str(p))
+                print('Opening file: ' + filename)
+                loader = yaml.safe_load(open(filename, 'r'))
 
-            if args.nrg_file is not None:
-                nrg_filename = args.nrg_file.replace('px', str(q)).replace('py', str(p))
-                print('Opening file: ' + nrg_filename)
-                nrg_loader = yaml.safe_load(open(nrg_filename, 'r'))
-            for r_idx, run in enumerate(loader['runs']):
-                if 'pdr' in run and 'loc_pdr' in run:
-                    if args.nrg_file is not None:
-                        pdr_arr[idx_p][idx_q].append(calc_avg_pdr_from_nrg(nrg_loader['runs'][r_idx]))
-                    else:
-                        pdr_arr[idx_p][idx_q].append(calc_avg_pdr(run))
-                    apn_arr[idx_p][idx_q].append(calc_avg_path_num(run))
-                    and_arr[idx_p][idx_q].append(calc_avg_nw_diameter(run))
-                    con_arr[idx_p][idx_q].append(calc_conn_ratio(run))
+                if args.nrg_file is not None:
+                    nrg_filename = args.nrg_file.replace('px', str(q)).replace('py', str(p))
+                    print('Opening file: ' + nrg_filename)
+                    nrg_loader = yaml.safe_load(open(nrg_filename, 'r'))
+                for r_idx, run in enumerate(loader['runs']):
+                    if 'pdr' in run and 'loc_pdr' in run:
+                        if args.nrg_file is not None:
+                            pdr_arr[idx_p][idx_q].append(calc_avg_pdr_from_nrg(nrg_loader['runs'][r_idx]))
+                        else:
+                            pdr_arr[idx_p][idx_q].append(calc_avg_pdr(run))
+                        apn_arr[idx_p][idx_q].append(calc_avg_path_num(run))
+                        and_arr[idx_p][idx_q].append(calc_avg_nw_diameter(run))
+                        con_arr[idx_p][idx_q].append(calc_conn_ratio(run))
 
-    def avg_arr(arr):
-        return [[np.average(arr[idx_p][idx_q]) for idx_q, q in enumerate(args.param_x)] for idx_p, p in enumerate(args.param_y)]
+        def avg_arr(arr):
+            return [[np.average(arr[idx_p][idx_q]) for idx_q, q in enumerate(args.param_x)] for idx_p, p in enumerate(args.param_y)]
 
-    avg_apn_arr = avg_arr(apn_arr)
-    avg_and_arr = avg_arr(and_arr)
-    avg_pdr_arr = avg_arr(pdr_arr)
-    avg_con_arr = avg_arr(con_arr)
-    print(con_arr)
+        avg_apn_arr = avg_arr(apn_arr)
+        avg_and_arr = avg_arr(and_arr)
+        avg_pdr_arr = avg_arr(pdr_arr)
+        avg_con_arr = avg_arr(con_arr)
+        print(con_arr)
+        print('Shelving out data')
+        shelve_out(args.file, ['avg_apn_arr','avg_and_arr','avg_pdr_arr','avg_con_arr'])
 
     # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_annotated_heatmap.html
 
-    fig, ax = plt.subplots(nrows=4)
+    fig, axs = plt.subplots(nrows=2, ncols=2)
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
+
+    ax = axs.ravel()
 
     for idx, arr in enumerate([avg_pdr_arr, avg_apn_arr, avg_and_arr, avg_con_arr]):
     # Show all ticks and label them with the respective list entries
         im = ax[idx].imshow(arr)
+        print(im.cmap(im.norm(np.unique(arr))))
         ax[idx].set_xticks(np.arange(len(args.param_x)), labels=args.param_x)
         ax[idx].set_yticks(np.arange(len(args.param_y)), labels=args.param_y)
-        ax[idx].set_xlabel(args.title_x)
-        ax[idx].set_ylabel(args.title_y)
+        ax[idx].set_xlabel(r"{}".format(args.title_x))
+        ax[idx].set_ylabel(r"{}".format(args.title_y))
 
     # Rotate the tick labels and set their alignment.
         plt.setp(ax[idx].get_xticklabels(), rotation=45, ha="right",
                  rotation_mode="anchor")
 
     # Loop over data dimensions and create text annotations.
-        arr_txt = arr
+        arr_txt = copy.deepcopy(arr)
+        arr_max = np.max(arr)
+
         if args.diff_p:
             for i in range(len(args.param_y)):
                 for j in range(len(args.param_x)):
@@ -211,12 +256,14 @@ if __name__ == '__main__':
         for i in range(len(args.param_y)):
             for j in range(len(args.param_x)):
                 if args.diff_p:
+                    print('color %: '+str(arr[i][j]/arr_max))
                     text = ax[idx].text(j, i, arr_txt[i][j],
-                                        ha="center", va="center", color="w", fontsize='small')
+                                        ha="center", va="center", color=str(to_color(arr[i][j]/arr_max, 0.98)), fontsize='x-small')
                 else:
                     text = ax[idx].text(j, i, "{:.2f}".format(arr_txt[i][j]),
-                                        ha="center", va="center", color="w")
+                                        ha="center", va="center", color=str(to_color(arr_txt[i][j]/arr_max)))
     for idx, label in enumerate(['Average Network PDR', 'Average Path Number', 'Average Network Diameter', 'Average Connected Node Ratio']):
         ax[idx].set_title(label)
     fig.tight_layout()
     plt.show()
+

@@ -16,6 +16,9 @@ if __name__ == '__main__':
                         default='shmrp')
     parser.add_argument('-e', '--event', dest='event', action='store_true')
     parser.add_argument('-nd', '--no-dead', dest='no_dead', action='store_true')
+    parser.add_argument('-u', '--unconnected', dest='unconn', action='store_true')
+    parser.add_argument('-b', '--box', dest='box', action='store_true')
+    parser.add_argument('-nc', '--no-color', dest='no_color', action='store_true')
     parser.add_argument('filename')
     args = parser.parse_args()
 
@@ -33,12 +36,12 @@ if __name__ == '__main__':
             pdr_map[i['node']] = i['report_pdr']
         else:
             pdr_map[i['node']] = 0
-    print(size)
+    #print(size)
     color_list = list(pdr_map)
 
     pdr_map = np.reshape(pdr_map, (size, size))
 
-    print(pdr_map)
+    #print(pdr_map)
 
     #plt.imshow(pdr_map)
 
@@ -60,7 +63,9 @@ if __name__ == '__main__':
                     else:
                         g_nw.add_edge(i['node'], j['node'], secl=j['secl'])
         if args.no_dead:
-            rm_nodes = [ node for node,data in g_nw.nodes(data=True) if data['state'] != 'DEAD' ]
+            rm_nodes = [node for node, data in g_nw.nodes(data=True) if data['state'] == 'DEAD']
+            g_nw.remove_nodes_from(rm_nodes)
+
     elif args.routing == 'efmrp':
         g_nw = nx.MultiDiGraph()
         for i in data_source['loc_pdr']:
@@ -71,22 +76,30 @@ if __name__ == '__main__':
                     if 'next_hop' in re and re['status'] == 'AVAILABLE':
                         g_nw.add_edge(i['node'], re['next_hop'], prio=re['prio'], origin=re['origin'])
 
+    if args.unconn:
+        print(len([i for i in g_nw.nodes() if g_nw.out_degree(i) == 0 and i != 0]))
+        exit(0)
+
     if args.event:
         target_pdr = 'event_pdr'
     else:
         target_pdr = 'report_pdr'
 
-    #ax = plt.gca()
-    #ax.add_patch(Rectangle((47, 47), 66, 66))
+    if args.box:
+        ax = plt.gca()
+        ax.add_patch(Rectangle((70, 47), 65, 65, color='tab:red'))
 
     node_color = [float(data_source['pdr'][i][target_pdr]) if target_pdr in data_source['pdr'][i] else 0 for i in list(g_nw)]
-    print(node_color)
-    for i in data_source['loc_pdr']:
-        if i['state'] == 'DEAD':
-            node_color[i['node']] = 0
-    nx.draw(nx.DiGraph(g_nw), pos=nx.get_node_attributes(g_nw, 'pos'), edgecolors='k', linewidths=1, node_color=node_color, with_labels=True)
+    #print(node_color)
+#    for i in data_source['loc_pdr']:
+#        if i['state'] == 'DEAD':
+#            node_color[i['node']] = 0
+    if args.no_color:
+        nx.draw(nx.DiGraph(g_nw), pos=nx.get_node_attributes(g_nw, 'pos'), edgecolors='k', linewidths=1, with_labels=True)
+    else:
+        nx.draw(nx.DiGraph(g_nw), pos=nx.get_node_attributes(g_nw, 'pos'), edgecolors='k', linewidths=1, node_color=node_color, with_labels=True)
 
 
-    plt.title(args.filename.split('/')[-1])
-
+    #plt.title(args.filename.split('/')[-1])
+    plt.tight_layout()
     plt.show()
