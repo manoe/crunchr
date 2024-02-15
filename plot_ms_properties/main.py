@@ -66,10 +66,10 @@ def calc_avg_pdr(run):
     pdr_arr = []
     if args.event:
         pdr_arr = [node['event_pdr'] for node in run['pdr'] if 'event_pdr' in node
-                   and node['node'] not in dead_nodes and check_node_wl(node['node']) and node['node'] not in ring_nodes]
+                   and node['node'] not in dead_nodes and node['node'] not in ring_nodes]
     else:
         pdr_arr = [node['report_pdr'] for node in run['pdr'] if 'report_pdr' in node
-                   and node['node'] not in dead_nodes and check_node_wl(node['node']) and node['node'] not in ring_nodes]
+                   and node['node'] not in dead_nodes and node['node'] not in ring_nodes]
     print(pdr_arr)
     return np.average(pdr_arr)
 
@@ -95,12 +95,17 @@ def calc_avg_nw_diameter(run):
     nw = construct_graph(run)
     outers = [node for node, in_degree in nw.in_degree() if in_degree == 0]
     diameters = []
+    sinks = [node[0] for node in nx.get_node_attributes(nw,'role').items() if node[1] == 'central']
     for i in outers:
-        try:
-            diameters.append(nx.shortest_path_length(nw, source=i, target=0))
-        except nx.exception.NetworkXNoPath as exp:
-            print(exp)
-
+        d = []
+        for s in sinks:
+            try:
+                d.append(nx.shortest_path_length(nw, source=i, target=s))
+            except nx.exception.NetworkXNoPath as exp:
+                print(exp)
+        if len(d) > 0:
+            diameters.append(max(d))
+    print('Diameters: ' + str(diameters))
     return np.average(diameters)
 
 
@@ -110,21 +115,23 @@ def calc_conn_ratio(run):
         nw = construct_graph(run)
         nw.remove_nodes_from(dead_nodes)
         conn = []
+        sinks = [node[0] for node in nx.get_node_attributes(nw, 'role').items() if node[1] == 'central']
+
         for i in nw.nodes():
-            try:
-                conn.append(nx.shortest_path_length(nw, source=i, target=0))
-            except nx.exception.NetworkXNoPath as exp:
-                print('No path '+str(exp))
+            paths = []
+            for s in sinks:
+                try:
+                    paths.append(nx.shortest_path_length(nw, source=i, target=s))
+                except nx.exception.NetworkXNoPath as exp:
+                    print('No path '+str(exp))
+            if len(paths) > 0:
+                conn.append(i)
+        print(conn)
         print(len(conn)/len(nw.nodes()))
         return float(len(conn)) / float(len(nw.nodes()))
     else:
         return float(len([n for n in run['loc_pdr'] if n['state'] == 'WORK'])) / float(len(run['loc_pdr']))
 
-def check_node_wl(node):
-    if args.include is None:
-        return True
-    else:
-        return node in args.include
 
 def to_color(p, th=0.6):
     if p < th:
@@ -136,7 +143,8 @@ def to_color(p, th=0.6):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_ms_properties', description='Plot bar charts, yeah', epilog=':-(')
     parser.add_argument('-px', '--param-x', dest='param_x', action='store', nargs='+', type=float)
-        parser.add_argument('-d', '--no_dead', dest='no_dead', action='store_true')
+    parser.add_argument('-d', '--no_dead', dest='no_dead', action='store_true')
+    parser.add_argument('-e', '--event', dest='event', action='store_true')
     parser.add_argument('-ex', '--external', dest='external', action='store_true')
     parser.add_argument('-tx', '--title-x', dest='title_x', action='store', type=str, default='X')
     parser.add_argument('-ty', '--title-y', dest='title_y', action='store', type=str, default='Y')
@@ -190,11 +198,12 @@ if __name__ == '__main__':
 
     for idx, arr in enumerate([avg_pdr_arr, avg_apn_arr, avg_and_arr, avg_con_arr]):
     # Show all ticks and label them with the respective list entries
-        ax[idx].bar(args.px,arr)
+        ax[idx].bar(np.arange(len(args.param_x)), arr)
         #colours = im.cmap(im.norm(arr))
         #print(colours)
         #image = arr
         ax[idx].set_xticks(np.arange(len(args.param_x)), labels=args.param_x)
+        
         ax[idx].set_xlabel(r"{}".format(args.title_x))
         ax[idx].set_ylabel(r"{}".format(args.title_y))
 
