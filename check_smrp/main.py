@@ -15,7 +15,7 @@ def construct_graph(loader):
     graph = nx.MultiDiGraph()
     pdr_dict = {i['node']: i['report_pdr'] for i in loader['pdr'] if 'report_pdr' in i}
     pdr_dict.update({i['node']: 0 for i in loader['pdr'] if 'report_pdr' not in i})
-    print(pdr_dict)
+    #print(pdr_dict)
     for i in loader['loc_pdr']:
         is_sink = i['node'] in i['hop']
         graph.add_node(i['node'], pos=[i['x'], i['y']], sink=is_sink, pdr=pdr_dict[i['node']])
@@ -68,6 +68,7 @@ if __name__ == '__main__':
 
     loader = yaml.safe_load(stream)
     for run in loader['runs']:
+        print('seed: '+str(run['seed']))
         graph = construct_graph(run)
         check_smrp_graph(graph, args.path_num)
 
