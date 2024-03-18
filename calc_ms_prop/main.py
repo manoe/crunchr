@@ -123,7 +123,6 @@ def calc_path_stat(run):
                 except nx.NetworkXNoPath:
                     continue
             else:
-                print('node: '+str(node))
                 try:
                     path_list = nx.shortest_path(nw, node, 0)
                 except nx.NetworkXNoPath:
@@ -138,7 +137,7 @@ def calc_path_stat(run):
 
             series.append([nw.nodes[node]['pdr'], np.average(d), np.std(d), len(path_list)-1, np.linalg.norm(np.subtract(nx.get_node_attributes(nw, 'pos')[node],
                                             nx.get_node_attributes(nw, 'pos')[0])) ])
-    print(series)
+
     return series
 
 
@@ -175,7 +174,7 @@ if __name__ == '__main__':
 
     bigarr = np.array(arr)
     bigarr = np.transpose(bigarr)
-    print(bigarr.shape)
+
 #    bigarr2d = np.reshape(bigarr, (3,len(np.array(pdr_arr).flat)))
 #    #print(list(bigarr2d))
     corrm = np.corrcoef(bigarr)
