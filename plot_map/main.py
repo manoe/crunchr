@@ -1,3 +1,5 @@
+#!/bin/env python3
+
 import argparse
 
 import matplotlib
@@ -6,6 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 import pandas as pd
+
 
 def calc_pdr(run):
     pdrs = []
@@ -31,7 +34,7 @@ if __name__ == '__main__':
     parser.add_argument('-tx', '--title-x', dest='title_x', action='store', type=str, default='X')
     parser.add_argument('-ty', '--title-y', dest='title_y', action='store', type=str, default='Y')
     parser.add_argument('-f', '--file', dest='file', help='use the pattern blabla_px_py_babla.yaml')
-    parser.add_argument('-t', '--tail', dest='tail', action='store', type=float, help='The tail threshold')
+    parser.add_argument('-t', '--tail', dest='tail', action='store', type=float, help='The tail threshold', default=0.0)
     args = parser.parse_args()
 
     arr = []
@@ -45,5 +48,5 @@ if __name__ == '__main__':
             y_arr.append(tail([calc_pdr(run) for run in loader['runs']], args.tail))
         arr.append(y_arr)
 
-    df = pd.DataFrame(arr, columns=args.param_x, index=args.param_y)
+    df = pd.DataFrame(arr, columns=args.param_y, index=args.param_x)
     print(df.to_string())
