@@ -88,7 +88,7 @@ if __name__ == '__main__':
     arr_connr_tailed = [[tail(i, args.tail) for i in j] for j in arr_connr]
 
     df_pdr = pd.DataFrame(arr_pdr_tailed, columns=args.param_y, index=args.param_x)
-    df_connr = pd.DataFrame(arr_pdr_tailed, columns=args.param_y, index=args.param_x)
+    df_connr = pd.DataFrame(arr_connr_tailed, columns=args.param_y, index=args.param_x)
     print('PDRs with tail set to '+str(args.tail))
     print(df_pdr.to_string())
     print('\n')
