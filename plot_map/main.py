@@ -111,8 +111,6 @@ if __name__ == '__main__':
     arr_connr_tailed = [[tail(i, args.tail) for i in j] for j in arr_connr]
     arr_dc_pdr_tailed = [[tail(i, args.tail) for i in j] for j in arr_dc_pdr]
 
-    print(arr_dc_pdr)
-
     df_pdr = pd.DataFrame(arr_pdr_tailed, columns=args.param_y, index=args.param_x)
     df_connr = pd.DataFrame(arr_connr_tailed, columns=args.param_y, index=args.param_x)
     df_dc_pdr = pd.DataFrame(arr_dc_pdr_tailed, columns=args.param_y, index=args.param_x)
