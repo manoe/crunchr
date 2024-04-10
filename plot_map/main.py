@@ -59,12 +59,19 @@ def calc_dc_pdr(run):
     return np.average([np.linalg.norm(loc[i])/d_max*pdr[i] for i in pdr.keys()])
 
 
+def coll_d_p(run):
+    loc = gen_node_loc(run)
+    pdr = gen_node_pdr(run)
+    d_max = max([np.linalg.norm(i) for i in loc.values()])
+    return [[np.linalg.norm(loc[i]) / d_max for i in pdr.keys()], [pdr[i] for i in pdr.keys()]]
+
+
 def calc_connr(run):
     return len([node['node'] for node in run['pdr'] if 'report_pdr' in node and node['report_pdr'] != 0])/len([node['node'] for node in run['pdr'] if 'report_pdr' in node])
 
 
 def tail(arr, th):
-    return len([i for i in arr if i > th])/len(arr)
+    return len([i for i in arr if i >= th])/len(arr)
 
 
 if __name__ == '__main__':
@@ -80,14 +87,14 @@ if __name__ == '__main__':
     parser.add_argument('-ty', '--title-y', dest='title_y', action='store', type=str, default='Y')
     parser.add_argument('-f', '--file', dest='file', help='use the pattern blabla_px_py_babla.yaml', required=True)
     parser.add_argument('-t', '--tail', dest='tail', action='store', type=float, help='The tail threshold', default=0.0)
-    parser.add_argument('-p', '--plot', dest='plot', action='store', choices=['pdr', 'connr', 'dc_pdr'], help='The tail threshold')
+    parser.add_argument('-p', '--plot', dest='plot', action='store', choices=['pdr', 'connr', 'dc_pdr', 'd_p'], help='Kind of the plot')
     parser.add_argument('-s', '--shelve', dest='shelve', action='store_true', help='use the pattern blabla_px_py_babla.yaml')
     args = parser.parse_args()
 
     arr_pdr = []
     arr_connr = []
     arr_dc_pdr = []
-
+    arr_d_p = []
     if args.shelve:
         shelve_in(args.file)
     else:
@@ -95,6 +102,7 @@ if __name__ == '__main__':
             y_pdr_arr = []
             y_connr_arr = []
             y_dc_pdr_arr = []
+            y_d_p_arr = []
             for idx_p, p in enumerate(args.param_y):
                 filename = args.file.replace('px', q).replace('py', p)
                 print('Opening file: ' + filename)
@@ -102,10 +110,26 @@ if __name__ == '__main__':
                 y_pdr_arr.append([calc_pdr(run) for run in loader['runs']])
                 y_connr_arr.append([calc_connr(run) for run in loader['runs']])
                 y_dc_pdr_arr.append([calc_dc_pdr(run) for run in loader['runs']])
+                d_p_arr = [[],[]]
+                for run in loader['runs']:
+                    arr = coll_d_p(run)
+                    d_p_arr[0].append(arr[0])
+                    d_p_arr[1].append(arr[1])
+                y_d_p_arr.append(d_p_arr)
             arr_pdr.append(y_pdr_arr)
             arr_connr.append(y_connr_arr)
             arr_dc_pdr.append(y_dc_pdr_arr)
-        shelve_out(args.file, ['arr_pdr', 'arr_connr', 'arr_dc_pdr'])
+            arr_d_p.append(y_d_p_arr)
+
+        shelve_out(args.file, ['arr_pdr', 'arr_connr', 'arr_dc_pdr','arr_d_p'])
+
+    if 'd_p' == args.plot:
+        for idx_q, q in enumerate(args.param_x):
+            for idx_p, p in enumerate(args.param_y):
+                plt.scatter(arr_d_p[idx_q][idx_p][0], arr_d_p[idx_q][idx_p][1])
+                plt.show()
+        print(arr_d_p)
+        exit(0)
 
     arr_pdr_tailed = [[tail(i, args.tail) for i in j] for j in arr_pdr]
     arr_connr_tailed = [[tail(i, args.tail) for i in j] for j in arr_connr]
