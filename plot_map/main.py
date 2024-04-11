@@ -10,6 +10,7 @@ import yaml
 import pandas as pd
 import shelve as sh
 
+
 def shelve_out(filename, keys):
     my_shelf = sh.open(filename, 'n')  # 'n' for new
     for key in keys:
@@ -95,6 +96,8 @@ if __name__ == '__main__':
     arr_connr = []
     arr_dc_pdr = []
     arr_d_p = []
+    arr_reg = []
+
     if args.shelve:
         shelve_in(args.file)
     else:
@@ -103,6 +106,7 @@ if __name__ == '__main__':
             y_connr_arr = []
             y_dc_pdr_arr = []
             y_d_p_arr = []
+            y_reg_arr = []
             for idx_p, p in enumerate(args.param_y):
                 filename = args.file.replace('px', q).replace('py', p)
                 print('Opening file: ' + filename)
@@ -111,18 +115,22 @@ if __name__ == '__main__':
                 y_connr_arr.append([calc_connr(run) for run in loader['runs']])
                 y_dc_pdr_arr.append([calc_dc_pdr(run) for run in loader['runs']])
                 d_p_arr = [[], []]
+                reg_arr = []
                 for run in loader['runs']:
                     arr = coll_d_p(run)
                     d_p_arr[0] += arr[0]
                     d_p_arr[1] += arr[1]
+                    reg_arr.append(np.linalg.lstsq(np.vstack([arr[0], np.ones(len(arr[0]))]).T, arr[1], rcond=None)[0])
                 print('d_p_arr len: '+str(len(d_p_arr)))
                 y_d_p_arr.append(d_p_arr)
+                y_reg_arr.append(reg_arr)
             arr_pdr.append(y_pdr_arr)
             arr_connr.append(y_connr_arr)
             arr_dc_pdr.append(y_dc_pdr_arr)
             arr_d_p.append(y_d_p_arr)
+            arr_reg.append(y_reg_arr)
 
-        shelve_out(args.file, ['arr_pdr', 'arr_connr', 'arr_dc_pdr', 'arr_d_p'])
+        shelve_out(args.file, ['arr_pdr', 'arr_connr', 'arr_dc_pdr', 'arr_d_p', 'arr_reg'])
 
     if 'd_p' == args.plot:
         fig, axs = plt.subplots(nrows=len(args.param_x), ncols=len(args.param_y), figsize=(3*len(args.param_y), 3*len(args.param_x)))
@@ -131,7 +139,10 @@ if __name__ == '__main__':
         print(arr_d_p)
         for idx_q, q in enumerate(args.param_x):
             for idx_p, p in enumerate(args.param_y):
+                ax[len(args.param_y)*idx_q+idx_p].set_title(str(q)+', '+str(p))
                 ax[len(args.param_y)*idx_q+idx_p].scatter(arr_d_p[idx_q][idx_p][0], arr_d_p[idx_q][idx_p][1])
+                #reg=np.linalg.lstsq(arr_d_p[idx_q][idx_p][0], arr_d_p[idx_q][idx_p][1], rcond=None)[0]
+                reg = np.linalg.lstsq(np.vstack([arr_d_p[idx_q][idx_p][0], np.ones(len(arr_d_p[idx_q][idx_p][0]))]).T, arr_d_p[idx_q][idx_p][1], rcond=None)[0]
         plt.show()
         print(arr_d_p)
         exit(0)
