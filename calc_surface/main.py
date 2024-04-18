@@ -103,7 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--shelve', dest='shelve', action='store_true',
                         help='use the pattern blabla_px_py_babla.yaml')
     args = parser.parse_args()
-
+    
     if args.shelve:
         shelve_in(args.file+'.dat')
     else:
