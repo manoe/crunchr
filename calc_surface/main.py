@@ -103,7 +103,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--shelve', dest='shelve', action='store_true',
                         help='use the pattern blabla_px_py_babla.yaml')
     args = parser.parse_args()
-    
+
     if args.shelve:
         shelve_in(args.file+'.dat')
     else:
@@ -112,7 +112,8 @@ if __name__ == '__main__':
         res = []
         for run in loader['runs']:
             loc = gen_node_loc(run)
-            conn = gen_node_conn(loader['runs'][0])
+            conn = gen_node_conn(run)
+            print(conn)
             x = np.linspace(0, args.length, 300)
             y = np.linspace(0, args.length, 300)
             # 100:  0.4119
@@ -141,7 +142,7 @@ if __name__ == '__main__':
                     r_idx_left = r_idx
                 elif err <= th:
                     if area < 1.0:
-                        print('Done. Error: '+str(err))
+                        print('Done - error reached. Error: '+str(err))
                         break
                     else:
                         print('Error lower: '+str(err))
@@ -154,27 +155,49 @@ if __name__ == '__main__':
                 print('Idx right: ' + str(r_idx_right))
 
                 if r_idx_new == r_idx:
+                    print('Done - recurring index. Error: ' + str(err))
                     break
                 else:
                     r_idx = r_idx_new
+            print('Index: ' + str(r_idx))
+            print('Area:  ' + str(area))
+            print('Value: ' + str(r_arr[r_idx]))
+
             res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run), 'radius': r_arr[r_idx]})
 
         shelve_out(args.file+'.dat',['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
 
     print(res)
-    if args.plot:
-        fig, ax = plt.subplots()
-        ax.set(xlim=(0, args.length), ylim=(0, args.length))
-        colors = list(map(lambda x: {True: 'b', False: 'w'}[x], c))
-        plt.scatter(np.ravel(xx), np.ravel(yy), c=colors)
-        plt.title(f'Area: {area}')
-        for c in circles:
-            a_circle = plt.Circle((c.x, c.y), c.radius, color='r', linewidth=1, fill=False)
-            ax.add_artist(a_circle)
-        ax.add_patch(plt.Rectangle((0, 0), args.length, args.length, color="k", linewidth=1, fill=False))
+    #if args.plot is True:
+    fig, ax = plt.subplots(nrows=1,ncols=2)
 
-        # Printing the graph
-        plt.show()
+    x_p_coord = [i['pdr'] for i in res]
+    x_dp_coord = [i['dc-pdr'] for i in res]
+    y_coord = [i['radius'] for i in res]
+    ax[0].scatter(x_p_coord, y_coord, s=10)
+    ax[1].scatter(x_dp_coord, y_coord, s=10)
+    ax[0].set_title('PDR')
+    ax[1].set_title('DC-PDR')
+
+
+    # Printing the graph
+    plt.title(args.file)
+    plt.show()
+
+
+
+#        fig, ax = plt.subplots()
+#        ax.set(xlim=(0, args.length), ylim=(0, args.length))
+#        colors = list(map(lambda x: {True: 'b', False: 'w'}[x], c))
+#        plt.scatter(np.ravel(xx), np.ravel(yy), c=colors)
+#        plt.title(f'Area: {area}')
+#        for c in circles:
+#            a_circle = plt.Circle((c.x, c.y), c.radius, color='r', linewidth=1, fill=False)
+#            ax.add_artist(a_circle)
+#        ax.add_patch(plt.Rectangle((0, 0), args.length, args.length, color="k", linewidth=1, fill=False))#
+
+#        # Printing the graph
+#        plt.show()
 
         # plotting circles and a square from (0,0) to (1,1)
 
