@@ -169,20 +169,20 @@ if __name__ == '__main__':
 
     print(res)
     if args.plot is True:
-    fig, ax = plt.subplots(nrows=1,ncols=2)
+        fig, ax = plt.subplots(nrows=1,ncols=2)
 
-    x_p_coord = [i['pdr'] for i in res]
-    x_dp_coord = [i['dc-pdr'] for i in res]
-    y_coord = [i['radius'] for i in res]
-    ax[0].scatter(x_p_coord, y_coord, s=10)
-    ax[1].scatter(x_dp_coord, y_coord, s=10)
-    ax[0].set_title('PDR')
-    ax[1].set_title('DC-PDR')
+        x_p_coord = [i['pdr'] for i in res]
+        x_dp_coord = [i['dc-pdr'] for i in res]
+        y_coord = [i['radius'] for i in res]
+        ax[0].scatter(x_p_coord, y_coord, s=10)
+        ax[1].scatter(x_dp_coord, y_coord, s=10)
+        ax[0].set_title('PDR')
+        ax[1].set_title('DC-PDR')
 
 
-    # Printing the graph
-    plt.title(args.file)
-    plt.show()
+        # Printing the graph
+        plt.title(args.file)
+        plt.show()
 
 
 
