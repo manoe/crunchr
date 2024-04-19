@@ -168,7 +168,7 @@ if __name__ == '__main__':
         shelve_out(args.file+'.dat',['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
 
     print(res)
-    #if args.plot is True:
+    if args.plot is True:
     fig, ax = plt.subplots(nrows=1,ncols=2)
 
     x_p_coord = [i['pdr'] for i in res]
