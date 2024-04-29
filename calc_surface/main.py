@@ -2,6 +2,7 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
+import networkx as nx
 import argparse
 import yaml
 import math
@@ -31,6 +32,7 @@ def shelve_in(filename):
         globals()[key] = my_shelf[key]
     my_shelf.close()
 
+
 # Making a class circle and initializing it with its centre and radius
 class circle:
     def __init__(self,radius,x,y):
@@ -53,6 +55,7 @@ def calc_connr(run):
 def gen_node_conn(run):
     is_conn = lambda n: 'report_pdr' in n and n['report_pdr'] != 0 or n['node'] == 0
     return {node['node']: is_conn(node) for node in run['pdr']}
+
 
 def gen_node_loc(run):
     return {i['node']: [i['x'], i['y']] for i in run['loc_pdr']}
@@ -82,6 +85,28 @@ def in_area(point):
     return exist.count(True) > 0
 
 
+def construct_graph(run):
+    g_nw = nx.DiGraph()
+    for i in run['loc_pdr']:
+        g_nw.add_node(i['node'], pos=[i['x'], i['y']], state=i['state'])
+        if 'routing_table' in i:
+            for j in i['routing_table']:
+                if 'node' in j:
+                    g_nw.add_edge(i['node'], j['node'])
+                elif 'next_hop' in j:
+                    g_nw.add_edge(i['node'], j['next_hop'])
+    return g_nw
+
+
+def calc_distance(p1, p2):
+    return np.linalg.norm(np.subtract(p1, p2))
+
+
+def calc_length(run):
+    g_nw = construct_graph(run)
+    return [calc_distance(g_nw.nodes[n1[0]]['pos'], g_nw.nodes[n1[1]]['pos']) for n1 in g_nw.edges() if n1[1]]
+
+
 # initializing plt of matplotlib
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='calc_surface', description='Calculate coverage surface, yeah', epilog=':-(')
@@ -102,6 +127,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--plot', dest='plot', action='store_true', help='Let\'s plot')
     parser.add_argument('-s', '--shelve', dest='shelve', action='store_true',
                         help='use the pattern blabla_px_py_babla.yaml')
+    parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='debug mode on (aka. printf)')
     args = parser.parse_args()
 
     if args.shelve:
@@ -113,7 +139,9 @@ if __name__ == '__main__':
         for run in loader['runs']:
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
-            print(conn)
+            l_arr = calc_length(run)
+            if args.debug:
+                print(conn)
             x = np.linspace(0, args.length, 300)
             y = np.linspace(0, args.length, 300)
             # 100:  0.4119
@@ -135,40 +163,49 @@ if __name__ == '__main__':
                 c = [in_area((x,y)) for x, y in zip(np.ravel(xx), np.ravel(yy))]
                 area = sum(c) / len(c)
                 err = 1.0 - area
-                print('=====================')
+                if args.debug:
+                    print('=====================')
                 if err > th:
-                    print('Error higher: '+str(err))
+                    if args.debug:
+                        print('Error higher: '+str(err))
                     r_idx_new = int(r_idx_right-((r_idx_right-r_idx)/2))
                     r_idx_left = r_idx
                 elif err <= th:
                     if area < 1.0:
-                        print('Done - error reached. Error: '+str(err))
+                        if args.debug:
+                            print('Done - error reached. Error: '+str(err))
                         break
                     else:
-                        print('Error lower: '+str(err))
+                        if args.debug:
+                            print('Error lower: '+str(err))
                         r_idx_new = int(r_idx_left+(r_idx-r_idx_left)/2)
                         r_idx_right = r_idx
-                print('Index: ' + str(r_idx))
-                print('Area:  ' + str(area))
-                print('New index: ' + str(r_idx_new))
-                print('Idx left: ' +str(r_idx_left))
-                print('Idx right: ' + str(r_idx_right))
+                if args.debug:
+                    print('Index: ' + str(r_idx))
+                    print('Area:  ' + str(area))
+                    print('New index: ' + str(r_idx_new))
+                    print('Idx left: ' +str(r_idx_left))
+                    print('Idx right: ' + str(r_idx_right))
 
                 if r_idx_new == r_idx:
-                    print('Done - recurring index. Error: ' + str(err))
+                    if args.debug:
+                        print('Done - recurring index. Error: ' + str(err))
                     break
                 else:
                     r_idx = r_idx_new
-            print('Index: ' + str(r_idx))
-            print('Area:  ' + str(area))
-            print('Value: ' + str(r_arr[r_idx]))
+            if args.debug:
+                print('Index: ' + str(r_idx))
+                print('Area:  ' + str(area))
+                print('Value: ' + str(r_arr[r_idx]))
 
-            res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run), 'radius': r_arr[r_idx]})
+            res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run), 'radius': r_arr[r_idx],
+                       'l_avg': np.average(l_arr), 'l_std': np.std(l_arr)})
 
         shelve_out(args.file+'.dat',['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
 
-    print(res)
+
     if args.plot is True:
+#    if True:
         fig, ax = plt.subplots(nrows=1,ncols=2)
 
         x_p_coord = [i['pdr'] for i in res]
@@ -176,12 +213,14 @@ if __name__ == '__main__':
         y_coord = [i['radius'] for i in res]
         ax[0].scatter(x_p_coord, y_coord, s=10)
         ax[1].scatter(x_dp_coord, y_coord, s=10)
+        ax[0].grid(True)
+        ax[1].grid(True)
         ax[0].set_title('PDR')
         ax[1].set_title('DC-PDR')
 
 
         # Printing the graph
-        plt.title(args.file)
+        fig.suptitle(args.file)
         plt.show()
 
 
