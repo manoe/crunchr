@@ -199,9 +199,9 @@ if __name__ == '__main__':
                 print('Value: ' + str(r_arr[r_idx]))
 
             res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run), 'radius': r_arr[r_idx],
-                       'l_avg': np.average(l_arr), 'l_std': np.std(l_arr)})
+                       'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr})
 
-        shelve_out(args.file+'.dat',['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
+        shelve_out(args.file+'.dat', ['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
 
 
     if args.plot is True:
