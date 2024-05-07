@@ -104,7 +104,6 @@ def calc_distance(p1, p2):
 def calc_msr2mrp_routes(run):
     r_arr = []
     for i in run['loc_pdr']:
-        r = 0
         if 'engines' in i and len(i['engines']) > 0 and 'routing_table' in i['engines'][0]:
             r_arr.append(len(i['engines'][0]['routing_table']))
     return r_arr
@@ -160,12 +159,14 @@ if __name__ == '__main__':
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
             l_arr = calc_length(run)
+            route_arr = []
             if run['protocol'] == 'msr2mrp':
                 route_arr = calc_msr2mrp_routes(run)
             elif run['protocol'] == 'efmrp':
                 route_arr = calc_efmrp_routes(run)
             if args.debug:
                 print(conn)
+                print(route_arr)
             x = np.linspace(0, args.length, 300)
             y = np.linspace(0, args.length, 300)
             # 100:  0.4119
