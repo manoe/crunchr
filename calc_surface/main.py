@@ -101,6 +101,24 @@ def construct_graph(run):
 def calc_distance(p1, p2):
     return np.linalg.norm(np.subtract(p1, p2))
 
+def calc_msr2mrp_routes(run):
+    r_arr = []
+    for i in run['loc_pdr']:
+        r = 0
+        if 'engines' in i and len(i['engines']) > 0 and 'routing_table' in i['engines'][0]:
+            r_arr.append(len(i['engines'][0]['routing_table']))
+    return r_arr
+
+def calc_efmrp_routes(run):
+    r_arr = []
+    for i in run['loc_pdr']:
+        r = 0
+        if 'routing_table' in i:
+            for j in i['routing_table']:
+                if j['origin'] == i['node'] and j['status'] == 'AVAILABLE':
+                    r += 1
+            r_arr.append(r)
+    return r_arr
 
 def calc_length(run):
     g_nw = construct_graph(run)
@@ -136,10 +154,16 @@ if __name__ == '__main__':
         print('Opening file: ' + args.file)
         loader = yaml.safe_load(open(args.file, 'r'))
         res = []
+
         for run in loader['runs']:
+
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
             l_arr = calc_length(run)
+            if run['protocol'] == 'msr2mrp':
+                route_arr = calc_msr2mrp_routes(run)
+            elif run['protocol'] == 'efmrp':
+                route_arr = calc_efmrp_routes(run)
             if args.debug:
                 print(conn)
             x = np.linspace(0, args.length, 300)
@@ -199,7 +223,7 @@ if __name__ == '__main__':
                 print('Value: ' + str(r_arr[r_idx]))
 
             res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run), 'radius': r_arr[r_idx],
-                       'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr})
+                       'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr, 'route_arr': route_arr})
 
         shelve_out(args.file+'.dat', ['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
 
