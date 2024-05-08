@@ -95,6 +95,12 @@ def construct_graph(run):
                     g_nw.add_edge(i['node'], j['node'])
                 elif 'next_hop' in j:
                     g_nw.add_edge(i['node'], j['next_hop'])
+        elif 'engines' in i and 'routing_table' in i['engines'][0]:
+            for j in i['engines'][0]['routing_table']:
+                if 'node' in j:
+                    g_nw.add_edge(i['node'], j['node'])
+                elif 'next_hop' in j:
+                    g_nw.add_edge(i['node'], j['next_hop'])
     return g_nw
 
 
@@ -167,6 +173,7 @@ if __name__ == '__main__':
             if args.debug:
                 print(conn)
                 print(route_arr)
+                print(l_arr)
             x = np.linspace(0, args.length, 300)
             y = np.linspace(0, args.length, 300)
             # 100:  0.4119
