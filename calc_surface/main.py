@@ -95,7 +95,7 @@ def construct_graph(run):
                     g_nw.add_edge(i['node'], j['node'])
                 elif 'next_hop' in j:
                     g_nw.add_edge(i['node'], j['next_hop'])
-        elif 'engines' in i and 'routing_table' in i['engines'][0]:
+        elif 'engines' in i and len(i['engines']) > 0 and 'routing_table' in i['engines'][0]:
             for j in i['engines'][0]['routing_table']:
                 if 'node' in j:
                     g_nw.add_edge(i['node'], j['node'])
