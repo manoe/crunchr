@@ -104,8 +104,24 @@ def construct_graph(run):
     return g_nw
 
 
+def calc_length_ratio(run, node):
+    g_nw = construct_graph(run)
+    try:
+        path = nx.shortest_path(g_nw, source=node, target=0)
+        print('path: '+str(path))
+        c_length = 0
+        t_length = calc_distance(g_nw.nodes[node]['pos'], g_nw.nodes[0]['pos'])
+        for idx, i in enumerate(path[:-1]):
+            c_length += calc_distance(g_nw.nodes[path[idx]]['pos'], g_nw.nodes[path[idx+1]]['pos'])
+        return t_length / c_length
+    except nx.NodeNotFound:
+        pass
+    return -1
+
+
 def calc_distance(p1, p2):
     return np.linalg.norm(np.subtract(p1, p2))
+
 
 def calc_msr2mrp_routes(run):
     r_arr = []
@@ -113,6 +129,7 @@ def calc_msr2mrp_routes(run):
         if 'engines' in i and len(i['engines']) > 0 and 'routing_table' in i['engines'][0]:
             r_arr.append(len(i['engines'][0]['routing_table']))
     return r_arr
+
 
 def calc_efmrp_routes(run):
     r_arr = []
@@ -124,6 +141,15 @@ def calc_efmrp_routes(run):
                     r += 1
             r_arr.append(r)
     return r_arr
+
+
+def get_hop(run, node):
+    for i in run['loc_pdr']:
+        if i['node'] == node:
+            if 'engines' in i and len(i['engines']) > 0:
+                return i['engines'][0]['hop']
+            if 'hop' in i:
+                return i['hop']
 
 def calc_length(run):
     g_nw = construct_graph(run)
@@ -165,6 +191,8 @@ if __name__ == '__main__':
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
             l_arr = calc_length(run)
+            hop = get_hop(run, 45)
+            lratio = calc_length_ratio(run, 45)
             route_arr = []
             if run['protocol'] == 'msr2mrp':
                 route_arr = calc_msr2mrp_routes(run)
@@ -174,6 +202,8 @@ if __name__ == '__main__':
                 print(conn)
                 print(route_arr)
                 print(l_arr)
+                print(hop)
+                print(lratio)
             x = np.linspace(0, args.length, 300)
             y = np.linspace(0, args.length, 300)
             # 100:  0.4119
@@ -231,7 +261,7 @@ if __name__ == '__main__':
                 print('Value: ' + str(r_arr[r_idx]))
 
             res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run), 'radius': r_arr[r_idx],
-                       'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr, 'route_arr': route_arr})
+                       'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr, 'route_arr': route_arr, 'lratio': lratio, 'hop': hop})
 
         shelve_out(args.file+'.dat', ['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
 
