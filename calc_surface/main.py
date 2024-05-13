@@ -116,6 +116,8 @@ def calc_length_ratio(run, node):
         return t_length / c_length
     except nx.NodeNotFound:
         pass
+    except nx.exception.NetworkXNoPath:
+        pass
     return -1
 
 
@@ -177,16 +179,19 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--shelve', dest='shelve', action='store_true',
                         help='use the pattern blabla_px_py_babla.yaml')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='debug mode on (aka. printf)')
+    parser.add_argument('-S', '--seeds', dest='seeds', nargs='+', help='seeds')
     args = parser.parse_args()
 
     if args.shelve:
         shelve_in(args.file+'.dat')
     else:
-        print('Opening file: ' + args.file)
-        loader = yaml.safe_load(open(args.file, 'r'))
+        print('Creating file: ' + args.file+'.dat')
+#        loader = yaml.safe_load(open(args.file, 'r'))
         res = []
 
-        for run in loader['runs']:
+#        for run in loader['runs']:
+        for seed in args.seeds:
+            run = yaml.safe_load(open(args.file.replace('_pdr.yaml', '')+'_seed_'+str(seed)+'/pdr.yaml', 'r'))
 
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
