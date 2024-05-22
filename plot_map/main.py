@@ -86,10 +86,11 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--event', dest='event', action='store_true')
     parser.add_argument('-tx', '--title-x', dest='title_x', action='store', type=str, default='X')
     parser.add_argument('-ty', '--title-y', dest='title_y', action='store', type=str, default='Y')
-    parser.add_argument('-f', '--file', dest='file', help='use the pattern blabla_px_py_babla.yaml', required=True)
+    parser.add_argument('-f', '--file', dest='file', help='use the pattern blabla_px_py_babla.yaml', required=True, nargs='+')
     parser.add_argument('-t', '--tail', dest='tail', action='store', type=float, help='The tail threshold', default=0.0)
-    parser.add_argument('-p', '--plot', dest='plot', action='store', choices=['pdr', 'connr', 'dc_pdr', 'd_p'], help='Kind of the plot')
+    parser.add_argument('-p', '--plot', dest='plot', action='store', choices=['pdr', 'connr', 'dc_pdr', 'd_p', 'hist_dp','hist_p'], help='Kind of the plot')
     parser.add_argument('-s', '--shelve', dest='shelve', action='store_true', help='use the pattern blabla_px_py_babla.yaml')
+    parser.add_argument('-l', '--labels', dest='labels', type=str, nargs='+', help='legend on histogram')
     args = parser.parse_args()
 
     arr_pdr = []
@@ -98,9 +99,7 @@ if __name__ == '__main__':
     arr_d_p = []
     arr_reg = []
 
-    if args.shelve:
-        shelve_in(args.file)
-    else:
+    if not args.shelve:
         for idx_q, q in enumerate(args.param_x):
             y_pdr_arr = []
             y_connr_arr = []
@@ -121,6 +120,8 @@ if __name__ == '__main__':
                     d_p_arr[0] += arr[0]
                     d_p_arr[1] += arr[1]
                     reg_arr.append(np.linalg.lstsq(np.vstack([arr[0], np.ones(len(arr[0]))]).T, arr[1], rcond=None)[0])
+
+
                 print('d_p_arr len: '+str(len(d_p_arr)))
                 y_d_p_arr.append(d_p_arr)
                 y_reg_arr.append(reg_arr)
@@ -131,20 +132,80 @@ if __name__ == '__main__':
             arr_reg.append(y_reg_arr)
 
         shelve_out(args.file, ['arr_pdr', 'arr_connr', 'arr_dc_pdr', 'arr_d_p', 'arr_reg'])
+    else:
+        shelve_in(args.file[0])
 
+
+    if args.plot in ['hist_dp', 'hist_p']:
+        fig, axs = plt.subplots(nrows=len(args.param_x), ncols=len(args.param_y),
+                                figsize=(3 * len(args.param_y), 3 * len(args.param_x)))
+        plt.subplots_adjust(wspace=0.1, hspace=0.1)
+        if isinstance(axs, np.ndarray):
+            ax = axs.ravel()
+        else:
+            ax = axs
+        for f in args.file:
+            if args.shelve:
+                shelve_in(f)
+            for idx_q, q in enumerate(args.param_x):
+                for idx_p, p in enumerate(args.param_y):
+                    ax[len(args.param_y) * idx_q + idx_p].set_title(str(q) + ', ' + str(p))
+                    if 'hist_dp' == args.plot:
+                        counts, bins = np.histogram(arr_dc_pdr[idx_q][idx_p], bins=20, range=(0, np.array(arr_dc_pdr).max()))
+                    else:
+                        counts, bins = np.histogram(arr_pdr[idx_q][idx_p], bins=20, range=(0, np.array(arr_pdr).max()))
+                    ax[len(args.param_y) * idx_q + idx_p].stairs(counts, bins)
+
+                    # ax[len(args.param_y) * idx_q + idx_p].set_xlim((-1, -0.4))
+                    # ax[len(args.param_y) * idx_q + idx_p].set_ylim((0, 1))
+    #                ax[len(args.param_y) * idx_q + idx_p].set_xlim((min_x, max_x))
+    #                ax[len(args.param_y) * idx_q + idx_p].set_ylim((min_y, max_y))
+                    ax[len(args.param_y) * idx_q + idx_p].set_xlabel(args.title_x)
+                    ax[len(args.param_y) * idx_q + idx_p].set_ylabel(args.title_y)
+    #                ax[len(args.param_y) * idx_q + idx_p].plot(sum(x_coord) / len(x_coord), sum(y_coord) / len(y_coord),
+    #                                                           'ro', markersize=4)
+    #                print('Centroid: ' + str((sum(x_coord) / len(x_coord), sum(y_coord) / len(y_coord))))
+                    # reg=np.linalg.lstsq(arr_d_p[idx_q][idx_p][0], arr_d_p[idx_q][idx_p][1], rcond=None)[0]
+                    # reg = np.linalg.lstsq(np.vstack([arr_d_p[idx_q][idx_p][0], np.ones(len(arr_d_p[idx_q][idx_p][0]))]).T, arr_d_p[idx_q][idx_p][1], rcond=None)[0]
+
+        ax[len(args.param_y) * idx_q + idx_p].legend(args.labels)
+        plt.tight_layout()
+        plt.show()
+        exit(0)
     if 'd_p' == args.plot:
         fig, axs = plt.subplots(nrows=len(args.param_x), ncols=len(args.param_y), figsize=(3*len(args.param_y), 3*len(args.param_x)))
         plt.subplots_adjust(wspace=0.1, hspace=0.1)
-        ax = axs.ravel()
+        if isinstance(axs, np.ndarray):
+            ax = axs.ravel()
+        else:
+            ax = axs
         print(arr_d_p)
+        xs = [i[0] for x in arr_reg for y in x for i in y]
+        max_x = max(xs)
+        min_x = min(xs)
+        ys = [i[1] for x in arr_reg for y in x for i in y]
+        max_y = max(ys)
+        min_y = min(ys)
+
         for idx_q, q in enumerate(args.param_x):
             for idx_p, p in enumerate(args.param_y):
                 ax[len(args.param_y)*idx_q+idx_p].set_title(str(q)+', '+str(p))
-                ax[len(args.param_y)*idx_q+idx_p].scatter(arr_d_p[idx_q][idx_p][0], arr_d_p[idx_q][idx_p][1])
+#                ax[len(args.param_y)*idx_q+idx_p].scatter(arr_d_p[idx_q][idx_p][0], arr_d_p[idx_q][idx_p][1])
+                x_coord = [i[0] for i in arr_reg[idx_q][idx_p]]
+                y_coord = [i[1] for i in arr_reg[idx_q][idx_p]]
+                ax[len(args.param_y) * idx_q + idx_p].scatter(x_coord, y_coord, s=10, c=arr_dc_pdr[idx_q][idx_p])
+                #ax[len(args.param_y) * idx_q + idx_p].set_xlim((-1, -0.4))
+                #ax[len(args.param_y) * idx_q + idx_p].set_ylim((0, 1))
+                ax[len(args.param_y) * idx_q + idx_p].set_xlim((min_x, max_x))
+                ax[len(args.param_y) * idx_q + idx_p].set_ylim((min_y, max_y))
+                ax[len(args.param_y) * idx_q + idx_p].set_xlabel(args.title_x)
+                ax[len(args.param_y) * idx_q + idx_p].set_ylabel(args.title_y)
+                ax[len(args.param_y) * idx_q + idx_p].plot(sum(x_coord) / len(x_coord), sum(y_coord) / len(y_coord),'ro', markersize=4)
+                print('Centroid: '+str((sum(x_coord) / len(x_coord), sum(y_coord) / len(y_coord))))
                 #reg=np.linalg.lstsq(arr_d_p[idx_q][idx_p][0], arr_d_p[idx_q][idx_p][1], rcond=None)[0]
-                reg = np.linalg.lstsq(np.vstack([arr_d_p[idx_q][idx_p][0], np.ones(len(arr_d_p[idx_q][idx_p][0]))]).T, arr_d_p[idx_q][idx_p][1], rcond=None)[0]
+                #reg = np.linalg.lstsq(np.vstack([arr_d_p[idx_q][idx_p][0], np.ones(len(arr_d_p[idx_q][idx_p][0]))]).T, arr_d_p[idx_q][idx_p][1], rcond=None)[0]
+        plt.tight_layout()
         plt.show()
-        print(arr_d_p)
         exit(0)
 
     arr_pdr_tailed = [[tail(i, args.tail) for i in j] for j in arr_pdr]

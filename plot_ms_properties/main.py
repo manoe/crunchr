@@ -266,4 +266,4 @@ if __name__ == '__main__':
     corrm = np.corrcoef(bigarr2d)
     cols = ['PDR', 'E(D)', 'D(D)']
     df = pd.DataFrame(corrm, columns=cols, index=cols)
-    print(df)
+    print(df.to_string())

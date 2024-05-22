@@ -9,6 +9,7 @@ import sys
 import networkx as nx
 import matplotlib
 
+
 # https://matplotlib.org/stable/tutorials/colors/colors.html
 def role_to_color(role):
     if role == 'central':
@@ -21,6 +22,9 @@ def role_to_color(role):
         return 'tab:blue'
     return 'tab:grey'
 
+def calc_aspect_ratio(nw):
+    max_d = max(list(nx.get_node_attributes(nw, 'pos').values()), key=np.linalg.norm)
+    return max_d[1]/max_d[0]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_msr2mrp_network', description='Plot an MS-R2MRP network', epilog=':-(')
@@ -59,71 +63,23 @@ if __name__ == '__main__':
     node_color = [role_to_color(nx.get_node_attributes(g_nw, 'role')[i])
                   for i in nx.get_node_attributes(g_nw, 'role')]
 
-    node_size = [700 if nx.get_node_attributes(g_nw, 'master')[i] else 300
+    node_size = [300 if nx.get_node_attributes(g_nw, 'master')[i] else 200
                  for i in nx.get_node_attributes(g_nw, 'master')]
 
-    plt.subplot(212)
-    #plt.gca().set_title('(c)', loc='left')
-    plt.gca().set_axis_off()
-#    nx.draw(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size, with_labels=True,
-#            edgecolors='k', linewidths=1)
-
-    nodes = []
-    for u, v, e in g_nw.edges(data=True):
-        if 'pathid' in e and 11 in e['pathid']:
-            nodes.append(u)
-            nodes.append(v)
-    nodes = list(set(nodes))
-    sub_g_nw=g_nw.subgraph(nodes)
-
-    edge_labels = {}
-
-    for u, v, e in sub_g_nw.edges.data('pathid'):
-        if e:
-            edge_labels[(u, v)] = str(','.join(str(i) for i in e))
-
-    nx.draw_networkx_edge_labels(sub_g_nw, nx.get_node_attributes(sub_g_nw, 'pos'), edge_labels=edge_labels)
-    plt.gca().set_aspect('equal')
-
-    nx.draw(sub_g_nw)
-#    nx.draw(sub_g_nw, pos=nx.get_node_attributes(sub_g_nw, 'pos'), node_color=node_color, node_size=node_size, with_labels=True,
-#            edgecolors='k', linewidths=1)
-
-    plt.subplot(222)
-    plt.gca().set_title('(b)', loc='left')
-    plt.gca().set_axis_off()
-    node_size = [500 if nx.get_node_attributes(g_nw, 'master')[i] else 200
-                 for i in nx.get_node_attributes(g_nw, 'master')]
-    nx.draw_networkx_nodes(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size,
-                           edgecolors='k', linewidths=1)
-    nx.draw_networkx_labels(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), font_size=8)
-
-    edge_list = []
-
+    edge_lists = [[], [], []]
     for (v, w) in g_nw.edges():
-        if g_nw.get_edge_data(v, w)['secl']:
-            edge_list.append((v, w))
-
-    nx.draw_networkx_edges(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), edgelist=edge_list)
-
-    plt.gca().set_aspect('equal')
-
-    plt.subplot(221)
-    plt.gca().set_title('(a)', loc='left')
-    plt.gca().set_axis_off()
-
-    nx.draw_networkx_nodes(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size,
-                           edgecolors='k', linewidths=1)
-    nx.draw_networkx_labels(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), font_size=8)
-
-    edge_list = []
-    for (v, w) in g_nw.edges():
+        edge_lists[0].append((v, w))
         if not g_nw.get_edge_data(v, w)['secl']:
-            edge_list.append((v, w))
-
-    nx.draw_networkx_edges(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), edgelist=edge_list)
-
-    plt.gca().set_aspect('equal')
+            edge_lists[1].append((v, w))
+        else:
+            edge_lists[2].append((v, w))
+    fig, axs = plt.subplots(1, 3, figsize=(12, 12))
+    for idx, ax in enumerate(axs.flat):
+        ax.axis('off')
+        ax.set_box_aspect(calc_aspect_ratio(g_nw))
+        nx.draw_networkx_nodes(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), node_color=node_color, node_size=node_size,
+                           edgecolors='k', linewidths=1, ax=ax)
+        nx.draw_networkx_labels(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), font_size=8, ax=ax)
+        nx.draw_networkx_edges(g_nw, pos=nx.get_node_attributes(g_nw, 'pos'), edgelist=edge_lists[idx], ax=ax)
     plt.tight_layout()
-    plt.savefig('graph.pdf', transparent=True, bbox_inches='tight', pad_inches=0)
     plt.show()

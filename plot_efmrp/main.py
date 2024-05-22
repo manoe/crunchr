@@ -51,7 +51,7 @@ if __name__ == '__main__':
     plt.subplot(223)
     nx.draw(sec_graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
     plt.subplot(224)
-    nx.draw(route_graph, pos=nx.get_node_attributes(graph, 'pos'), with_labels=True)
+    nx.draw(route_graph,  with_labels=True) # pos=nx.get_node_attributes(graph, 'pos'),
 
     def update(num):
         ax = plt.subplot(224)

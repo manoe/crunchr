@@ -6,7 +6,7 @@ import argparse
 import matplotlib.pyplot as plt
 import sys
 import numpy as np
-
+import matplotlib.patches as mpatches
 
 def sum_list_prop(list_prop, attr_value=None):
     if attr_value is None:
@@ -51,11 +51,17 @@ if __name__ == '__main__':
     max_val = max([i.max() for i in sent_report_pkt.values()])
     min_val = min([i.min() for i in recv_report_pkt.values()])
 
+    colors = []
+
 #    fig, ax = plt.subplots(nrows=rows, ncols=columns)
     for idx, file in enumerate(files):
         fig, ax = plt.subplots(nrows=rows, ncols=columns, num=idx)
-        ax.plot(timestamp[file], np.transpose(np.array([sent_report_pkt[file], recv_report_pkt[file]])))
-        ax.legend(['Sent pkt', 'Recv pkt'])
+        line1 = ax.plot(timestamp[file], np.transpose(np.array([sent_report_pkt[file], recv_report_pkt[file]])))
+        ax.set_ylabel('Pkt/s')
+        ax.set_xlabel('Time (sec)')
+        colors = [i.get_color() for i in line1]
+
+#        ax.legend(['Sent pkt', 'Recv pkt'])
         plt.ylim(top=math.ceil(max_val/10.0)*10.0, bottom=math.floor(min_val))
         if args.event is not None:
             for i in args.event:
@@ -63,11 +69,20 @@ if __name__ == '__main__':
         plt.grid(True)
         if args.dead_node_count:
             ax2 = ax.twinx()
-            ax2.plot(timestamp[file], dead_node_count[file][0:-1], color='tab:cyan', label='Dead nodes')
+            line2 = ax2.plot(timestamp[file], dead_node_count[file][0:-1], color='tab:cyan', label='Dead nodes')
+            colors.append(line2[0].get_color())
+            ax2.set_ylabel('Node count')
         plt.title(file.split('/')[-1])
         plt.xlim([0, timestamp[file][-1]])
+        plt.ylim(bottom=0)
+ #   plt.figlegend([line2], ['Line2'])
 
-    plt.figlegend()
+    labels = ['Sent message', 'Received message', 'Dead node']
+    patches = []
+    for idx, i in enumerate(colors):
+        patches.append(mpatches.Patch(color=i, label=labels[idx]))
+    ax.legend(handles=patches)
+
     plt.tight_layout()
     plt.show()
 

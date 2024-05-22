@@ -39,6 +39,9 @@ def check_smrp_graph(graph, path_num):
         node_path_table[-1].update({i: False for i in range(1,path_num+1)})
         sub_graph = nx.MultiDiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['origin'] == node))
 
+        if node not in sub_graph:
+            continue
+
         for i in sub_graph.out_edges(node, data=True):
             #print('Edge: '+str(i))
             path_graph = nx.MultiDiGraph(((u, v, e) for u, v, e in sub_graph.edges(data=True) if e['prio'] == i[2]['prio']))
@@ -54,6 +57,7 @@ def check_smrp_graph(graph, path_num):
         path_count.append(len(paths))
     pdr_list = [attribute['pdr'] for node, attribute in graph.nodes(data=True) if attribute['sink'] is False]
     print('Conn ratio: '+str((len(nodes)-len(disconnected_nodes))/len(nodes))+' Path ratio: '+str(sum(path_count)/(len(nodes*path_num)))+' PDR: '+str(np.average(pdr_list)))
+    return [(len(nodes)-len(disconnected_nodes))/len(nodes), sum(path_count)/(len(nodes*path_num)), np.average(pdr_list)]
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='check_smrp', description='Check SMRP network', epilog=':-(')
@@ -67,11 +71,15 @@ if __name__ == '__main__':
         stream = open(args.filename, 'r')
 
     loader = yaml.safe_load(stream)
+
+    arr = []
     for run in loader['runs']:
         print('seed: '+str(run['seed']))
         graph = construct_graph(run)
-        check_smrp_graph(graph, args.path_num)
+        arr.append(check_smrp_graph(graph, args.path_num))
 
+    print(arr)
+    print(np.average(arr, axis=0))
     exit(0)
 
     pri_graph = nx.DiGraph(((u, v, e) for u, v, e in graph.edges(data=True) if e['prio'] == 1))

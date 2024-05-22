@@ -199,6 +199,7 @@ if __name__ == '__main__':
             l_arr = calc_length(run)
             hop = {i['node']: get_hop(run, i['node']) for i in run['pdr']}
             lratio = {i['node']: calc_length_ratio(run, i['node']) for i in run['pdr']}
+            pdr = gen_node_pdr(run)
             route_arr = []
             if run['protocol'] == 'msr2mrp':
                 route_arr = calc_msr2mrp_routes(run)
@@ -267,7 +268,7 @@ if __name__ == '__main__':
                 print('Value: ' + str(r_arr[r_idx]))
 
             res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run), 'radius': r_arr[r_idx],
-                       'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr, 'route_arr': route_arr, 'lratio': lratio, 'hop': hop})
+                       'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr, 'route_arr': route_arr, 'lratio': lratio, 'hop': hop, 'pdr': pdr})
 
         shelve_out(args.file+'.dat', ['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
 

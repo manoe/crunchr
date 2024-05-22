@@ -9,6 +9,7 @@ import pickle
 import shelve
 import os.path
 import copy
+from sklearn import preprocessing
 
 def shelve_out(filename, keys):
     my_shelf = shelve.open(filename, 'n')  # 'n' for new
@@ -52,7 +53,11 @@ def calc_avg_path_num(run):
     for node in run['loc_pdr']:
         if node['role'] == 'external' and 'routing_table' in node:
             pn_arr.append(len(node['routing_table']))
-    return np.average(pn_arr)
+    print('Avg. path num: '+str(pn_arr))
+    if len(pn_arr) > 0:
+        return np.average(pn_arr)
+    else:
+        return 0
 
 
 def calc_avg_pdr(run):
@@ -96,13 +101,19 @@ def calc_avg_nw_diameter(run):
     nw = construct_graph(run)
     outers = [node for node, in_degree in nw.in_degree() if in_degree == 0]
     diameters = []
+    sinks = [node[0] for node in nx.get_node_attributes(nw,'role').items() if node[1] == 'central']
     for i in outers:
-        try:
-            diameters.append(nx.shortest_path_length(nw, source=i, target=0))
-        except nx.exception.NetworkXNoPath as exp:
-            print(exp)
-
+        d = []
+        for s in sinks:
+            try:
+                d.append(nx.shortest_path_length(nw, source=i, target=s))
+            except nx.exception.NetworkXNoPath as exp:
+                print(exp)
+        if len(d) > 0:
+            diameters.append(min(d))
+    print('Diameters: ' + str(diameters))
     return np.average(diameters)
+
 
 
 def calc_conn_ratio(run):
@@ -163,7 +174,7 @@ def to_color(p, th=0.6):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_two_parameter_heatmap', description='Plot heatmaps, yeah', epilog=':-(')
     parser.add_argument('-px', '--param-x', dest='param_x', action='store', nargs='+', type=float)
-    parser.add_argument('-py', '--param-y', dest='param_y', action='store', nargs='+', type=str)
+    parser.add_argument('-py', '--param-y', dest='param_y', action='store', nargs='+', type=float)
     parser.add_argument('-x', '--exclude', dest='exclude', nargs='+', type=int, help='Exclude nodes from calculation')
     parser.add_argument('-i', '--include', dest='include', nargs='+', type=int, help='Include only these nodes in calculation')
     parser.add_argument('-d', '--no_dead', dest='no_dead', action='store_true')
@@ -192,7 +203,7 @@ if __name__ == '__main__':
 
         for idx_q, q in enumerate(args.param_x):
             for idx_p, p in enumerate(args.param_y):
-                filename = args.file.replace('px', str(q)).replace('py', str(p))
+                filename = args.file.replace('px', '{:.1f}'.format(q)).replace('py', '{:.3f}'.format(p))
                 print('Opening file: ' + filename)
                 loader = yaml.safe_load(open(filename, 'r'))
 
@@ -223,15 +234,18 @@ if __name__ == '__main__':
 
     # https://matplotlib.org/stable/gallery/images_contours_and_fields/image_annotated_heatmap.html
 
-    fig, axs = plt.subplots(nrows=2, ncols=2)
+    fig, axs = plt.subplots(nrows=2, ncols=2, figsize=(5, 10))
     plt.subplots_adjust(wspace=0.1, hspace=0.1)
 
     ax = axs.ravel()
 
     for idx, arr in enumerate([avg_pdr_arr, avg_apn_arr, avg_and_arr, avg_con_arr]):
     # Show all ticks and label them with the respective list entries
-        im = ax[idx].imshow(arr)
-        print(im.cmap(im.norm(np.unique(arr))))
+        ax[idx].imshow(arr)
+        #colours = im.cmap(im.norm(arr))
+        #print(colours)
+        image = (arr - np.min(arr)) / (np.max(arr) - np.min(arr))
+        #image = arr
         ax[idx].set_xticks(np.arange(len(args.param_x)), labels=args.param_x)
         ax[idx].set_yticks(np.arange(len(args.param_y)), labels=args.param_y)
         ax[idx].set_xlabel(r"{}".format(args.title_x))
@@ -256,14 +270,14 @@ if __name__ == '__main__':
         for i in range(len(args.param_y)):
             for j in range(len(args.param_x)):
                 if args.diff_p:
-                    print('color %: '+str(arr[i][j]/arr_max))
+                    print('color %: '+str(image[i][j]))
                     text = ax[idx].text(j, i, arr_txt[i][j],
-                                        ha="center", va="center", color=str(to_color(arr[i][j]/arr_max, 0.98)), fontsize='x-small')
+                                        ha="center", va="center", color=str(to_color(image[i][j], 0.3)), fontsize='small')
                 else:
                     text = ax[idx].text(j, i, "{:.2f}".format(arr_txt[i][j]),
-                                        ha="center", va="center", color=str(to_color(arr_txt[i][j]/arr_max)))
+                                        ha="center", va="center", color=str(to_color(arr_txt[i][j]/arr_max)), fontsize='xx-small')
     for idx, label in enumerate(['Average Network PDR', 'Average Path Number', 'Average Network Diameter', 'Average Connected Node Ratio']):
-        ax[idx].set_title(label)
+        ax[idx].set_title(label, fontsize='small')
     fig.tight_layout()
     plt.show()
 
