@@ -153,6 +153,7 @@ def get_hop(run, node):
             if 'hop' in i:
                 return i['hop']
 
+
 def calc_length(run):
     g_nw = construct_graph(run)
     return [calc_distance(g_nw.nodes[n1[0]]['pos'], g_nw.nodes[n1[1]]['pos']) for n1 in g_nw.edges() if n1[1]]
@@ -196,8 +197,8 @@ if __name__ == '__main__':
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
             l_arr = calc_length(run)
-            hop = get_hop(run, 45)
-            lratio = calc_length_ratio(run, 45)
+            hop = {i['node']: get_hop(run, i['node']) for i in run['pdr']}
+            lratio = {i['node']: calc_length_ratio(run, i['node']) for i in run['pdr']}
             route_arr = []
             if run['protocol'] == 'msr2mrp':
                 route_arr = calc_msr2mrp_routes(run)
