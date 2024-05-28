@@ -128,8 +128,8 @@ def calc_distance(p1, p2):
 def calc_msr2mrp_routes(run):
     r_arr = []
     for i in run['loc_pdr']:
-        if 'engines' in i and len(i['engines']) > 0 and 'routing_table' in i['engines'][0]:
-            r_arr.append(len(i['engines'][0]['routing_table']))
+        if 'engines' in i and len(i['engines']) > 0:
+            r_arr.append(sum([len(i['routing_table']) if 'routing_table' in i else 0 for i in i['engines']]))
     return r_arr
 
 
@@ -203,7 +203,7 @@ if __name__ == '__main__':
             route_arr = []
             if run['protocol'] == 'msr2mrp':
                 route_arr = calc_msr2mrp_routes(run)
-            elif run['protocol'] == 'efmrp':
+            elif run['protocol'] in ['efmrp', 'smrp']:
                 route_arr = calc_efmrp_routes(run)
             if args.debug:
                 print(conn)
@@ -227,7 +227,7 @@ if __name__ == '__main__':
             r_idx = len(r_arr) - 1
             r_idx_left = 0
             r_idx_right = len(r_arr) - 1
-            while True:
+            while False:
                 circles = [circle(r_arr[r_idx], loc[i][0], loc[i][1]) for i in loc.keys() if conn[i]]
                 c = [in_area((x,y)) for x, y in zip(np.ravel(xx), np.ravel(yy))]
                 area = sum(c) / len(c)
