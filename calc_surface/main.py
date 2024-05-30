@@ -126,22 +126,22 @@ def calc_distance(p1, p2):
 
 
 def calc_msr2mrp_routes(run):
-    r_arr = []
+    r_arr = {}
     for i in run['loc_pdr']:
         if 'engines' in i and len(i['engines']) > 0:
-            r_arr.append(sum([len(i['routing_table']) if 'routing_table' in i else 0 for i in i['engines']]))
+            r_arr[i['node']] = sum([len(i['routing_table']) if 'routing_table' in i else 0 for i in i['engines']])
     return r_arr
 
 
 def calc_efmrp_routes(run):
-    r_arr = []
+    r_arr = {}
     for i in run['loc_pdr']:
         r = 0
         if 'routing_table' in i:
             for j in i['routing_table']:
                 if j['origin'] == i['node'] and j['status'] == 'AVAILABLE':
                     r += 1
-            r_arr.append(r)
+            r_arr[i['node']] = r
     return r_arr
 
 
@@ -227,7 +227,7 @@ if __name__ == '__main__':
             r_idx = len(r_arr) - 1
             r_idx_left = 0
             r_idx_right = len(r_arr) - 1
-            while False:
+            while True:
                 circles = [circle(r_arr[r_idx], loc[i][0], loc[i][1]) for i in loc.keys() if conn[i]]
                 c = [in_area((x,y)) for x, y in zip(np.ravel(xx), np.ravel(yy))]
                 area = sum(c) / len(c)
