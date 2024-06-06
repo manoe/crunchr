@@ -159,6 +159,26 @@ def calc_length(run):
     return [calc_distance(g_nw.nodes[n1[0]]['pos'], g_nw.nodes[n1[1]]['pos']) for n1 in g_nw.edges() if n1[1]]
 
 
+def get_centrality(G):
+    G_Cb = nx.betweenness_centrality(G, weight='weight', normalized=True)
+    return sum([max(G_Cb.values())-i for i in G_Cb.values()])/(len(G)-1)
+
+
+def get_msa(G):
+    Gp = copy.deepcopy(G)
+    Gp.remove_edges_from([i for i in DG.edges() if i[0] == 0])
+    E = nx.algorithms.tree.Edmonds(Gp.reverse())
+    return E.find_optimum(preserve_attrs=True, kind='max').reverse()
+
+
+def pl_to_graph(pl):
+    DG = nx.DiGraph()
+    edges = [(i['node'], j['node'], 100 - j['PL']) for i in pl for j in i['neighbors'] if i['node'] != j['node']]
+    print(edges)
+    DG.add_weighted_edges_from(edges)
+    return DG
+
+
 # initializing plt of matplotlib
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='calc_surface', description='Calculate coverage surface, yeah', epilog=':-(')
@@ -193,10 +213,20 @@ if __name__ == '__main__':
 #        for run in loader['runs']:
         for seed in args.seeds:
             run = yaml.safe_load(open(args.file.replace('_pdr.yaml', '')+'_seed_'+str(seed)+'/pdr.yaml', 'r'))
+            pl = yaml.safe_load(open(args.file.replace('_pdr.yaml', '')+'_seed_'+str(seed)+'/avg_pl.yaml', 'r'))
+            pl_g = pl_to_graph(pl)
+
+            centrality = {}
+            centrality['pl'] = get_centrality(pl_g)
+            centrality['msa'] = get_centrality(get_msa(pl_g))
+            centrality['proto'] = get_centrality(construct_graph(run))
 
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
             l_arr = calc_length(run)
+
+
+
             hop = {i['node']: get_hop(run, i['node']) for i in run['pdr']}
             lratio = {i['node']: calc_length_ratio(run, i['node']) for i in run['pdr']}
             pdr = gen_node_pdr(run)
