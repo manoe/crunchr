@@ -222,11 +222,24 @@ if __name__ == '__main__':
             msa = get_msa(pl_g)
             pg = construct_graph(run)
 
-            centrality = {'pl': get_centrality(pl_g), 'msa': get_centrality(msa), 'proto': get_centrality(pg)}
-            assortativity = {'pl': get_assortativity(pl_g), 'msa': get_assortativity(msa),
-                             'proto': get_assortativity(pg)}
+            try:
+                centrality = {'pl': get_centrality(pl_g), 'msa': get_centrality(msa), 'proto': get_centrality(pg)}
+            except Exception as e:
+                centrality = {}
+                print('Centrality error: '+args.file+str(seed))
 
-            clust_coeff = {'pl': nx.clustering(pl_g, weight='weight'), 'msa': nx.clustering(msa, weight='weight'), 'proto': nx.clustering(pg)}
+            try:
+                assortativity = {'pl': get_assortativity(pl_g), 'msa': get_assortativity(msa),
+                                'proto': get_assortativity(pg)}
+            except Exception as e:
+                assortativity = {}
+                print('Assortativity error: '+args.file + str(seed))
+
+            try:
+                clust_coeff = {'pl': nx.clustering(pl_g, weight='weight'), 'msa': nx.clustering(msa, weight='weight'), 'proto': nx.clustering(pg)}
+            except Exception as e:
+                clust_coeff = {}
+                print('Clustering coeff error: ' + args.file + str(seed))
 
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
