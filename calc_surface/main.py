@@ -219,17 +219,14 @@ if __name__ == '__main__':
             pl = yaml.safe_load(open(args.file.replace('_pdr.yaml', '')+'_seed_'+str(seed)+'/avg_pl.yaml', 'r'))
             pl_g = pl_to_graph(pl)
 
-            centrality = {}
             msa = get_msa(pl_g)
             pg = construct_graph(run)
-            centrality['pl'] = get_centrality(pl_g)
-            centrality['msa'] = get_centrality(msa)
-            centrality['proto'] = get_centrality(pg)
 
-            assortativity = {}
-            assortativity['pl'] = get_assortativity(pl_g)
-            assortativity['msa'] = get_assortativity(msa)
-            assortativity['proto'] = get_assortativity(pg)
+            centrality = {'pl': get_centrality(pl_g), 'msa': get_centrality(msa), 'proto': get_centrality(pg)}
+            assortativity = {'pl': get_assortativity(pl_g), 'msa': get_assortativity(msa),
+                             'proto': get_assortativity(pg)}
+
+            clust_coeff = {'pl': nx.clustering(pl_g, weight='weight'), 'msa': nx.clustering(msa, weight='weight'), 'proto': nx.clustering(pg)}
 
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
