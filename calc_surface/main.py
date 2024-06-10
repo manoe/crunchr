@@ -7,7 +7,7 @@ import argparse
 import yaml
 import math
 import shelve as sh
-
+import copy
 
 def shelve_out(filename, keys):
     my_shelf = sh.open(filename, 'n')  # 'n' for new
@@ -108,7 +108,6 @@ def calc_length_ratio(run, node):
     g_nw = construct_graph(run)
     try:
         path = nx.shortest_path(g_nw, source=node, target=0)
-        print('path: '+str(path))
         c_length = 0
         t_length = calc_distance(g_nw.nodes[node]['pos'], g_nw.nodes[0]['pos'])
         for idx, i in enumerate(path[:-1]):
@@ -159,6 +158,10 @@ def calc_length(run):
     return [calc_distance(g_nw.nodes[n1[0]]['pos'], g_nw.nodes[n1[1]]['pos']) for n1 in g_nw.edges() if n1[1]]
 
 
+def get_assortativity(G):
+    return nx.degree_pearson_correlation_coefficient(G, x='in', y='in')
+
+
 def get_centrality(G):
     G_Cb = nx.betweenness_centrality(G, weight='weight', normalized=True)
     return sum([max(G_Cb.values())-i for i in G_Cb.values()])/(len(G)-1)
@@ -166,7 +169,7 @@ def get_centrality(G):
 
 def get_msa(G):
     Gp = copy.deepcopy(G)
-    Gp.remove_edges_from([i for i in DG.edges() if i[0] == 0])
+    Gp.remove_edges_from([i for i in Gp.edges() if i[0] == 0])
     E = nx.algorithms.tree.Edmonds(Gp.reverse())
     return E.find_optimum(preserve_attrs=True, kind='max').reverse()
 
@@ -174,7 +177,6 @@ def get_msa(G):
 def pl_to_graph(pl):
     DG = nx.DiGraph()
     edges = [(i['node'], j['node'], 100 - j['PL']) for i in pl for j in i['neighbors'] if i['node'] != j['node']]
-    print(edges)
     DG.add_weighted_edges_from(edges)
     return DG
 
@@ -201,6 +203,7 @@ if __name__ == '__main__':
                         help='use the pattern blabla_px_py_babla.yaml')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', help='debug mode on (aka. printf)')
     parser.add_argument('-S', '--seeds', dest='seeds', nargs='+', help='seeds')
+    parser.add_argument('-c', '--calc-radius', dest='calc_radius', action='store_true', help='Calculate radius (consumes lot of cpu, i.e. time)')
     args = parser.parse_args()
 
     if args.shelve:
@@ -217,9 +220,16 @@ if __name__ == '__main__':
             pl_g = pl_to_graph(pl)
 
             centrality = {}
+            msa = get_msa(pl_g)
+            pg = construct_graph(run)
             centrality['pl'] = get_centrality(pl_g)
-            centrality['msa'] = get_centrality(get_msa(pl_g))
-            centrality['proto'] = get_centrality(construct_graph(run))
+            centrality['msa'] = get_centrality(msa)
+            centrality['proto'] = get_centrality(pg)
+
+            assortativity = {}
+            assortativity['pl'] = get_assortativity(pl_g)
+            assortativity['msa'] = get_assortativity(msa)
+            assortativity['proto'] = get_assortativity(pg)
 
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
@@ -257,7 +267,7 @@ if __name__ == '__main__':
             r_idx = len(r_arr) - 1
             r_idx_left = 0
             r_idx_right = len(r_arr) - 1
-            while True:
+            while args.calc_radius:
                 circles = [circle(r_arr[r_idx], loc[i][0], loc[i][1]) for i in loc.keys() if conn[i]]
                 c = [in_area((x,y)) for x, y in zip(np.ravel(xx), np.ravel(yy))]
                 area = sum(c) / len(c)
@@ -297,8 +307,10 @@ if __name__ == '__main__':
                 print('Area:  ' + str(area))
                 print('Value: ' + str(r_arr[r_idx]))
 
-            res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run), 'radius': r_arr[r_idx],
-                       'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr, 'route_arr': route_arr, 'lratio': lratio, 'hop': hop, 'n-pdr': pdr})
+            res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run),
+                        'radius': r_arr[r_idx], 'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr,
+                        'route_arr': route_arr, 'lratio': lratio, 'hop': hop, 'n-pdr': pdr,
+                       'centrality': centrality, 'assortativity': assortativity})
 
         shelve_out(args.file+'.dat', ['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
 
