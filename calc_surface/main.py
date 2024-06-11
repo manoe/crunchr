@@ -320,7 +320,7 @@ if __name__ == '__main__':
             res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run),
                         'radius': r_arr[r_idx], 'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr,
                         'route_arr': route_arr, 'lratio': lratio, 'hop': hop, 'n-pdr': pdr,
-                       'centrality': centrality, 'assortativity': assortativity, 'clust_coef': clust_coeff})
+                       'centrality': centrality, 'assortativity': assortativity, 'clust_coeff': clust_coeff})
 
         shelve_out(args.file+'.dat', ['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
 
