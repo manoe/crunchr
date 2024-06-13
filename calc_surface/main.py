@@ -8,6 +8,8 @@ import yaml
 import math
 import shelve as sh
 import copy
+import algebraic_connectivity_directed as acd
+
 
 def shelve_out(filename, keys):
     my_shelf = sh.open(filename, 'n')  # 'n' for new
@@ -241,6 +243,22 @@ if __name__ == '__main__':
                 clust_coeff = {}
                 print('Clustering coeff error: ' + args.file + str(seed))
 
+
+            try:
+                alg_conn = {'pl': nx.algebraic_connectivity(nx.Graph(pl_g)), 'msa': nx.algebraic_connectivity(nx.Graph(msa)),
+                'proto': nx.algebraic_connectivity(nx.Graph(pg))}
+            except Exception as e:
+                alg_conn = {}
+                print('Algebraic conn error: '+args.file + str(seed))
+
+            try:
+                acd_conn = {'pl': acd.algebraic_connectivity_directed.algebraic_connectivity_directed(pl_g),
+                            'msa': acd.algebraic_connectivity_directed.algebraic_connectivity_directed(msa.reverse()),
+                            'proto': acd.algebraic_connectivity_directed.algebraic_connectivity_directed(pg) }
+            except Exception as e:
+                acd_conn = {}
+                print('Algebraic conn error: ' + args.file + str(seed))
+
             loc = gen_node_loc(run)
             conn = gen_node_conn(run)
             l_arr = calc_length(run)
@@ -320,7 +338,8 @@ if __name__ == '__main__':
             res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run),
                         'radius': r_arr[r_idx], 'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr,
                         'route_arr': route_arr, 'lratio': lratio, 'hop': hop, 'n-pdr': pdr,
-                       'centrality': centrality, 'assortativity': assortativity, 'clust_coeff': clust_coeff})
+                       'centrality': centrality, 'assortativity': assortativity, 'clust_coeff': clust_coeff, 'alg_conn': alg_conn,
+                        'acd_conn': acd_conn})
 
         shelve_out(args.file+'.dat', ['res', 'circles', 'area', 'c', 'xx', 'yy', 'args'])
 
