@@ -138,7 +138,7 @@ def calc_msr2mrp_rinv_pathid(run):
     rinv_arr = {}
     for i in run['loc_pdr']:
         if 'engines' in i and len(i['engines']) > 0 and 'external' in [e['role'] for e in i['engines']]:
-            rinv_arr[i['node']] = len({r['pathid'] for e in i['engines'] for r in e['rinv_table']})
+            rinv_arr[i['node']] = len({p['pathid'] for e in i['engines'] for r in e['rinv_table'] for p in r['pathid']})
     return rinv_arr
 
 
