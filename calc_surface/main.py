@@ -129,9 +129,17 @@ def calc_distance(p1, p2):
 def calc_msr2mrp_routes(run, only_external=False):
     r_arr = {}
     for i in run['loc_pdr']:
-        if 'engines' in i and len(i['engines']) > 0 and 'external' in [e['role'] for e in i['engines']]:
+        if 'engines' in i and len(i['engines']) > 0 and ('external' in [e['role'] for e in i['engines']] or not only_external):
             r_arr[i['node']] = sum([len(i['routing_table']) if 'routing_table' in i and (i['role'] == 'external' or not only_external) else 0 for i in i['engines']])
     return r_arr
+
+
+def calc_msr2mrp_rinv_pathid(run):
+    rinv_arr = {}
+    for i in run['loc_pdr']:
+        if 'engines' in i and len(i['engines']) > 0 and 'external' in [e['role'] for e in i['engines']]:
+            rinv_arr[i['node']] = len({r['pathid'] for e in i['engines'] for r in e['rinv_table']})
+    return rinv_arr
 
 
 def calc_efmrp_routes(run):
@@ -272,7 +280,8 @@ if __name__ == '__main__':
             ext_route_arr = []
             if run['protocol'] == 'msr2mrp':
                 route_arr = calc_msr2mrp_routes(run)
-                ext_route_arr = calc_msr2mrp_routes(run,True)
+                ext_route_arr = calc_msr2mrp_routes(run, True)
+                rinv_arr = calc_msr2mrp_rinv_pathid(run)
             elif run['protocol'] in ['efmrp', 'smrp']:
                 route_arr = calc_efmrp_routes(run)
             if args.debug:
@@ -339,7 +348,7 @@ if __name__ == '__main__':
 
             res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run),
                         'radius': r_arr[r_idx], 'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr,
-                        'route_arr': route_arr, 'ext_route_arr': ext_route_arr, 'lratio': lratio, 'hop': hop, 'n-pdr': pdr,
+                        'route_arr': route_arr, 'ext_route_arr': ext_route_arr, 'rinv_arr': rinv_arr, 'lratio': lratio, 'hop': hop, 'n-pdr': pdr,
                        'centrality': centrality, 'assortativity': assortativity, 'clust_coeff': clust_coeff, 'alg_conn': alg_conn,
                         'acd_conn': acd_conn})
 
