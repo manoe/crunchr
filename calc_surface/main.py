@@ -129,10 +129,9 @@ def calc_distance(p1, p2):
 def calc_msr2mrp_routes(run, only_external=False):
     r_arr = {}
     for i in run['loc_pdr']:
-        if 'engines' in i and len(i['engines']) > 0:
+        if 'engines' in i and len(i['engines']) > 0 and 'external' in [e['role'] for e in i['engines']]:
             r_arr[i['node']] = sum([len(i['routing_table']) if 'routing_table' in i and (i['role'] == 'external' or not only_external) else 0 for i in i['engines']])
     return r_arr
-
 
 
 def calc_efmrp_routes(run):
