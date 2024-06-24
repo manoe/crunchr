@@ -126,12 +126,13 @@ def calc_distance(p1, p2):
     return np.linalg.norm(np.subtract(p1, p2))
 
 
-def calc_msr2mrp_routes(run):
+def calc_msr2mrp_routes(run, only_external=False):
     r_arr = {}
     for i in run['loc_pdr']:
         if 'engines' in i and len(i['engines']) > 0:
-            r_arr[i['node']] = sum([len(i['routing_table']) if 'routing_table' in i else 0 for i in i['engines']])
+            r_arr[i['node']] = sum([len(i['routing_table']) if 'routing_table' in i and (i['role'] == 'external' or not only_external) else 0 for i in i['engines']])
     return r_arr
+
 
 
 def calc_efmrp_routes(run):
@@ -269,8 +270,10 @@ if __name__ == '__main__':
             lratio = {i['node']: calc_length_ratio(run, i['node']) for i in run['pdr']}
             pdr = gen_node_pdr(run)
             route_arr = []
+            ext_route_arr = []
             if run['protocol'] == 'msr2mrp':
                 route_arr = calc_msr2mrp_routes(run)
+                ext_route_arr = calc_msr2mrp_routes(run,True)
             elif run['protocol'] in ['efmrp', 'smrp']:
                 route_arr = calc_efmrp_routes(run)
             if args.debug:
@@ -337,7 +340,7 @@ if __name__ == '__main__':
 
             res.append({'seed': run['seed'], 'pdr': calc_pdr(run), 'dc-pdr': calc_dc_pdr(run),
                         'radius': r_arr[r_idx], 'l_avg': np.average(l_arr), 'l_std': np.std(l_arr), 'l_arr': l_arr,
-                        'route_arr': route_arr, 'lratio': lratio, 'hop': hop, 'n-pdr': pdr,
+                        'route_arr': route_arr, 'ext_route_arr': ext_route_arr, 'lratio': lratio, 'hop': hop, 'n-pdr': pdr,
                        'centrality': centrality, 'assortativity': assortativity, 'clust_coeff': clust_coeff, 'alg_conn': alg_conn,
                         'acd_conn': acd_conn})
 
