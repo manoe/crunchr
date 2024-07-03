@@ -90,7 +90,7 @@ def in_area(point):
 def construct_graph(run):
     g_nw = nx.DiGraph()
     for i in run['loc_pdr']:
-        g_nw.add_node(i['node'], pos=[i['x'], i['y']], state=i['state'])
+        g_nw.add_node(i['node'], pos=[i['x'], i['y']], state=i['state'], role=i['engines'][0]['role'])
         if 'routing_table' in i:
             for j in i['routing_table']:
                 if 'node' in j:
@@ -176,6 +176,12 @@ def get_centrality(G):
     G_Cb = nx.betweenness_centrality(G, weight='weight', normalized=True)
     return sum([max(G_Cb.values())-i for i in G_Cb.values()])/(len(G)-1)
 
+def get_routing_centrality(G):
+    roles = nx.get_node_attributes(G, 'role')
+    sources = [ i for i in roles.keys() if roles[i] == 'external']
+    targets = [ i for i in roles.keys() if roles[i] == 'central']
+    G_Cb = nx.betweenness_centrality_subset(G, sources=sources, targets=targets, normalized=True)
+    return sum([max(G_Cb.values()) - i for i in G_Cb.values()]) / (len(G) - 1)
 
 def get_msa(G):
     Gp = copy.deepcopy(G)
@@ -233,7 +239,7 @@ if __name__ == '__main__':
             pg = construct_graph(run)
 
             try:
-                centrality = {'pl': get_centrality(pl_g), 'msa': get_centrality(msa), 'proto': get_centrality(pg)}
+                centrality = {'pl': get_centrality(pl_g), 'msa': get_centrality(msa), 'proto': get_centrality(pg), 'rt': get_routing_centrality(pg)}
             except Exception as e:
                 centrality = {}
                 print('Centrality error: '+args.file+str(seed))
