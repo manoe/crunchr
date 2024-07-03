@@ -90,7 +90,12 @@ def in_area(point):
 def construct_graph(run):
     g_nw = nx.DiGraph()
     for i in run['loc_pdr']:
-        g_nw.add_node(i['node'], pos=[i['x'], i['y']], state=i['state'], role=i['engines'][0]['role'])
+        g_nw.add_node(i['node'], pos=[i['x'], i['y']], state=i['state'])
+        if 'engines' in i and len(i['engines']) > 0:
+            role = i['engines'][0]['role']
+        else:
+            role = 'none'
+        nx.set_node_attributes(g_nw, {i['node']: role}, 'role')
         if 'routing_table' in i:
             for j in i['routing_table']:
                 if 'node' in j:
