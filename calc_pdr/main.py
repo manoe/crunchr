@@ -7,7 +7,7 @@ import numpy as np
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='calc_pdr.py', description='Calculate PDR', epilog=':-(')
     parser.add_argument('-e', '--event', dest='event', action='store_true')
-    parser.add_argument('-n', '--node', dest='node', type='float')
+    parser.add_argument('-n', '--node', dest='node', type=float)
     parser.add_argument('-f', '--file', dest='file')
 
     args = parser.parse_args()
