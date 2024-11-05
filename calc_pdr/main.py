@@ -23,9 +23,9 @@ if __name__ == '__main__':
     else:
         data_source = loader
 
-    pkt_cat = 'report_pdr'
+    pkt_cat = 'report_pdr_new'
     if args.event:
-        pkt_cat = 'event_pdr'
+        pkt_cat = 'event_pdr_new'
 
     if args.node:
         pdr_arr = [i[pkt_cat] for i in data_source['pdr'] if pkt_cat in i and i['node'] == args.node]
