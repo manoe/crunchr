@@ -59,11 +59,21 @@ if __name__ == '__main__':
     fig, ax = plt.subplots(nrows=nrows, ncols=ncols)
     ax_list = ax.ravel()
 
-    for f_idx,filename in enumerate(args.filename):
-        table = pd.read_pickle(filename)
-        ax_list[f_idx].bar(table.index, table.mean(axis=1), yerr=table.std(axis=1), align='center', ecolor='black', capsize=10)
-        ax_list[f_idx].title.set_text(args.title[f_idx]+' - average hop/pkt')
+    pickle_list = [pd.read_pickle(filename) for filename in args.filename]
 
-    
+    for idx,table in enumerate(pickle_list):
+        ax_list[idx].bar(table.index, table.mean(axis=1), yerr=table.std(axis=1), align='center', ecolor='black', capsize=10)
+        ax_list[idx].title.set_text(args.title[idx]+' - average hop/pkt')
+        ax_list[idx].set_ylim(bottom=0)
+
+    max_x = max([max(table.index) for table in pickle_list])
+    max_y = max([max(table.mean(axis=1)) for table in pickle_list])
+
+    list(map(lambda x: x.set_xlim(right=max_x), ax_list))
+    list(map(lambda x: x.set_ylim(top=max_y), ax_list))
+
+
+    if len(args.filename) % 2 == 1:
+        ax_list[-1].axis('off')
     plt.tight_layout()
     plt.show()
