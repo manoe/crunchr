@@ -47,6 +47,7 @@ if __name__ == '__main__':
     parser.add_argument('filename', help='Pickle(s) to read', nargs='+')
     parser.add_argument('-c', '--columns', dest='columns', type=int, default=2, help='Number of columns in plot')
     parser.add_argument('-t', '--title', dest='title', type=str, default=['MSR2MRP'], help='Plot title(s)', nargs='+')
+    parser.add_argument('-g', '--global-title', dest='g_title', type=str)
     args = parser.parse_args()
 
     if len(args.filename) != len(args.title) and len(args.title) != 1:
@@ -75,5 +76,8 @@ if __name__ == '__main__':
 
     if len(args.filename) % 2 == 1:
         ax_list[-1].axis('off')
+
+    if 'g_title' in args:
+        fig.suptitle(args.g_title)
     plt.tight_layout()
     plt.show()
