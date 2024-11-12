@@ -1,7 +1,11 @@
 #!/bin/env python3
 
 import yaml
+import matplotlib.pyplot as plt
 import argparse
+import sys
+import math
+import numpy as np
 import pandas as pd
 
 
@@ -39,27 +43,15 @@ def get_hop_pkt_stat(x_bars):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='border_plot', description='Process MSR2MRP border node related stats', epilog=':-(')
-    parser.add_argument('filename', help='Input filenames', nargs='*')
+    parser = argparse.ArgumentParser(prog='plot_border', description='Plot MSR2MRP border node related pickleized stats', epilog=':-(')
+    parser.add_argument('filename', help='Pickle to read')
     parser.add_argument('-c', '--columns', dest='columns', type=int, default=2, help='Number of columns in plot')
-    parser.add_argument('-o', '--out', dest='out', type=str, default='out', help='Output filename')
     args = parser.parse_args()
 
-    means = []
-    for filename in args.filename:
-        stream = open(filename, 'r')
-        loader = yaml.safe_load(stream)
-        borders = get_borders(loader)
-        hop_pkt_list = get_hop_pkt_list(borders)
-        table = get_hop_pkt_stat(hop_pkt_list)
-        means.append({'hop': table.index, 'mean': table.mean(axis=1)})
-    max_hop = max([max(i['hop']) for i in means])
-    table = pd.DataFrame(index=list(range(1, max_hop + 1)), columns=range(len(means)))
-    for m_idx, m in enumerate(means):
-        for idx,i in enumerate(m['hop']):
-            table.at[i, m_idx] = m['mean'][i]
-    table.fillna(0)
+    table = pd.read_pickle(args.filename)
 
-    table.to_pickle(args.out+'.pickle', )
-
-
+    fig, ax = plt.subplots(1, 1)
+    ax.bar(table.index, table.mean(axis=1), yerr=table.std(axis=1), align='center', ecolor='black', capsize=10)
+    ax.title.set_text('Average hop/pkt')
+    plt.tight_layout()
+    plt.show()
