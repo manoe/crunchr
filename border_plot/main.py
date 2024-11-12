@@ -52,20 +52,24 @@ if __name__ == '__main__':
     if len(args.filename) > 1:
         means = []
         for filename in args.filename:
-            stream = open(args.filename[0], 'r')
+            stream = open(filename, 'r')
             loader = yaml.safe_load(stream)
             borders = get_borders(loader)
             hop_pkt_list = get_hop_pkt_list(borders)
             table = get_hop_pkt_stat(hop_pkt_list)
             means.append({'hop': table.index, 'mean': table.mean(axis=1)})
+        print(means)
         max_hop = max([max(i['hop']) for i in means])
-        table = pd.DataFrame(index=list(range(1, max_hop + 1)), columns=list(range(1, len(means) + 1)))
+        table = pd.DataFrame(index=list(range(1, max_hop + 1)), columns=range(len(means)))
         for m_idx, m in enumerate(means):
             for idx,i in enumerate(m['hop']):
                 table.at[i, m_idx] = m['mean'][i]
         table.fillna(0)
         fig, ax = plt.subplots(1, 1)
-        ax.bar(table.index, table.mean(axis=1))
+        print(table) # .std(axis=1)
+        ax.bar(table.index, table.mean(axis=1), yerr=table.std(axis=1), align='center', ecolor='black', capsize=10)
+#        ax.errorbar(table.index, table.mean(axis=1), table.std(axis=1), fmt='.', color='Black', elinewidth=2, capthick=10, errorevery=1, alpha=0.5, ms=4,
+#                     capsize=2)
         ax.title.set_text('Average hop/pkt')
         plt.tight_layout()
         plt.show()
