@@ -44,14 +44,24 @@ def get_hop_pkt_stat(x_bars):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_border', description='Plot MSR2MRP border node related pickleized stats', epilog=':-(')
-    parser.add_argument('filename', help='Pickle to read')
+    parser.add_argument('filename', help='Pickle(s) to read', nargs='+')
     parser.add_argument('-c', '--columns', dest='columns', type=int, default=2, help='Number of columns in plot')
+    parser.add_argument('-t', '--title', dest='title', type=str, default='MSR2MRP', help='Plot title(s)', nargs='+')
     args = parser.parse_args()
 
-    table = pd.read_pickle(args.filename)
+    if len(args.filename) != len(args.title) and len(args.title) != 1:
+        print('Filename and title must be the same amount')
+        exit(1)
 
-    fig, ax = plt.subplots(1, 1)
-    ax.bar(table.index, table.mean(axis=1), yerr=table.std(axis=1), align='center', ecolor='black', capsize=10)
-    ax.title.set_text('Average hop/pkt')
+    nrows = math.ceil(len(args.filename) / 2)
+    ncols = args.columns
+    fig, ax = plt.subplots(nrows=nrows, ncols=ncols)
+    ax_list = ax.ravel()
+
+    for f_idx,filename in args.filename:
+        table = pd.read_pickle(filename)
+        ax_list[f_idx].bar(table.index, table.mean(axis=1), yerr=table.std(axis=1), align='center', ecolor='black', capsize=10)
+        ax_list[f_idx].title.set_text(args.title[f_idx]+' - average hop/pkt')
+
     plt.tight_layout()
     plt.show()

@@ -60,6 +60,6 @@ if __name__ == '__main__':
             table.at[i, m_idx] = m['mean'][i]
     table.fillna(0)
 
-    table.to_pickle(args.out+'.pickle', )
+    table.to_pickle(args.out+'.pickle')
 
 
