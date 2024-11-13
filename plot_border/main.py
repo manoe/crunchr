@@ -48,11 +48,18 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--columns', dest='columns', type=int, default=2, help='Number of columns in plot')
     parser.add_argument('-t', '--title', dest='title', type=str, default=['MSR2MRP'], help='Plot title(s)', nargs='+')
     parser.add_argument('-g', '--global-title', dest='g_title', type=str)
+    parser.add_argument('-p', '--plot', dest='plot', choices=['pkt', 'bhist', 'rhist'], default='pkt', help='Plot type')
+    parser.add_argument('-b', '--border-num', dest='bnum', type=int, help='Plot type')
     args = parser.parse_args()
 
     if len(args.filename) != len(args.title) and len(args.title) != 1:
         print(len(args.title))
         print('Filename and title must be the same amount')
+        exit(1)
+
+
+    if args.plot == 'rhist' and 'bnum' not in args:
+        print('No bnum defined for rhist')
         exit(1)
 
     nrows = math.ceil(len(args.filename) / 2)
@@ -63,15 +70,22 @@ if __name__ == '__main__':
     pickle_list = [pd.read_pickle(filename) for filename in args.filename]
 
     for idx,table in enumerate(pickle_list):
-        ax_list[idx].bar(table.index, table.mean(axis=1), yerr=table.std(axis=1), align='center', ecolor='black', capsize=10)
-        ax_list[idx].title.set_text(args.title[idx]+' - average hop/pkt')
-        ax_list[idx].set_ylim(bottom=0)
-
-    max_x = max([max(table.index) for table in pickle_list])
-    max_y = max([max(table.mean(axis=1)) for table in pickle_list])
-
-    list(map(lambda x: x.set_xlim(right=max_x), ax_list))
-    list(map(lambda x: x.set_ylim(top=max_y), ax_list))
+        match args.plot:
+            case 'pkt':
+                ax_list[idx].bar(table.index, table.mean(axis=1), yerr=table.std(axis=1), align='center', ecolor='black', capsize=10)
+                ax_list[idx].title.set_text(args.title[idx]+' - average hop/pkt')
+                ax_list[idx].set_ylim(bottom=0)
+            case 'bhist':
+                counts, bins = np.histogram(pickle_list)
+                ax_list[idx].hist(bins[:-1], bins, weights=counts)
+                ax_list[idx].title.set_text(args.title[idx] + ' - border histogram')
+            case 'rhist':
+                [ i for i in table]
+    if args.plot == 'pkt':
+        max_x = max([max(table.index) for table in pickle_list])
+        max_y = max([max(table.mean(axis=1)) for table in pickle_list])
+        list(map(lambda x: x.set_xlim(right=max_x), ax_list))
+        list(map(lambda x: x.set_ylim(top=max_y), ax_list))
 
 
     if len(args.filename) % 2 == 1:
