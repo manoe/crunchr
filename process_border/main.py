@@ -1,4 +1,5 @@
 #!/bin/env python3
+from operator import truediv
 
 import yaml
 import argparse
@@ -35,11 +36,15 @@ def get_rt_num(top):
     data=get_data_from_loader(top)
     rt = []
     for i in data:
+        add_flag = False
         rt_num = 0
         for j in i['engines']:
-            if j['role'] == 'external':
+            if j['role'] == 'external' and 'routing_table' in j:
                 rt_num+= len(j['routing_table'])
-        rt.append(rt_num)
+            if j['role'] == 'internal':
+                add_flag=True
+        if add_flag:
+            rt.append(rt_num)
     return rt
 
 
@@ -93,5 +98,3 @@ if __name__ == '__main__':
     pd.Series(borders).to_pickle(args.out+'_borders.pickle')
     pd.Series(rt).to_pickle(args.out + '_rt.pickle')
     table.to_pickle(args.out+'_border_pkt.pickle')
-
-    print(pd.read_pickle(args.out+'_borders.pickle'))
