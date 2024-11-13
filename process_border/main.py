@@ -5,11 +5,14 @@ import argparse
 import pandas as pd
 
 
-def get_borders(top):
+def get_data_from_loader(top):
     if 'runs' in top:
-        data = top['runs'][0]['loc_pdr']
+        return top['runs'][0]['loc_pdr']
     else:
-        data = top
+        return top
+
+def get_borders(top):
+    data=get_data_from_loader(top)
     borders = []
     for i in data:
         for j in i['engines']:
@@ -19,16 +22,25 @@ def get_borders(top):
 
 
 def get_borders_only(top):
-    if 'runs' in top:
-        data = top['runs'][0]['loc_pdr']
-    else:
-        data = top
+    data=get_data_from_loader(top)
     borders = []
     for i in data:
         for j in i['engines']:
             if j['role'] == 'border':
                 borders.append(i['node'])
     return borders
+
+
+def get_rt_num(top):
+    data=get_data_from_loader(top)
+    rt = []
+    for i in data:
+        rt_num = 0
+        for j in i['engines']:
+            if j['role'] == 'external':
+                rt_num+= len(j['routing_table'])
+        rt.append(rt_num)
+    return rt
 
 
 def get_hop_pkt_list(borders):
@@ -59,6 +71,7 @@ if __name__ == '__main__':
 
     means = []
     borders = []
+    rt = []
     for filename in args.filename:
         stream = open(filename, 'r')
         loader = yaml.safe_load(stream)
@@ -66,7 +79,10 @@ if __name__ == '__main__':
         hop_pkt_list = get_hop_pkt_list(border_list)
         table = get_hop_pkt_stat(hop_pkt_list)
         means.append({'hop': table.index, 'mean': table.mean(axis=1)})
-        borders.append(len(get_borders_only(loader)))
+        border_num=len(get_borders_only(loader))
+        borders.append(border_num)
+        rt.append({border_num: get_rt_num(loader)})
+
     max_hop = max([max(i['hop']) for i in means])
     table = pd.DataFrame(index=list(range(1, max_hop + 1)), columns=range(len(means)))
     for m_idx, m in enumerate(means):
@@ -75,6 +91,7 @@ if __name__ == '__main__':
     table.fillna(0)
 
     pd.Series(borders).to_pickle(args.out+'_borders.pickle')
+    pd.Series(rt).to_pickle(args.out + '_rt.pickle')
     table.to_pickle(args.out+'_border_pkt.pickle')
 
     print(pd.read_pickle(args.out+'_borders.pickle'))
