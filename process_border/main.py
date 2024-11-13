@@ -41,7 +41,7 @@ def get_rt_num(top):
         for j in i['engines']:
             if j['role'] == 'external' and 'routing_table' in j:
                 rt_num+= len(j['routing_table'])
-            if j['role'] == 'internal':
+            if j['role'] == 'external':
                 add_flag=True
         if add_flag:
             rt.append(rt_num)
