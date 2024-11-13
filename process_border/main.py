@@ -18,6 +18,19 @@ def get_borders(top):
     return borders
 
 
+def get_borders_only(top):
+    if 'runs' in top:
+        data = top['runs'][0]['loc_pdr']
+    else:
+        data = top
+    borders = []
+    for i in data:
+        for j in i['engines']:
+            if j['role'] == 'border':
+                borders.append(i['node'])
+    return borders
+
+
 def get_hop_pkt_list(borders):
     x_bars = []
     for b_idx, border in enumerate(borders):
@@ -41,18 +54,19 @@ def get_hop_pkt_stat(x_bars):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='border_plot', description='Process MSR2MRP border node related stats', epilog=':-(')
     parser.add_argument('filename', help='Input filenames', nargs='*')
-    parser.add_argument('-c', '--columns', dest='columns', type=int, default=2, help='Number of columns in plot')
     parser.add_argument('-o', '--out', dest='out', type=str, default='out', help='Output filename')
     args = parser.parse_args()
 
     means = []
+    borders = []
     for filename in args.filename:
         stream = open(filename, 'r')
         loader = yaml.safe_load(stream)
-        borders = get_borders(loader)
-        hop_pkt_list = get_hop_pkt_list(borders)
+        border_list = get_borders(loader)
+        hop_pkt_list = get_hop_pkt_list(border_list)
         table = get_hop_pkt_stat(hop_pkt_list)
         means.append({'hop': table.index, 'mean': table.mean(axis=1)})
+        borders.append(len(get_borders_only(loader)))
     max_hop = max([max(i['hop']) for i in means])
     table = pd.DataFrame(index=list(range(1, max_hop + 1)), columns=range(len(means)))
     for m_idx, m in enumerate(means):
@@ -60,6 +74,7 @@ if __name__ == '__main__':
             table.at[i, m_idx] = m['mean'][i]
     table.fillna(0)
 
-    table.to_pickle(args.out+'.pickle')
+    pd.Series(borders).to_pickle(args.out+'_borders.pickle')
+    table.to_pickle(args.out+'_border_pkt.pickle')
 
-
+    print(pd.read_pickle(args.out+'_borders.pickle'))
