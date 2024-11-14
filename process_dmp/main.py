@@ -4,6 +4,7 @@ import yaml
 import logging
 logger = logging.getLogger(__name__)
 import itertools as it
+import pandas as pd
 
 def construct_graph(run):
     nw = nx.MultiDiGraph()
@@ -29,7 +30,7 @@ def construct_graph(run):
 
 
 def get_nodes_based_on_role(nw, role):
-    roles = nx.get_node_attributes(nw, name=role)
+    roles = nx.get_node_attributes(nw, name='roles')
     out_nodes = set()
     for n in roles.keys():
         for r in roles[n]:
@@ -47,7 +48,7 @@ def filter_graph(nw, filter):
                 if f == r[1]:
                     logger.debug(str(node)+' removed due to '+str(r)+' in filter '+str(f))
                     rm_nodes.append(node)
-    print(rm_nodes)
+    logger.debug('Nodes to remove: '+str(rm_nodes))
     nw.remove_nodes_from(rm_nodes)
     return nw
 
@@ -58,14 +59,16 @@ def get_nodes_patids(nw,node):
         pathids+=e[2]['pathid']
     return pathids
 
+
 def check_disjointness(nw, node):
     nodes = []
+
     for p in get_nodes_patids(nw,node):
         f_nw = filter_edges(nw,'pathid',p)
         nodes.append(list(nx.descendants(f_nw,node)))
 
-    for c in it.combinations(nodes,2):
-        print(set(c[0]) & set(c[1]))
+    return [set(c[0]) & set(c[1]) for c in it.combinations(nodes,2) ]
+
 
 def get_data_from_loader(top):
     if 'runs' in top:
@@ -90,16 +93,16 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--out', dest='out', type=str, default='out', help='Output filename')
     args = parser.parse_args()
 
-    stream = open(args.filename[0], 'r')
-    loader = yaml.safe_load(stream)
+    results = []
 
-    data = get_data_from_loader(loader)
-    nw = construct_graph(data)
-    f_nw = filter_graph(nw, filter=['internal','central'])
+    for filename in args.filename:
+        stream = open(filename, 'r')
+        loader = yaml.safe_load(stream)
 
-    ext_nodes = get_nodes_based_on_role(nw,'external')
-    borders = get_nodes_based_on_role(nw,'border')
+        data = get_data_from_loader(loader)
+        nw = construct_graph(data)
+        f_nw = filter_graph(nw, filter=['internal','central'])
 
-    n_nw = filter_edges(nw, 'pathid', 62)
-
-
+        dis_arr = [ check_disjointness(f_nw, n) for n in get_nodes_based_on_role(nw, 'external') ]
+        dis_rat_arr = [ len([j for j in i if len(j) > 0])/len(i) for i in dis_arr ]
+        results.append(len([i for i in dis_rat_arr if i == 1])/len(dis_rat_arr))
