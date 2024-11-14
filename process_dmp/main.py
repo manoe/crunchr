@@ -108,3 +108,4 @@ if __name__ == '__main__':
         results.append(len([i for i in dis_rat_arr if i == 1])/len(dis_rat_arr))
 
     pd.Series(results).to_pickle(args.out+'.pickle')
+
