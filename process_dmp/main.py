@@ -106,3 +106,5 @@ if __name__ == '__main__':
         dis_arr = [ check_disjointness(f_nw, n) for n in get_nodes_based_on_role(nw, 'external') ]
         dis_rat_arr = [ len([j for j in i if len(j) > 0])/len(i) for i in dis_arr ]
         results.append(len([i for i in dis_rat_arr if i == 1])/len(dis_rat_arr))
+
+    pd.Series(results).to_pickle(args.out+'.pickle')
