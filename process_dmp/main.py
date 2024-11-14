@@ -3,7 +3,7 @@ import argparse
 import yaml
 import logging
 logger = logging.getLogger(__name__)
-
+import itertools as it
 
 def construct_graph(run):
     nw = nx.MultiDiGraph()
@@ -52,9 +52,20 @@ def filter_graph(nw, filter):
     return nw
 
 
-#def check_disjointness(nw, node, borders):
+def get_nodes_patids(nw,node):
+    pathids = []
+    for e in nw.out_edges([node], data=True):
+        pathids+=e[2]['pathid']
+    return pathids
 
+def check_disjointness(nw, node):
+    nodes = []
+    for p in get_nodes_patids(nw,node):
+        f_nw = filter_edges(nw,'pathid',p)
+        nodes.append(list(nx.descendants(f_nw,node)))
 
+    for c in it.combinations(nodes,2):
+        print(set(c[0]) & set(c[1]))
 
 def get_data_from_loader(top):
     if 'runs' in top:
@@ -69,6 +80,7 @@ def filter_edges(nw, property, value):
     for edge in nw.edges(data=True):
         if value in edge[2][property]:
             f_nw.add_edges_from([edge])
+    f_nw.remove_nodes_from(list(nx.isolates(f_nw)))
     return f_nw
 
 
@@ -88,6 +100,6 @@ if __name__ == '__main__':
     ext_nodes = get_nodes_based_on_role(nw,'external')
     borders = get_nodes_based_on_role(nw,'border')
 
-    filter_edges(nw, 'pathid', 62)
+    n_nw = filter_edges(nw, 'pathid', 62)
 
 
