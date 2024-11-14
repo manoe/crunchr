@@ -1,6 +1,8 @@
 import networkx as nx
 import argparse
 import yaml
+import logging
+logger = logging.getLogger(__name__)
 
 def construct_graph(run):
     nw = nx.MultiDiGraph()
@@ -26,12 +28,18 @@ def construct_graph(run):
 
 
 def filter_graph(nw, filter):
-    roles = nx.get_node_attributes(nw, name='role')
+    roles = nx.get_node_attributes(nw, name='roles')
+
+    rm_nodes = []
+
     for node in nw.nodes():
         for f in filter:
-            if f in roles[node]:
-                nw.remove_node(node)
-
+            for r in roles[node]:
+                if f == r[1]:
+                    logger.debug(str(node)+' removed due to '+str(r)+' in filter '+str(f))
+                    rm_nodes.append(node)
+    print(rm_nodes)
+    nw.remove_nodes_from(rm_nodes)
 
 def get_data_from_loader(top):
     if 'runs' in top:
@@ -52,4 +60,5 @@ if __name__ == '__main__':
     data = get_data_from_loader(loader)
 
     nw = construct_graph(data)
-    nf_f = filter_graph(nw, filter=['internal','sink'])
+
+    nf_f = filter_graph(nw, filter=['internal','central'])
