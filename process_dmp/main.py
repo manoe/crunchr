@@ -4,6 +4,7 @@ import yaml
 import logging
 logger = logging.getLogger(__name__)
 
+
 def construct_graph(run):
     nw = nx.MultiDiGraph()
     for node in run:
@@ -27,14 +28,14 @@ def construct_graph(run):
     return nw
 
 
-def get_external_nodes(nw):
-    roles = nx.get_node_attributes(nw, name='roles')
-    ext_nodes = set()
+def get_nodes_based_on_role(nw, role):
+    roles = nx.get_node_attributes(nw, name=role)
+    out_nodes = set()
     for n in roles.keys():
         for r in roles[n]:
-            if r[1] == 'external':
-                ext_nodes.add(n)
-    return list(ext_nodes)
+            if r[1] == role:
+                out_nodes.add(n)
+    return list(out_nodes)
 
 
 def filter_graph(nw, filter):
@@ -51,11 +52,24 @@ def filter_graph(nw, filter):
     return nw
 
 
+#def check_disjointness(nw, node, borders):
+
+
+
 def get_data_from_loader(top):
     if 'runs' in top:
         return top['runs'][0]['loc_pdr']
     else:
         return top
+
+
+def filter_edges(nw, property, value):
+    f_nw = nx.MultiDiGraph(nw)
+    f_nw.remove_edges_from(list(f_nw.edges()))
+    for edge in nw.edges(data=True):
+        if value in edge[2][property]:
+            f_nw.add_edges_from([edge])
+    return f_nw
 
 
 if __name__ == '__main__':
@@ -71,6 +85,9 @@ if __name__ == '__main__':
     nw = construct_graph(data)
     f_nw = filter_graph(nw, filter=['internal','central'])
 
-    for i get_external_nodes(nw):
+    ext_nodes = get_nodes_based_on_role(nw,'external')
+    borders = get_nodes_based_on_role(nw,'border')
+
+    filter_edges(nw, 'pathid', 62)
 
 
