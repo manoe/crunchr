@@ -27,11 +27,19 @@ def construct_graph(run):
     return nw
 
 
+def get_external_nodes(nw):
+    roles = nx.get_node_attributes(nw, name='roles')
+    ext_nodes = set()
+    for n in roles.keys():
+        for r in roles[n]:
+            if r[1] == 'external':
+                ext_nodes.add(n)
+    return list(ext_nodes)
+
+
 def filter_graph(nw, filter):
     roles = nx.get_node_attributes(nw, name='roles')
-
     rm_nodes = []
-
     for node in nw.nodes():
         for f in filter:
             for r in roles[node]:
@@ -40,6 +48,8 @@ def filter_graph(nw, filter):
                     rm_nodes.append(node)
     print(rm_nodes)
     nw.remove_nodes_from(rm_nodes)
+    return nw
+
 
 def get_data_from_loader(top):
     if 'runs' in top:
@@ -58,7 +68,9 @@ if __name__ == '__main__':
     loader = yaml.safe_load(stream)
 
     data = get_data_from_loader(loader)
-
     nw = construct_graph(data)
+    f_nw = filter_graph(nw, filter=['internal','central'])
 
-    nf_f = filter_graph(nw, filter=['internal','central'])
+    for i get_external_nodes(nw):
+
+
