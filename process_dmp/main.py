@@ -99,6 +99,7 @@ if __name__ == '__main__':
 
     for filename in args.filename:
         stream = open(filename, 'r')
+        print(filename)
         loader = yaml.safe_load(stream)
 
         data = get_data_from_loader(loader)
