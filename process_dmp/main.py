@@ -58,7 +58,8 @@ def filter_graph(nw, filter):
 def get_nodes_patids(nw,node):
     pathids = []
     for e in nw.out_edges([node], data=True):
-        pathids+=e[2]['pathid']
+        if 'pathid' in e[2]:
+            pathids+=e[2]['pathid']
     return pathids
 
 
