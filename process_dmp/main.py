@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 import itertools as it
 import pandas as pd
 
+
 def construct_graph(run):
     nw = nx.MultiDiGraph()
     for node in run:
@@ -60,6 +61,8 @@ def get_nodes_patids(nw,node):
     for e in nw.out_edges([node], data=True):
         if 'pathid' in e[2]:
             pathids+=e[2]['pathid']
+        else:
+            logger.debug('Edge without pathid: ' + str(e))
     return pathids
 
 
