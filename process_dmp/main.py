@@ -68,7 +68,6 @@ def check_disjointness(nw, node):
     for p in get_nodes_patids(nw,node):
         f_nw = filter_edges(nw,'pathid',p)
         nodes.append(list(nx.descendants(f_nw,node)))
-
     return [set(c[0]) & set(c[1]) for c in it.combinations(nodes,2) ]
 
 
@@ -97,9 +96,9 @@ if __name__ == '__main__':
 
     results = []
 
-    for filename in args.filename:
+    for idx,filename in enumerate(args.filename):
         stream = open(filename, 'r')
-        print(filename)
+        print(str(filename)+' '+str(idx+1)+'/'+str(len(args.filename)))
         loader = yaml.safe_load(stream)
 
         data = get_data_from_loader(loader)
@@ -107,8 +106,9 @@ if __name__ == '__main__':
         f_nw = filter_graph(nw, filter=['internal','central'])
 
         dis_arr = [ check_disjointness(f_nw, n) for n in get_nodes_based_on_role(nw, 'external') ]
-        dis_rat_arr = [ len([j for j in i if len(j) > 0])/len(i) for i in dis_arr ]
+        dis_rat_arr = [ len([j for j in i if len(j) > 0])/len(i) if len(i) > 0 else 1 for i in dis_arr]
         results.append(len([i for i in dis_rat_arr if i == 1])/len(dis_rat_arr))
+        # Single path nodes!!!
 
-    pd.Series(results).to_pickle(args.out+'.pickle')
+    pd.Series(results).to_pickle(args+'.pickle')
 
