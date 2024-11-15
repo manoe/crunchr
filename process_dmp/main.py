@@ -78,11 +78,14 @@ def get_data_from_loader(top):
         return top
 
 
-def filter_edges(nw, property, value):
+def filter_edges(nw, prop, value):
     f_nw = nx.MultiDiGraph(nw)
     f_nw.remove_edges_from(list(f_nw.edges()))
     for edge in nw.edges(data=True):
-        if value in edge[2][property]:
+        if prop not in edge[2]:
+            logger.debug('Property '+str(prop)+' not present in '+str(edge[2]))
+            print('Property '+str(prop)+' not present in '+str(edge[2]))
+        elif value in edge[2][prop]:
             f_nw.add_edges_from([edge])
     f_nw.remove_nodes_from(list(nx.isolates(f_nw)))
     return f_nw
@@ -110,5 +113,5 @@ if __name__ == '__main__':
         results.append(len([i for i in dis_rat_arr if i == 1])/len(dis_rat_arr))
         # Single path nodes!!!
 
-    pd.Series(results).to_pickle(args+'.pickle')
+    pd.Series(results).to_pickle(args.out+'.pickle')
 
