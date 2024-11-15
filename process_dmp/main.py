@@ -83,8 +83,7 @@ def filter_edges(nw, prop, value):
     f_nw.remove_edges_from(list(f_nw.edges()))
     for edge in nw.edges(data=True):
         if prop not in edge[2]:
-            logger.debug('Property '+str(prop)+' not present in '+str(edge[2]))
-            print('Property '+str(prop)+' not present in '+str(edge[2]))
+            logger.debug('Property '+str(prop)+' not present in '+str(edge))
         elif value in edge[2][prop]:
             f_nw.add_edges_from([edge])
     f_nw.remove_nodes_from(list(nx.isolates(f_nw)))
