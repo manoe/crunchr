@@ -7,7 +7,7 @@ import logging
 logger = logging.getLogger(__name__)
 import itertools as it
 import pandas as pd
-
+import sys
 
 def construct_graph(run):
     nw = nx.MultiDiGraph()
@@ -18,13 +18,18 @@ def construct_graph(run):
             for engine in node['engines']:
                 if 'routing_table' in engine:
                     for re in engine['routing_table']:
+                        pathid = [pe['pathid'] for pe in re['pathid']]
                         if engine['role'] == 'external':
-                            pathid = [pe['pathid'] for pe in re['pathid']]
                             secl = False
                             for k in re['pathid']:
                                 if k['secl']:
                                     secl = True
                             nw.add_edge(node['node'], re['node'], pathid=pathid, secl=secl, engine=engine['engine'])
+                        elif engine['role'] == 'border':
+                            if re['node'] in pathid:
+                                nw.add_edge(node['node'], re['node'], pathid=pathid, engine=engine['engine'])
+                            else:
+                                nw.add_edge(node['node'], re['node'], secl=re['secl'], engine=engine['engine'])
                         else:
                             nw.add_edge(node['node'], re['node'], secl=re['secl'], engine=engine['engine'])
                 roles.append((engine['engine'], engine['role']))
@@ -95,10 +100,15 @@ def filter_edges(nw, prop, value):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='border_plot', description='Process MSR2MRP border node related stats', epilog=':-(')
+    parser = argparse.ArgumentParser(prog='process_dmp', description='Process MSR2MRP border node related stats', epilog=':-(')
     parser.add_argument('filename', help='Input filenames', nargs='*')
     parser.add_argument('-o', '--out', dest='out', type=str, default='out', help='Output filename')
+    parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
+    parser.add_argument('-m', '--mode', dest='mode', choices=['dmp','rm'], default='dmp', help='Process mode')
     args = parser.parse_args()
+
+    if args.debug:
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     results = []
 
@@ -111,10 +121,23 @@ if __name__ == '__main__':
         nw = construct_graph(data)
         f_nw = filter_graph(nw, filter=['internal','central'])
 
-        dis_arr = [ check_disjointness(f_nw, n) for n in get_nodes_based_on_role(nw, 'external') ]
-        dis_rat_arr = [ len([j for j in i if len(j) > 0])/len(i) if len(i) > 0 else 1 for i in dis_arr]
-        results.append(len([i for i in dis_rat_arr if i == 1])/len(dis_rat_arr))
+        match args.mode:
+            case 'dmp':
+                dis_arr = [ check_disjointness(f_nw, n) for n in get_nodes_based_on_role(nw, 'external') ]
+                dis_rat_arr = [ len([j for j in i if len(j) > 0])/len(i) if len(i) > 0 else 1 for i in dis_arr]
+                results.append(len([i for i in dis_rat_arr if i == 1]) / len(dis_rat_arr))
+            case 'rm':
+                r_num_arr = [ (n, len(f_nw.out_edges(n))) for n in get_nodes_based_on_role(nw, 'external')]
+                results.append(r_num_arr)
+
         # Single path nodes!!!
-
-    pd.Series(results).to_pickle(args.out+'.pickle')
-
+    match args.mode:
+        case 'dmp':
+            pd.Series(results).to_pickle(args.out + '.pickle')
+        case 'rm':
+            out_data = pd.DataFrame()
+            for i_idx, i in enumerate(results):
+                for j_idx, j in enumerate(i):
+                    out_data.at[i_idx,j[0]]=j[1]
+            out_data.to_pickle(args.out + '.pickle')
+    logger.debug('Results: ' + str(list(results)))
