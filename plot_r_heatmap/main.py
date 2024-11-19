@@ -8,6 +8,8 @@ logger = logging.getLogger(__name__)
 import itertools as it
 import pandas as pd
 import sys
+import matplotlib.pyplot as plt
+
 
 def construct_graph(run):
     nw = nx.MultiDiGraph()
@@ -46,7 +48,7 @@ def get_data_from_loader(top):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_r_heatmap', description='Plot MsR2MRP network with spatial heatmap representing route numbers', epilog=':-(')
-    parser.add_argument('-i','--input',dest='filename', help='Input filenames', nargs='*')
+    parser.add_argument('-i','--input',dest='filename', help='Input filename')
     parser.add_argument('-b', '--base', dest='base_filename', help='Base filename to plot')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     args = parser.parse_args()
@@ -55,3 +57,9 @@ if __name__ == '__main__':
     loader = yaml.safe_load(stream)
     data = get_data_from_loader(loader)
     nw = construct_graph(data)
+
+    data = pd.read_pickle(args.base_filename)
+
+    fig = plt.figure()
+
+    nx.draw_networkx_nodes(nw, pos=nx.get_node_attributes(nw, 'pos'))
