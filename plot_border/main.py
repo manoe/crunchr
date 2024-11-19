@@ -48,7 +48,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--columns', dest='columns', type=int, default=2, help='Number of columns in plot')
     parser.add_argument('-t', '--title', dest='title', type=str, default=['MSR2MRP'], help='Plot title(s)', nargs='+')
     parser.add_argument('-g', '--global-title', dest='g_title', type=str)
-    parser.add_argument('-p', '--plot', dest='plot', choices=['pkt', 'bhist', 'rhist'], default='pkt', help='Plot type')
+    parser.add_argument('-p', '--plot', dest='plot', choices=['pkt', 'bhist', 'rhist', 'dmp'], default='pkt', help='Plot type')
     parser.add_argument('-b', '--border-num', dest='bnum', type=int, help='Plot type')
     args = parser.parse_args()
 
@@ -80,7 +80,18 @@ if __name__ == '__main__':
                 ax_list[idx].hist(bins[:-1], bins, weights=counts)
                 ax_list[idx].title.set_text(args.title[idx] + ' - border histogram')
             case 'rhist':
-                [ i for i in table]
+                rt_lists = [ list(i.values())[0] for i in table if args.bnum in i.keys()]
+                rt = []
+                for i in rt_lists:
+                    rt+=i
+                counts, bins = np.histogram(rt)
+                ax_list[idx].hist(bins[:-1], bins, weights=counts)
+                ax_list[idx].title.set_text(args.title[idx] + ' - bnum='+str(args.bnum)+' rt histogram')
+            case 'dmp':
+                counts, bins = np.histogram(table)
+                ax_list[idx].hist(bins[:-1], bins, weights=counts)
+                ax_list[idx].title.set_text(args.title[idx] + ' - dmp histogram')
+
     if args.plot == 'pkt':
         max_x = max([max(table.index) for table in pickle_list])
         max_y = max([max(table.mean(axis=1)) for table in pickle_list])

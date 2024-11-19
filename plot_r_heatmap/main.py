@@ -58,8 +58,18 @@ if __name__ == '__main__':
     data = get_data_from_loader(loader)
     nw = construct_graph(data)
 
-    data = pd.read_pickle(args.base_filename)
+    data = pd.read_pickle(args.filename)
+
+    mean_r=data.mean()
+
+    norm_mean_r = mean_r / mean_r.max()
+
+    color = [ norm_mean_r[i] if i in norm_mean_r.index else 0 for i in nw.nodes()]
 
     fig = plt.figure()
 
-    nx.draw_networkx_nodes(nw, pos=nx.get_node_attributes(nw, 'pos'))
+    nx.draw_networkx_nodes(nw, pos=nx.get_node_attributes(nw, 'pos'), node_color=color)
+
+
+
+    plt.show()
