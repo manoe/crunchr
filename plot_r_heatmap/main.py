@@ -70,6 +70,4 @@ if __name__ == '__main__':
 
     nx.draw_networkx_nodes(nw, pos=nx.get_node_attributes(nw, 'pos'), node_color=color)
 
-
-
     plt.show()

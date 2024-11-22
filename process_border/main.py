@@ -17,7 +17,7 @@ def get_borders(top):
     borders = []
     for i in data:
         for j in i['engines']:
-            if j['role'] == 'border' and len(j['hop_pkt_table']) > 0:
+            if j['role'] == 'bord0er' and len(j['hop_pkt_table']) > 0:
                 borders.append({'node': i['node'], 'hop_pkt_table': j['hop_pkt_table']})
     return borders
 
