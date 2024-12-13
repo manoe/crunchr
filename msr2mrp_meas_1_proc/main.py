@@ -100,7 +100,7 @@ def filter_edges(nw, prop, value):
 
 
 def get_sinks(nw, n):
-    return set( e['engine'] for e in nw.out_edges(n, data=True) )
+    return set( e[2]['engine'] for e in nw.out_edges(n, data=True) )
 
 
 def construct_dataframe(results):
@@ -134,10 +134,9 @@ if __name__ == '__main__':
         data = get_data_from_loader(loader)
         nw = construct_graph(data)
 
-        engines = [ get_sinks(nw,n) for n in get_nodes_based_on_role(nw, 'external') ]
-
+        engines = [ (n, len(get_sinks(nw,n))) for n in get_nodes_based_on_role(nw, 'external') ]
+        sink_results.append(engines)
         f_nw = filter_graph(nw, filter=['internal','central'])
-
 
         dis_arr = [ check_disjointness(f_nw, n) for n in get_nodes_based_on_role(nw, 'external') ]
         dis_rat_arr = [ len([j for j in i if len(j) > 0])/len(i) if len(i) > 0 else 1 for i in dis_arr]
@@ -151,6 +150,3 @@ if __name__ == '__main__':
     pd.Series(dmp_results).to_pickle(args.out + '_dmp.pickle')
     construct_dataframe(rm_results).to_pickle(args.out + '_rm.pickle')
     construct_dataframe(sink_results).to_pickle(args.out + '_sink.pickle')
-
-
-
