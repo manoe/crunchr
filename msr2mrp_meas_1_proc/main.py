@@ -100,7 +100,15 @@ def filter_edges(nw, prop, value):
 
 
 def get_sinks(nw, n):
-    pass
+    return set( e['engine'] for e in nw.out_edges(n, data=True) )
+
+
+def construct_dataframe(results):
+    out_data = pd.DataFrame()
+    for i_idx, i in enumerate(results):
+        for j_idx, j in enumerate(i):
+            out_data.at[i_idx,j[0]]=j[1]
+    return out_data
 
 
 if __name__ == '__main__':
@@ -140,11 +148,9 @@ if __name__ == '__main__':
 
         # Single path nodes!!!
 
-    pd.Series(dmp_results).to_pickle(args.out + '.pickle')
+    pd.Series(dmp_results).to_pickle(args.out + '_dmp.pickle')
+    construct_dataframe(rm_results).to_pickle(args.out + '_rm.pickle')
+    construct_dataframe(sink_results).to_pickle(args.out + '_sink.pickle')
 
-    out_data = pd.DataFrame()
-    for i_idx, i in enumerate(rm_results):
-        for j_idx, j in enumerate(i):
-            out_data.at[i_idx,j[0]]=j[1]
-    out_data.to_pickle(args.out + '.pickle')
+
 
