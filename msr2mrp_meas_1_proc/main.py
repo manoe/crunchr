@@ -112,7 +112,7 @@ def construct_dataframe(results):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='process_dmp', description='Process MSR2MRP border node related stats', epilog=':-(')
+    parser = argparse.ArgumentParser(prog='msr2mrp_meas_1_proc', description='Process measurement data related to measurement 1', epilog=':-(')
     parser.add_argument('filename', help='Input filenames', nargs='*')
     parser.add_argument('-o', '--out', dest='out', type=str, default='out', help='Output filename')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
