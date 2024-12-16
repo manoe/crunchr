@@ -78,8 +78,6 @@ def check_disjointness(nw, node):
         f_nw = filter_edges(nw,'pathid', p)
         nodes.append(list(nx.descendants(f_nw,node)))
 
-    c = it.combinations([set(l) for l in nodes], 2)
-
     for i in range(len(nodes), 1 ,-1):
         for j in it.combinations([set(l) for l in nodes], i):
             isect = [set.intersection(*c) for c in it.combinations([set(l) for l in j], 2)]
@@ -87,7 +85,7 @@ def check_disjointness(nw, node):
                 return i/len(nodes)
 
     logger.debug('No disjoint path: ' + str(nodes))
-    return 1/len(nodes)
+    return 0
 
 
 def get_data_from_loader(top):
