@@ -77,7 +77,13 @@ def check_disjointness(nw, node):
     for p in get_nodes_patids(nw,node):
         f_nw = filter_edges(nw,'pathid', p)
         nodes.append(list(nx.descendants(f_nw,node)))
-    return [set(c[0]) & set(c[1]) for c in it.combinations(nodes,2) ]
+
+    for i in range(len(nodes), 1 ,-1):
+        if map(lambda j: not len(j), [set.intersection(*c) for c in it.combinations([set(l) for l in nodes], i)]):
+            return i/len(nodes)
+
+    logger.debug('No disjoint path: ' + str(nodes))
+    return 1/len(nodes)
 
 
 def get_data_from_loader(top):
@@ -124,7 +130,7 @@ if __name__ == '__main__':
     dmp_results = []
     rm_results = []
     sink_results = []
-
+    dmp_ratio_results = []
 
     for idx,filename in enumerate(args.filename):
         stream = open(filename, 'r')
@@ -136,11 +142,11 @@ if __name__ == '__main__':
 
         engines = [ (n, len(get_sinks(nw,n))) for n in get_nodes_based_on_role(nw, 'external') ]
         sink_results.append(engines)
-        f_nw = filter_graph(nw, filter=['internal','central'])
 
-        dis_arr = [ check_disjointness(f_nw, n) for n in get_nodes_based_on_role(nw, 'external') ]
-        dis_rat_arr = [ len([j for j in i if len(j) > 0])/len(i) if len(i) > 0 else 1 for i in dis_arr]
-        dmp_results.append(len([i for i in dis_rat_arr if i == 1]) / len(dis_rat_arr))
+        f_nw = filter_graph(nw, filter=['internal','central'])
+        dis_arr = [ (n, check_disjointness(f_nw, n)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
+        dmp_results.append(len([i[1] for i in dis_arr if i[1] == 1]) / len(dis_arr))
+        dmp_ratio_results.append(dis_arr)
 
         r_num_arr = [ (n, len(f_nw.out_edges(n))) for n in get_nodes_based_on_role(nw, 'external')]
         rm_results.append(r_num_arr)
@@ -148,5 +154,6 @@ if __name__ == '__main__':
         # Single path nodes!!!
 
     pd.Series(dmp_results).to_pickle(args.out + '_dmp.pickle')
+    construct_dataframe(rm_results).to_pickle(args.out + '_dmp_ratio.pickle')
     construct_dataframe(rm_results).to_pickle(args.out + '_rm.pickle')
     construct_dataframe(sink_results).to_pickle(args.out + '_sink.pickle')
