@@ -147,7 +147,6 @@ if __name__ == '__main__':
 
         f_nw = filter_graph(nw, filter=['internal','central'])
         dis_arr = [ (n, check_disjointness(f_nw, n)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
-        dmp_results.append(len([i[1] for i in dis_arr if i[1] == 1]) / len(dis_arr))
         dmp_ratio_results.append(dis_arr)
 
         r_num_arr = [ (n, len(f_nw.out_edges(n))) for n in get_nodes_based_on_role(nw, 'external')]
@@ -155,7 +154,6 @@ if __name__ == '__main__':
 
         # Single path nodes!!!
 
-    pd.Series(dmp_results).to_pickle(args.out + '_dmp.pickle')
-    construct_dataframe(dmp_ratio_results).to_pickle(args.out + '_dmp_ratio.pickle')
+    construct_dataframe(dmp_ratio_results).to_pickle(args.out + '_dmp.pickle')
     construct_dataframe(rm_results).to_pickle(args.out + '_rm.pickle')
     construct_dataframe(sink_results).to_pickle(args.out + '_sink.pickle')
