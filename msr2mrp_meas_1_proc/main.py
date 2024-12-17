@@ -132,7 +132,6 @@ if __name__ == '__main__':
     dmp_results = []
     rm_results = []
     sink_results = []
-    dmp_ratio_results = []
 
     for idx,filename in enumerate(args.filename):
         stream = open(filename, 'r')
@@ -142,18 +141,19 @@ if __name__ == '__main__':
         data = get_data_from_loader(loader)
         nw = construct_graph(data)
 
+
         engines = [ (n, len(get_sinks(nw,n))) for n in get_nodes_based_on_role(nw, 'external') ]
         sink_results.append(engines)
 
         f_nw = filter_graph(nw, filter=['internal','central'])
         dis_arr = [ (n, check_disjointness(f_nw, n)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
-        dmp_ratio_results.append(dis_arr)
+        dmp_results.append(dis_arr)
 
         r_num_arr = [ (n, len(f_nw.out_edges(n))) for n in get_nodes_based_on_role(nw, 'external')]
         rm_results.append(r_num_arr)
 
         # Single path nodes!!!
 
-    construct_dataframe(dmp_ratio_results).to_pickle(args.out + '_dmp.pickle')
+    construct_dataframe(dmp_results).to_pickle(args.out + '_dmp.pickle')
     construct_dataframe(rm_results).to_pickle(args.out + '_rm.pickle')
     construct_dataframe(sink_results).to_pickle(args.out + '_sink.pickle')
