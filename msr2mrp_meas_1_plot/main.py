@@ -50,7 +50,8 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-pl', '--plot', dest='plot', choices=['network', 'bar','hist'], help='Plot type')
     parser.add_argument('-pd', '--plot-data', dest='plot_data', choices=['disjoint', 'pathnum'], default='disjoint', help='Plot data')
-    parser.add_argument('-n', '--network', dest='network', type=str, nargs='*', help='Number of nodes')
+    parser.add_argument('-n', '--network', dest='network', type=str, nargs='*', help='Network plot files')
+    parser.add_argument('-o', '--outlier', dest='outlier', type=float,  help='Outlier threshold', default=0.0)
     args = parser.parse_args()
 
     if args.debug:
@@ -118,12 +119,12 @@ if __name__ == '__main__':
                 loader = yaml.safe_load(stream)
                 nw = construct_graph(loader)
                 if args.plot_data == 'disjoint':
-                    color = [r['dmp'].mean(axis=0)[i] if i in r['dmp'].mean(axis=0).index else 0 for i in nw.nodes()]
+                    color = [r['dmp'].mean(axis=0)[i] if i in r['dmp'].mean(axis=0).index and r['dmp'][i].notna().sum()/len(r['dmp'][i]) > args.outlier else 0 for i in nw.nodes()]
                 else:
-                    color = [r['rm'].mean(axis=0)[i] if i in r['rm'].mean(axis=0).index else 0 for i in nw.nodes()]
+                    color = [r['rm'].mean(axis=0)[i] if i in r['rm'].mean(axis=0).index and r['dmp'][i].notna().sum()/len(r['dmp'][i]) > args.outlier else 0 for i in nw.nodes()]
 
                 pos = nx.get_node_attributes(nw, 'pos')
-
+                edgecolors = []
                 nx.draw_networkx_nodes(nw, ax=axs_arr[idx_r], pos=pos, node_color=color, cmap='viridis', node_size=200)
                 nx.draw_networkx_edges(nw, ax=axs_arr[idx_r], pos=pos)
 
