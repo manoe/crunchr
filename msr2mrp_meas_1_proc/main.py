@@ -133,7 +133,7 @@ if __name__ == '__main__':
     dmp_results = []
     rm_results = []
     sink_results = []
-    iso_arr = []
+    iso_results = []
 
     for idx,filename in enumerate(args.filename):
         stream = open(filename, 'r')
@@ -148,7 +148,7 @@ if __name__ == '__main__':
         sink_results.append(engines)
 
         iso_arr = [ (n, len(nx.get_node_attributes(nw, 'roles')[n]) ) for n in nw.nodes() ]
-
+        iso_results.append(engines)
         f_nw = filter_graph(nw, filter=['internal','central'])
         dis_arr = [ (n, check_disjointness(f_nw, n)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
         dmp_results.append(dis_arr)
@@ -161,4 +161,4 @@ if __name__ == '__main__':
     construct_dataframe(dmp_results).to_pickle(args.out + '_dmp.pickle')
     construct_dataframe(rm_results).to_pickle(args.out + '_rm.pickle')
     construct_dataframe(sink_results).to_pickle(args.out + '_sink.pickle')
-    construct_dataframe(sink_results).to_pickle(args.out + '_iso.pickle')
+    construct_dataframe(iso_results).to_pickle(args.out + '_iso.pickle')
