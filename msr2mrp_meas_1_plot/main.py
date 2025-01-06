@@ -79,20 +79,27 @@ if __name__ == '__main__':
         case 'bar':
             match args.plot_data:
                 case 'sinkpath':
+                    x = -0.07
                     fig, axs = plt.subplots(nrows=2, ncols=1)
                     sink_num = [np.average(r['sink'].mean(axis=1)) for r in record]
                     sink_err = [np.average(r['sink'].std(axis=1)) for r in record]
-                    axs[0].set_title('Sink')
+                    axs[0].set_title('(a)', loc='left', pad=15, x=x)
                     bars = axs[0].bar(args.params, sink_num)
+                    axs[0].set_ylabel('Average reachable sinks')
+                    axs[0].set_xlabel('Available sinks')
+                    axs[0].set_ylim([0, 6])
                     axs[0].bar_label(bars, label_type='edge')
                     axs[0].errorbar(args.params, sink_num, sink_err, fmt='.', color='Black', elinewidth=2, capthick=10,
                                     errorevery=1, alpha=0.5, ms=4, capsize=2)
 
                     path_num = [np.average(r['rm'].mean(axis=1)) for r in record]
                     path_err = [np.average(r['rm'].std(axis=1)) for r in record]
-                    axs[1].set_title('Path')
+                    axs[1].set_title('(b)', loc='left', pad=15, x=x)
+                    axs[1].set_ylabel('Average path number')
+                    axs[1].set_xlabel('Available sinks')
                     bars = axs[1].bar(args.params, path_num)
                     axs[1].bar_label(bars, label_type='edge')
+                    axs[1].set_ylim([0, 8])
                     axs[1].errorbar(args.params, path_num, path_err, fmt='.', color='Black', elinewidth=2, capthick=10,
                                     errorevery=1, alpha=0.5, ms=4, capsize=2)
                 case 'disjoint':
@@ -170,4 +177,5 @@ if __name__ == '__main__':
 
     plt.tight_layout()
     plt.show()
+    fig.savefig(str(args.plot)+'_'+str(args.plot_data)+".pdf", bbox_inches='tight')
 
