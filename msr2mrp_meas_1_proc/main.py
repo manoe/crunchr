@@ -73,7 +73,7 @@ def get_nodes_patids(nw,node):
     return pathids
 
 
-def check_disjointness(nw, node):
+def check_disjointness(nw, node, min_d=False):
     nodes = []
     for p in get_nodes_patids(nw,node):
         f_nw = filter_edges(nw,'pathid', p)
@@ -83,7 +83,10 @@ def check_disjointness(nw, node):
         for j in it.combinations([set(l) for l in nodes], i):
             isect = [set.intersection(*c) for c in it.combinations([set(l) for l in j], 2)]
             if all(map(lambda s: not len(s), isect)):
-                return i/len(nodes)
+                if(min_d):
+                    return i
+                else:
+                    return i/len(nodes)
 
     logger.debug('No disjoint path: ' + str(nodes))
     return 0
@@ -131,6 +134,7 @@ if __name__ == '__main__':
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     dmp_results = []
+    min_d_results = []
     rm_results = []
     sink_results = []
     iso_results = []
@@ -159,6 +163,8 @@ if __name__ == '__main__':
         dis_arr = [ (n, check_disjointness(f_nw, n)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
         dmp_results.append(dis_arr)
 
+        min_d_arr = [ (n, check_disjointness(f_nw, n, true)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
+
         r_num_arr = [ (n, len(f_nw.out_edges(n))) for n in get_nodes_based_on_role(nw, 'external')]
         rm_results.append(r_num_arr)
 
@@ -169,3 +175,4 @@ if __name__ == '__main__':
     construct_dataframe(sink_results).to_pickle(args.out + '_sink.pickle')
     construct_dataframe(iso_results).to_pickle(args.out + '_iso.pickle')
     construct_dataframe(role_results).to_pickle(args.out + '_role.pickle')
+    construct_dataframe(min_d_results).to_pickle(args.out + '_min_d.pickle')
