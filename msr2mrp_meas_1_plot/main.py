@@ -103,20 +103,24 @@ if __name__ == '__main__':
                     axs[1].errorbar(args.params, path_num, path_err, fmt='.', color='Black', elinewidth=2, capthick=10,
                                     errorevery=1, alpha=0.5, ms=4, capsize=2)
                 case 'disjoint':
+                    x = -0.07
+
                     fig, axs = plt.subplots(nrows=2, ncols=1)
 
                     dmp_num = [np.average(r['dmp'].mean(axis=1)) for r in record]
                     dmp_err = [np.average(r['dmp'].std(axis=1)) for r in record]
 
-                    axs[0].set_title('Disjointness')
+                    axs[0].set_title('(a)', loc='left', pad=15, x=x)
                     bars = axs[0].bar(args.params, dmp_num)
                     axs[0].bar_label(bars, label_type='edge')
                     axs[0].errorbar(args.params, dmp_num, dmp_err, fmt='.', color='Black', elinewidth=2, capthick=10,
                                     errorevery=1, alpha=0.5, ms=4,
                                     capsize=2)
+                    axs[0].set_ylabel('Disjointness')
 
                     two_disj_num = [(r['dmp'] == 0).sum(axis=1).div(r['dmp'].notna().sum(axis=1)).mean() for r in record]
                     two_disj_err = [(r['dmp'] == 0).sum(axis=1).div(r['dmp'].notna().sum(axis=1)).std() for r in record]
+                    axs[1].set_title('(b)', loc='left', pad=15, x=x)
 
                     axs[1].set_title('Two disj probability')
                     bars = axs[1].bar(args.params, two_disj_num)
