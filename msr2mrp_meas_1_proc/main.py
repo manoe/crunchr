@@ -163,7 +163,8 @@ if __name__ == '__main__':
         dis_arr = [ (n, check_disjointness(f_nw, n)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
         dmp_results.append(dis_arr)
 
-        min_d_arr = [ (n, check_disjointness(f_nw, n, true)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
+        min_d_arr = [ (n, check_disjointness(f_nw, n, True)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
+        min_d_results.append(min_d_arr)
 
         r_num_arr = [ (n, len(f_nw.out_edges(n))) for n in get_nodes_based_on_role(nw, 'external')]
         rm_results.append(r_num_arr)
