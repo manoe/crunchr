@@ -95,8 +95,6 @@ if __name__ == '__main__':
                     axs[1].bar_label(bars, label_type='edge')
                     axs[1].errorbar(args.params, path_num, path_err, fmt='.', color='Black', elinewidth=2, capthick=10,
                                     errorevery=1, alpha=0.5, ms=4, capsize=2)
-                    plt.tight_layout()
-                    plt.show()
                 case 'disjoint':
                     fig, axs = plt.subplots(nrows=2, ncols=1)
 
@@ -119,8 +117,6 @@ if __name__ == '__main__':
                                     errorevery=1, alpha=0.5, ms=4,
                                     capsize=2)
                     axs[1].bar_label(bars, label_type='edge')
-                    plt.tight_layout()
-                    plt.show()
                 case _:
                     logger.error('Unknown plot type for bar: ' + args.plot_data)
                     exit(1)
