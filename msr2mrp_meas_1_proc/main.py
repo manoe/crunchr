@@ -160,9 +160,11 @@ if __name__ == '__main__':
         role_results.append(role_arr)
 
         f_nw = filter_graph(nw, filter=['internal','central'])
+        # if should placed inside the array
         dis_arr = [ (n, check_disjointness(f_nw, n)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
         dmp_results.append(dis_arr)
 
+        # if should placed inside the array
         min_d_arr = [ (n, check_disjointness(f_nw, n, True)) for n in get_nodes_based_on_role(nw, 'external') if len(f_nw.out_edges(n)) >1 ]
         min_d_results.append(min_d_arr)
 

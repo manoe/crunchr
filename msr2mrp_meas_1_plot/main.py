@@ -2,10 +2,15 @@
 
 import argparse
 import logging
+from xml.dom.minidom import NamedNodeMap
+
+import matplotlib
+
 logger = logging.getLogger(__name__)
 import pandas as pd
 import sys
 import matplotlib.pyplot as plt
+from matplotlib import colormaps
 from matplotlib import cm
 import numpy as np
 import networkx as nx
@@ -68,12 +73,14 @@ if __name__ == '__main__':
         filename = args.filename.replace('$1', param)
         logger.debug('Base filename: ' + str(filename))
 
-        dmp  = pd.read_pickle(filename.replace('$2', 'dmp'))
-        rm   = pd.read_pickle(filename.replace('$2', 'rm'))
-        sink = pd.read_pickle(filename.replace('$2', 'sink'))
-        iso  = pd.read_pickle(filename.replace('$2', 'sink'))
-        role = pd.read_pickle(filename.replace('$2', 'role'))
-        record.append({'filename': filename, 'dmp':dmp, 'rm':rm, 'sink':sink, 'iso':iso, 'role':role})
+        dmp   = pd.read_pickle(filename.replace('$2', 'dmp'))
+        rm    = pd.read_pickle(filename.replace('$2', 'rm'))
+        sink  = pd.read_pickle(filename.replace('$2', 'sink'))
+        iso   = pd.read_pickle(filename.replace('$2', 'sink'))
+        role  = pd.read_pickle(filename.replace('$2', 'role'))
+        min_d = pd.read_pickle(filename.replace('$2', 'min_d'))
+
+        record.append({'filename': filename, 'dmp':dmp, 'rm':rm, 'sink':sink, 'iso':iso, 'role':role, 'min_d':min_d})
 
     match args.plot:
         case 'bar':
@@ -103,7 +110,7 @@ if __name__ == '__main__':
                     axs[1].errorbar(args.params, path_num, path_err, fmt='.', color='Black', elinewidth=2, capthick=10,
                                     errorevery=1, alpha=0.5, ms=4, capsize=2)
                 case 'disjoint':
-                    x = -0.07
+                    x = -0.1
 
                     fig, axs = plt.subplots(nrows=2, ncols=1)
 
@@ -112,74 +119,111 @@ if __name__ == '__main__':
 
                     axs[0].set_title('(a)', loc='left', pad=15, x=x)
                     bars = axs[0].bar(args.params, dmp_num)
-                    axs[0].bar_label(bars, label_type='edge')
+                    axs[0].bar_label(bars, label_type='edge', fmt='{0:.2f}')
                     axs[0].errorbar(args.params, dmp_num, dmp_err, fmt='.', color='Black', elinewidth=2, capthick=10,
                                     errorevery=1, alpha=0.5, ms=4,
                                     capsize=2)
                     axs[0].set_ylabel('Disjointness')
 
-                    two_disj_num = [(r['dmp'] == 0).sum(axis=1).div(r['dmp'].notna().sum(axis=1)).mean() for r in record]
-                    two_disj_err = [(r['dmp'] == 0).sum(axis=1).div(r['dmp'].notna().sum(axis=1)).std() for r in record]
+                    ind = np.arange(len(record))
                     axs[1].set_title('(b)', loc='left', pad=15, x=x)
-
-                    axs[1].set_title('Two disj probability')
-                    bars = axs[1].bar(args.params, two_disj_num)
-                    axs[1].errorbar(args.params, two_disj_num, two_disj_err, fmt='.', color='Black', elinewidth=2, capthick=10,
+                    axs[1].set_ylabel('N-disjointness probability')
+                    width = 0.2
+                    bars = []
+                    for idx_p, p in enumerate(np.arange(1,5)):
+                        disj_num = [(r['min_d'] > p).sum(axis=1).div(r['min_d'].notna().sum(axis=1)).mean() for r in record]
+                        disj_err = [(r['min_d'] > p).sum(axis=1).div(r['min_d'].notna().sum(axis=1)).std() for r in record]
+                        bars.append(axs[1].bar(ind+width*idx_p, disj_num, width=width))
+                        axs[1].bar_label(bars[-1], label_type='edge', fmt='{0:.2f}')
+                        axs[1].errorbar(ind+width*idx_p, disj_num, disj_err, fmt='.', color='Black', elinewidth=2, capthick=10,
                                     errorevery=1, alpha=0.5, ms=4,
                                     capsize=2)
-                    axs[1].bar_label(bars, label_type='edge')
+
+
+                    plt.xticks(ind + width*1.5, args.params)
+                    plt.legend(tuple(bars), tuple(np.arange(2,6)))
                 case _:
                     logger.error('Unknown plot type for bar: ' + args.plot_data)
                     exit(1)
 
         case 'network':
-            fig, axs = plt.subplots(nrows=int(np.ceil(len(record[1:]) / 2)), ncols=2)
+            fig, axs = plt.subplots(nrows=int(np.ceil(len(record) / 2)), ncols=2, layout='compressed')
             axs_arr = axs.ravel()
 
-            for idx_r,r in enumerate(record[1:]):
-                stream = open(args.network[idx_r+1], 'r')
+            vmin=[]
+            vmax=[]
+            title = ['(a)', '(b)', '(c)', '(d)', '(e)', '(f)']
+            x=0.04
+            for idx_r,r in enumerate(record):
+                stream = open(args.network[idx_r], 'r')
                 loader = yaml.safe_load(stream)
                 nw = construct_graph(loader)
                 alpha=1
                 match args.plot_data:
                     case 'disjoint':
+                        clabel='Disjointness score'
                         color = [r['dmp'].mean(axis=0)[i] if i in r['dmp'].mean(axis=0).index and r['dmp'][i].notna().sum()/len(r['dmp'][i]) > args.outlier else 0 for i in nw.nodes()]
+                        vmin.append(0)
+                        vmax.append(1)
                     case 'pathnum':
                         color = [r['rm'].mean(axis=0)[i] if i in r['rm'].mean(axis=0).index and
                                                     r['dmp'][i].notna().sum() / len(r['dmp'][i]) > args.outlier else 0 for i in nw.nodes()]
+                        vmin.append(min(color))
+                        vmax.append(max(color))
+                        clabel='Path number'
                     case 'border':
                         color = [r['role'][i].value_counts()['border']/r['role'][i].value_counts().sum() if 'border' in r['role'][i].value_counts() else 0 for i in nw.nodes()]
                         alpha = [ 1 if i > 0 else 0 for i in color]
                         edgecolors = [  '#1f78b4ff' for i in color]
+                        vmin.append(min(color))
+                        vmax.append(max(color))
+                        clabel='Border node probability'
                     case _:
                         'none'
                 edgecolors = ['#1f78b4ff' for i in color]
                 pos = nx.get_node_attributes(nw, 'pos')
 
-                nx.draw_networkx_nodes(nw, ax=axs_arr[idx_r], pos=pos, node_color=color, cmap='viridis', node_size=200, alpha=alpha, edgecolors=edgecolors)
+                nx.draw_networkx_nodes(nw, ax=axs_arr[idx_r], pos=pos, node_color=colormaps['viridis']([i/max(vmax) for i in color]), node_size=200, alpha=alpha, edgecolors=edgecolors)
                 nx.draw_networkx_edges(nw, ax=axs_arr[idx_r], pos=pos)
+                axs_arr[idx_r].axis('off')
+                axs_arr[idx_r].set_title(title[idx_r], loc='left', pad=5, x=x)
+            cmap = cm.ScalarMappable(cmap='viridis')
+            cmap.set_clim(vmin=min(vmin), vmax=max(vmax))
 
-                cmap = cm.ScalarMappable(cmap='viridis')
-                cmap.set_clim(vmin=np.min(color), vmax=np.max(color))
-                fig.colorbar(cmap, ax=axs_arr[idx_r], orientation='vertical', label='Some Units')
+                #fig.subplots_adjust(right=0.8)
+                #cbar_ax = fig.add_axes([0.85, 0.15, 0.05, 0.7])
+            cax, kw = matplotlib.colorbar.make_axes([ax for ax in axs.flat],aspect=40)
+            plt.colorbar(cmap, cax=cax, **kw, label=clabel)
         case 'hist':
-            fig, axs = plt.subplots(nrows=int(np.ceil(len(record[1:]) / 2)), ncols=2)
-            axs_arr = axs.ravel()
-
-            for idx_r, r in enumerate(record[1:]):
+            #fig, axs = plt.subplots(nrows=int(np.ceil(len(record[1:]) / 2)), ncols=2)
+            fig, axs = plt.subplots(nrows=1, ncols=1)
+            x=-0.23
+            axs.set_ylabel('Probability')
+            for idx_r, r in enumerate(record):
                 if args.plot_data == 'disjoint':
                     data_src = [i for i in r['dmp'].values.ravel() if not np.isnan(i)]
-                    bins = np.arange(0,1.1,0.1)
+                    orig_bins = np.arange(0,1.1,0.1)
+                    axs.set_xlabel('Disjointness score')
+                    counts, bins = np.histogram(data_src, bins=orig_bins)
+                    axs.stairs(counts / sum(counts), bins + 0.003 * (idx_r - 1))
                 else:
                     data_src = [i for i in r['rm'].values.ravel() if not np.isnan(i)]
-                    bins = 'auto'
-                counts, bins = np.histogram(data_src, bins=bins)
-                axs_arr[idx_r].stairs(counts, bins)
+                    orig_bins = np.arange(0, max(r['rm'].values.ravel())+1)
+                    axs.set_xticks(orig_bins)
+                    axs.set_xticklabels(["{0:.0f}".format(x) for x in orig_bins])
+                    axs.set_xlabel('Path number')
+                    #bins = 'auto'
+                    counts, bins = np.histogram(data_src, bins=orig_bins)
+                    axs.stairs(counts / sum(counts), bins + 0.02 * (idx_r - 1))
+                axs.legend(labels=args.params, title='Sink amount')
+                axs.set_ylim([0, 1.01])
+
         case _:
             logger.error('Plot param unknown')
             exit(1)
 
-    plt.tight_layout()
+    if args.plot != 'network':
+        plt.tight_layout()
     plt.show()
     fig.savefig(str(args.plot)+'_'+str(args.plot_data)+".pdf", bbox_inches='tight')
 
