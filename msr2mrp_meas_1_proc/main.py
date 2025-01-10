@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 import itertools as it
 import pandas as pd
 import sys
+import numpy as np
 
 
 def construct_graph(run):
@@ -72,6 +73,14 @@ def get_nodes_patids(nw,node):
             logger.debug('Edge without pathid: ' + str(e))
     return pathids
 
+
+def calc_t_pdr(nw, node, pdr=0.6, ring=1):
+    paths = []
+    for p in get_nodes_patids(nw, node):
+        f_nw = filter_edges(nw, 'pathid', p)
+        paths.append(len(list(nx.descendants(f_nw, node)))+ring)
+
+    return 1-np.prod( [ 1.0-pow(pdr,float(p)) for p in paths ])
 
 def check_disjointness(nw, node, min_d=False):
     nodes = []
@@ -139,6 +148,7 @@ if __name__ == '__main__':
     sink_results = []
     iso_results = []
     role_results = []
+    t_pdr_results = []
 
     for idx,filename in enumerate(args.filename):
         stream = open(filename, 'r')
@@ -171,6 +181,10 @@ if __name__ == '__main__':
         r_num_arr = [ (n, len(f_nw.out_edges(n))) for n in get_nodes_based_on_role(nw, 'external')]
         rm_results.append(r_num_arr)
 
+        t_pdr_arr = [ (n, calc_t_pdr(f_nw, n)) for n in get_nodes_based_on_role(nw, 'external')]
+        t_pdr_results.append(t_pdr_arr)
+        # f_nw-t hasznald fel
+
         # Single path nodes!!!
 
     construct_dataframe(dmp_results).to_pickle(args.out + '_dmp.pickle')
@@ -179,3 +193,4 @@ if __name__ == '__main__':
     construct_dataframe(iso_results).to_pickle(args.out + '_iso.pickle')
     construct_dataframe(role_results).to_pickle(args.out + '_role.pickle')
     construct_dataframe(min_d_results).to_pickle(args.out + '_min_d.pickle')
+    construct_dataframe(t_pdr_results).to_pickle(args.out + '_t_pdr.pickle')
