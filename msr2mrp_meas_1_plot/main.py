@@ -87,7 +87,7 @@ if __name__ == '__main__':
             match args.plot_data:
                 case 'sinkpath':
                     x = -0.07
-                    fig, axs = plt.subplots(nrows=2, ncols=1)
+                    fig, axs = plt.subplots(nrows=2, ncols=1, layout='compressed')
                     sink_num = [np.average(r['sink'].mean(axis=1)) for r in record]
                     sink_err = [np.average(r['sink'].std(axis=1)) for r in record]
                     axs[0].set_title('(a)', loc='left', pad=15, x=x)
@@ -95,9 +95,9 @@ if __name__ == '__main__':
                     axs[0].set_ylabel('Average reachable sinks')
                     axs[0].set_xlabel('Available sinks')
                     axs[0].set_ylim([0, 6])
-                    axs[0].bar_label(bars, label_type='edge')
-                    axs[0].errorbar(args.params, sink_num, sink_err, fmt='.', color='Black', elinewidth=2, capthick=10,
-                                    errorevery=1, alpha=0.5, ms=4, capsize=2)
+                    axs[0].bar_label(bars, label_type='center',fmt='{0:.4f}')
+                    axs[0].errorbar(args.params, sink_num, sink_err, fmt='.', color='Black', elinewidth=2, capthick=1,
+                                    errorevery=1, alpha=0.5, ms=4, capsize=5)
 
                     path_num = [np.average(r['rm'].mean(axis=1)) for r in record]
                     path_err = [np.average(r['rm'].std(axis=1)) for r in record]
@@ -105,25 +105,27 @@ if __name__ == '__main__':
                     axs[1].set_ylabel('Average path number')
                     axs[1].set_xlabel('Available sinks')
                     bars = axs[1].bar(args.params, path_num)
-                    axs[1].bar_label(bars, label_type='edge')
-                    axs[1].set_ylim([0, 8])
-                    axs[1].errorbar(args.params, path_num, path_err, fmt='.', color='Black', elinewidth=2, capthick=10,
-                                    errorevery=1, alpha=0.5, ms=4, capsize=2)
+                    axs[1].bar_label(bars, label_type='center', fmt='{0:.2f}', padding=0)
+                    axs[1].set_ylim([0, 9])
+                    axs[1].errorbar(args.params, path_num, path_err, fmt='.', color='Black', elinewidth=2, capthick=1,
+                                    errorevery=1, alpha=0.5, ms=4, capsize=5)
                 case 'disjoint':
-                    x = -0.1
+                    x = -0.08
 
-                    fig, axs = plt.subplots(nrows=2, ncols=1)
+                    fig, axs = plt.subplots(nrows=2, ncols=1, layout='compressed')
 
                     dmp_num = [np.average(r['dmp'].mean(axis=1)) for r in record]
                     dmp_err = [np.average(r['dmp'].std(axis=1)) for r in record]
 
                     axs[0].set_title('(a)', loc='left', pad=15, x=x)
                     bars = axs[0].bar(args.params, dmp_num)
-                    axs[0].bar_label(bars, label_type='edge', fmt='{0:.2f}')
-                    axs[0].errorbar(args.params, dmp_num, dmp_err, fmt='.', color='Black', elinewidth=2, capthick=10,
+                    axs[0].bar_label(bars, label_type='center', fmt='{0:.2f}')
+                    axs[0].errorbar(args.params, dmp_num, dmp_err, fmt='.', color='Black', elinewidth=2, capthick=1,
                                     errorevery=1, alpha=0.5, ms=4,
-                                    capsize=2)
-                    axs[0].set_ylabel('Disjointness')
+                                    capsize=5)
+                    axs[0].set_ylabel('d-score')
+                    axs[0].set_xlabel('Available sinks')
+                    axs[1].set_xlabel('Available sinks')
 
                     ind = np.arange(len(record))
                     axs[1].set_title('(b)', loc='left', pad=15, x=x)
@@ -134,20 +136,23 @@ if __name__ == '__main__':
                         disj_num = [(r['min_d'] > p).sum(axis=1).div(r['min_d'].notna().sum(axis=1)).mean() for r in record]
                         disj_err = [(r['min_d'] > p).sum(axis=1).div(r['min_d'].notna().sum(axis=1)).std() for r in record]
                         bars.append(axs[1].bar(ind+width*idx_p, disj_num, width=width))
-                        axs[1].bar_label(bars[-1], label_type='edge', fmt='{0:.2f}')
-                        axs[1].errorbar(ind+width*idx_p, disj_num, disj_err, fmt='.', color='Black', elinewidth=2, capthick=10,
+                        axs[1].bar_label(bars[-1], label_type='center', fmt='{0:.2f}')
+                        axs[1].errorbar(ind+width*idx_p, disj_num, disj_err, fmt='.', color='Black', elinewidth=2, capthick=1,
                                     errorevery=1, alpha=0.5, ms=4,
-                                    capsize=2)
-
+                                    capsize=5)
 
                     plt.xticks(ind + width*1.5, args.params)
-                    plt.legend(tuple(bars), tuple(np.arange(2,6)))
+                    plt.legend(tuple(bars), tuple(np.arange(2,6)), title='Minimum disjointness', loc='center',
+                                ncol=5, bbox_to_anchor=(0.5, -0.6))
+                    # https://stackoverflow.com/questions/44071525/matplotlib-add-titles-to-the-legend-rows/44072076#44072076
                 case _:
                     logger.error('Unknown plot type for bar: ' + args.plot_data)
                     exit(1)
 
         case 'network':
-            fig, axs = plt.subplots(nrows=int(np.ceil(len(record) / 2)), ncols=2, layout='compressed')
+            figsize = rcParams["figure.figsize"]
+            figsize = [i*2 for i in figsize]
+            fig, axs = plt.subplots(nrows=int(np.ceil(len(record) / 2)), ncols=2, layout='compressed', figsize=figsize)
             axs_arr = axs.ravel()
 
             vmin=[]
@@ -161,7 +166,7 @@ if __name__ == '__main__':
                 alpha=1
                 match args.plot_data:
                     case 'disjoint':
-                        clabel='Disjointness score'
+                        clabel='d-score'
                         color = [r['dmp'].mean(axis=0)[i] if i in r['dmp'].mean(axis=0).index and r['dmp'][i].notna().sum()/len(r['dmp'][i]) > args.outlier else 0 for i in nw.nodes()]
                         vmin.append(0)
                         vmax.append(1)
@@ -196,16 +201,16 @@ if __name__ == '__main__':
             plt.colorbar(cmap, cax=cax, **kw, label=clabel)
         case 'hist':
             #fig, axs = plt.subplots(nrows=int(np.ceil(len(record[1:]) / 2)), ncols=2)
-            fig, axs = plt.subplots(nrows=1, ncols=1)
+            fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(rcParams["figure.figsize"][0], rcParams["figure.figsize"][1]*0.75))
             x=-0.23
             axs.set_ylabel('Probability')
             for idx_r, r in enumerate(record):
                 if args.plot_data == 'disjoint':
                     data_src = [i for i in r['dmp'].values.ravel() if not np.isnan(i)]
                     orig_bins = np.arange(0,1.1,0.1)
-                    axs.set_xlabel('Disjointness score')
+                    axs.set_xlabel('d-score')
                     counts, bins = np.histogram(data_src, bins=orig_bins)
-                    axs.stairs(counts / sum(counts), bins + 0.003 * (idx_r - 1))
+                    axs.stairs(counts / sum(counts), bins + 0.002 * (idx_r - 1))
                 else:
                     data_src = [i for i in r['rm'].values.ravel() if not np.isnan(i)]
                     orig_bins = np.arange(0, max(r['rm'].values.ravel())+1)
@@ -214,15 +219,15 @@ if __name__ == '__main__':
                     axs.set_xlabel('Path number')
                     #bins = 'auto'
                     counts, bins = np.histogram(data_src, bins=orig_bins)
-                    axs.stairs(counts / sum(counts), bins + 0.02 * (idx_r - 1))
-                axs.legend(labels=args.params, title='Sink amount')
+                    axs.stairs(counts / sum(counts), bins + 0.01 * (idx_r - 1))
+                axs.legend(labels=args.params, title='Sink amount', ncol=5, loc='upper left')
                 axs.set_ylim([0, 1.01])
 
         case _:
             logger.error('Plot param unknown')
             exit(1)
 
-    if args.plot != 'network':
+    if args.plot != 'network' and args.plot != 'bar':
         plt.tight_layout()
     plt.show()
     fig.savefig(str(args.plot)+'_'+str(args.plot_data)+".pdf", bbox_inches='tight')
