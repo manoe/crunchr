@@ -2,8 +2,6 @@
 
 import argparse
 import logging
-from xml.dom.minidom import NamedNodeMap
-
 import matplotlib
 
 logger = logging.getLogger(__name__)
@@ -54,7 +52,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--parameters', dest='params', nargs='+', help='Parameter space')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-pl', '--plot', dest='plot', choices=['network', 'bar','hist'], help='Plot type')
-    parser.add_argument('-pd', '--plot-data', dest='plot_data', choices=['disjoint', 'pathnum', 'border', 'sinkpath'], default='disjoint', help='Plot data')
+    parser.add_argument('-pd', '--plot-data', dest='plot_data', choices=['disjoint', 'pathnum', 'border', 'sinkpath', 't-pdr'], default='disjoint', help='Plot data')
     parser.add_argument('-n', '--network', dest='network', type=str, nargs='*', help='Network plot files')
     parser.add_argument('-o', '--outlier', dest='outlier', type=float,  help='Outlier threshold', default=0.0)
     args = parser.parse_args()
@@ -79,8 +77,8 @@ if __name__ == '__main__':
         iso   = pd.read_pickle(filename.replace('$2', 'sink'))
         role  = pd.read_pickle(filename.replace('$2', 'role'))
         min_d = pd.read_pickle(filename.replace('$2', 'min_d'))
-
-        record.append({'filename': filename, 'dmp':dmp, 'rm':rm, 'sink':sink, 'iso':iso, 'role':role, 'min_d':min_d})
+        t_pdr = pd.read_pickle(filename.replace('$2', 't_pdr'))
+        record.append({'filename': filename, 'dmp':dmp, 'rm':rm, 'sink':sink, 'iso':iso, 'role':role, 'min_d':min_d, 't_pdr': t_pdr})
 
     match args.plot:
         case 'bar':
@@ -205,23 +203,34 @@ if __name__ == '__main__':
             x=-0.23
             axs.set_ylabel('Probability')
             for idx_r, r in enumerate(record):
-                if args.plot_data == 'disjoint':
-                    data_src = [i for i in r['dmp'].values.ravel() if not np.isnan(i)]
-                    orig_bins = np.arange(0,1.1,0.1)
-                    axs.set_xlabel('d-score')
-                    counts, bins = np.histogram(data_src, bins=orig_bins)
-                    axs.stairs(counts / sum(counts), bins + 0.002 * (idx_r - 1))
-                else:
-                    data_src = [i for i in r['rm'].values.ravel() if not np.isnan(i)]
-                    orig_bins = np.arange(0, max(r['rm'].values.ravel())+1)
-                    axs.set_xticks(orig_bins)
-                    axs.set_xticklabels(["{0:.0f}".format(x) for x in orig_bins])
-                    axs.set_xlabel('Path number')
-                    #bins = 'auto'
-                    counts, bins = np.histogram(data_src, bins=orig_bins)
-                    axs.stairs(counts / sum(counts), bins + 0.01 * (idx_r - 1))
+                match  args.plot_data:
+                    case 'disjoint':
+                        data_src = [i for i in r['dmp'].values.ravel() if not np.isnan(i)]
+                        orig_bins = np.arange(0,1.1,0.1)
+                        axs.set_xlabel('d-score')
+                        counts, bins = np.histogram(data_src, bins=orig_bins)
+                        axs.stairs(counts / sum(counts), bins + 0.002 * (idx_r - 1))
+                    case 'pathnum':
+                        data_src = [i for i in r['rm'].values.ravel() if not np.isnan(i)]
+                        orig_bins = np.arange(0, max(r['rm'].values.ravel())+1)
+                        axs.set_xticks(orig_bins)
+                        axs.set_xticklabels(["{0:.0f}".format(x) for x in orig_bins])
+                        axs.set_xlabel('Path number')
+                        #bins = 'auto'
+                        counts, bins = np.histogram(data_src, bins=orig_bins)
+                        axs.stairs(counts / sum(counts), bins + 0.01 * (idx_r - 1))
+                    case 't-pdr':
+                        data_src = [i for i in r['t_pdr'].values.ravel() if not np.isnan(i)]
+                        orig_bins = np.arange(0, 1.1, 0.1)
+                        axs.set_xlabel('End-to-end PDR')
+                        counts, bins = np.histogram(data_src, bins=orig_bins)
+                        axs.stairs(counts / sum(counts), bins + 0.002 * (idx_r - 1))
+                    case _:
+                        logger.error('Unknown plot type for histogram: ' + args.plot_data)
+                        exit(1)
                 axs.legend(labels=args.params, title='Sink amount', ncol=5, loc='upper left')
                 axs.set_ylim([0, 1.01])
+
 
         case _:
             logger.error('Plot param unknown')
