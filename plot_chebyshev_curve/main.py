@@ -63,7 +63,7 @@ if __name__ == '__main__':
                 axs.ravel()[idx + 1].plot(node_nrg_arr[i], linestyle=':')
             else:
                 axs.ravel()[idx + 1].plot(node_nrg_arr[i])
-        axs.ravel()[idx + 1].legend(node_nrg_arr.keys())
+        #axs.ravel()[idx + 1].legend(node_nrg_arr.keys())
 
     if args.image:
         fig.savefig('plot.pdf', bbox_inches='tight')
