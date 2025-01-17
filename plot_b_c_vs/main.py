@@ -61,13 +61,13 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(nrows=nrows, ncols=1, layout='compressed', figsize=(8,16))
     axs_arr = axs.ravel()
 
-    axs_arr[0].plot(rnd_c_arr,topsis_c_arr, marker='o')
+    axs_arr[0].plot(rnd_c_arr,topsis_c_arr, 'o')
     axs_arr[0].set_xlabel('RND C-sum')
     axs_arr[0].set_ylabel('TOPSIS C-sum')
 
 
     if args.borders:
-        axs_arr[1].plot(rnd_b_arr, topsis_b_arr, marker='o')
+        axs_arr[1].plot(rnd_b_arr, topsis_b_arr, 'o')
         axs_arr[1].set_xlabel('RND B node')
         axs_arr[1].set_ylabel('TOPSIS B node')
 
