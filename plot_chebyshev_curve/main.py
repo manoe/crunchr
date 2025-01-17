@@ -39,7 +39,6 @@ if __name__ == '__main__':
     nw_yml = yaml.safe_load(stream)
 
     borders = get_border_nodes(nw_yml)
-    print(borders)
     fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed')
     for idx, n_f in enumerate(args.nrg_file):
         stream = open(n_f, 'r')
@@ -60,10 +59,8 @@ if __name__ == '__main__':
         axs.ravel()[0].plot(chebyshev_arr)
 
         for i in node_nrg_arr:
-            print(i)
             if args.border and i == args.border:
                 axs.ravel()[idx + 1].plot(node_nrg_arr[i], linestyle=':')
-                print('gecccci')
             else:
                 axs.ravel()[idx + 1].plot(node_nrg_arr[i])
         axs.ravel()[idx + 1].legend(node_nrg_arr.keys())
