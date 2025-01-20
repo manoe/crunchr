@@ -57,6 +57,8 @@ if __name__ == '__main__':
 
     if args.borders:
         nrows=2
+    else:
+        nrows=1
 
     fig, axs = plt.subplots(nrows=nrows, ncols=1, layout='compressed', figsize=(8,16))
     axs_arr = axs.ravel()
