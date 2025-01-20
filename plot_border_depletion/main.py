@@ -28,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-i', '--image', dest='image', action='store_true', default=False, help='Save as image')
     parser.add_argument('-s', '--source', dest='source', choices=['l_energy','c_energy', 'pkt'], default='l_energy', help='Data source')
+    parser.add_argument('-l', '--legend', dest='legend', action='store', nargs='+')
     args = parser.parse_args()
 
     if args.debug:
@@ -64,7 +65,10 @@ if __name__ == '__main__':
             alpha[i['timestamp']] = [ 1.0 if i == 'border' else 0.5 for i in role_arr ]
 
         axs_arr[0].plot(chebyshev_arr)
-        axs_arr[0].legend(args.nrg_file)
+        if args.legend:
+            axs_arr[0].legend(args.legend)
+        else:
+            axs_arr[0].legend(args.nrg_file)
 
 
         for index, row in values.iterrows():
