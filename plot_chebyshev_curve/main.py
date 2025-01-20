@@ -28,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('-b', '--border', dest='border', action='store', help='Mark border node', type=int)
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-i', '--image', dest='image', action='store_true', default=False, help='Save as image')
+    parser.add_argument('-l', '--legend', dest='legend', action='store_true', default=False, help='Show legend')
     args = parser.parse_args()
 
     if args.debug:
@@ -63,7 +64,8 @@ if __name__ == '__main__':
                 axs.ravel()[idx + 1].plot(node_nrg_arr[i], linestyle=':')
             else:
                 axs.ravel()[idx + 1].plot(node_nrg_arr[i])
-        #axs.ravel()[idx + 1].legend(node_nrg_arr.keys())
+        if args.legend:
+            axs.ravel()[idx + 1].legend(node_nrg_arr.keys())
 
     if args.image:
         fig.savefig('plot.pdf', bbox_inches='tight')
