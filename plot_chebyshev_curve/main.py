@@ -29,6 +29,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-i', '--image', dest='image', action='store_true', default=False, help='Save as image')
     parser.add_argument('-l', '--legend', dest='legend', action='store_true', default=False, help='Show legend')
+    parser.add_argument('-s', '--source', dest='source', choices=['energy', 'pkt'], default='energy', help='Data source')
     args = parser.parse_args()
 
     if args.debug:
@@ -38,6 +39,11 @@ if __name__ == '__main__':
 
     stream = open(args.nw_file, 'r')
     nw_yml = yaml.safe_load(stream)
+
+    if args.source == 'energy':
+        s_sel = 'consumed_energy'
+    else:
+        s_sel = 'pkt_forw'
 
     borders = get_border_nodes(nw_yml)
     fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed')
@@ -52,13 +58,13 @@ if __name__ == '__main__':
             nrg_arr = []
             for k in i['nodes']:
                 if k['node'] in borders:
-                    nrg_arr.append(k['consumed_energy'])
-                    node_nrg_arr[k['node']].append(k['consumed_energy'])
+                    nrg_arr.append(k[s_sel])
+                    node_nrg_arr[k['node']].append(k[s_sel])
             logger.debug('nrg arr: '+str(nrg_arr))
             chebyshev_arr.append(calculate_chebyshev(nrg_arr))
 
         axs.ravel()[0].plot(chebyshev_arr)
-
+        axs.ravel()[0].legend(args.nrg_file)
         for i in node_nrg_arr:
             if args.border and i == args.border:
                 axs.ravel()[idx + 1].plot(node_nrg_arr[i], linestyle=':')
