@@ -27,7 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--energy', dest='nrg_file', action='store', help='The energy file', required=True, nargs='+')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-i', '--image', dest='image', action='store_true', default=False, help='Save as image')
-    parser.add_argument('-s', '--source', dest='source', choices=['l_energy','c_energy', 'pkt'], default='energy', help='Data source')
+    parser.add_argument('-s', '--source', dest='source', choices=['l_energy','c_energy', 'pkt'], default='l_energy', help='Data source')
     args = parser.parse_args()
 
     if args.debug:
