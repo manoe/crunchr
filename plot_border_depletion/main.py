@@ -27,6 +27,7 @@ if __name__ == '__main__':
     parser.add_argument('-e', '--energy', dest='nrg_file', action='store', help='The energy file', required=True, nargs='+')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-i', '--image', dest='image', action='store_true', default=False, help='Save as image')
+    parser.add_argument('-o', '--output', dest='output', action='store', help='Output file', default='plot')
     parser.add_argument('-s', '--source', dest='source', choices=['l_energy','c_energy', 'pkt'], default='l_energy', help='Data source')
     parser.add_argument('-l', '--legend', dest='legend', action='store', nargs='+')
     args = parser.parse_args()
@@ -78,6 +79,6 @@ if __name__ == '__main__':
                 axs_arr[idx+1].plot(x, y, color=z[1],alpha=v[1])
 
     if args.image:
-        fig.savefig('plot.pdf', bbox_inches='tight')
+        fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
     else:
         plt.show()
