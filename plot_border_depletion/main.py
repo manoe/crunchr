@@ -43,7 +43,7 @@ if __name__ == '__main__':
         case 'pkt':
             s_sel = 'pkt_forw'
 
-    fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed')
+    fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed', figsize=(8,16))
     axs_arr = axs.ravel()
     for idx, n_f in enumerate(args.nrg_file):
         stream = open(n_f, 'r')
