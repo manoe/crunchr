@@ -62,7 +62,7 @@ if __name__ == '__main__':
             chebyshev_arr.append(calculate_chebyshev(b_nrg_arr))
             values[i['timestamp']] = [n[s_sel] for n in  i['nodes']]
             role_arr = [n['role'] for n in  i['nodes']]
-            colors[i['timestamp']] = [ 'blue' if i == 'border' else 'green' for i in role_arr ]
+            colors[i['timestamp']] = [ 'blue' if i == 'border' else 'grey' for i in role_arr ]
             alpha[i['timestamp']] = [ 1.0 if i == 'border' else 0.5 for i in role_arr ]
 
         axs_arr[0].plot(chebyshev_arr)
