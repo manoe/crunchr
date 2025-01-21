@@ -40,7 +40,7 @@ if __name__ == '__main__':
     for idx, n_f in enumerate(args.nrg_file):
         stream = open(n_f, 'r')
         nrg_yml = yaml.safe_load(stream)
-
+        logger.debug('filename: '+str(n_f))
         for i in nrg_yml['nrg_list']:
             b_nrg_arr = [ n['energy'] for n in i['nodes'] if n['role'] == 'border']
             if min(b_nrg_arr) == 0:
@@ -51,8 +51,9 @@ if __name__ == '__main__':
                 break
 
     for idx, data in enumerate(blt.items()):
-        counts, bins = np.histogram(blt[data[1]])
+        counts, bins = np.histogram(data[1])
         axs_arr[idx].hist(bins[:-1], bins, weights=counts)
+        axs_arr[idx].set_title(data[0])
 
     if args.image:
         fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
