@@ -21,7 +21,7 @@ def calculate_chebyshev(arr):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='plot_chebyshev_curve', description='Process MSR2MRP border node related stats', epilog=':-(')
+    parser = argparse.ArgumentParser(prog='plot_blt', description='Process MSR2MRP border node related stats', epilog=':-(')
     parser.add_argument('-e', '--energy', dest='nrg_file', action='store', help='The energy file', required=True, nargs='+')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-i', '--image', dest='image', action='store_true', default=False, help='Save as image')
