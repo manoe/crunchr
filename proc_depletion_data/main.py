@@ -42,4 +42,4 @@ if __name__ == '__main__':
             min_val=np.nan
         res[i] = min_val
     logger.debug('result: '+str(res))
-    pd.to_pickle(res, args.output)
+    pd.to_pickle(res, args.output+'.pickle')
