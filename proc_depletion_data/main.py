@@ -33,13 +33,14 @@ if __name__ == '__main__':
         if min(nrg_arr) == 0:
             lt['lt'].append(i['timestamp'])
 
-    res = pd.DataFrame()
-
+    res = pd.DataFrame(columns=['lt', 'blt'])
+    res_data = []
     for i in ['lt', 'blt']:
         if len(lt[i]) > 0:
-            min_val=min(lt[i])
+            res_data.append(min(lt[i]))
         else:
-            min_val=np.nan
-        res[i] = min_val
+            res_data.append(np.nan)
+
+    res.loc[0]=res_data
     logger.debug('result: '+str(res))
     pd.to_pickle(res, args.output+'.pickle')
