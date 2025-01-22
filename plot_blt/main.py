@@ -22,11 +22,12 @@ def calculate_chebyshev(arr):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_blt', description='Process MSR2MRP border node related stats', epilog=':-(')
-    parser.add_argument('-e', '--energy', dest='nrg_file', action='store', help='The energy file', required=True, nargs='+')
+    parser.add_argument('-p', '--pickle', dest='pickle_file', action='store', help='The pickle file', required=True, nargs='+')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-i', '--image', dest='image', action='store_true', default=False, help='Save as image')
     parser.add_argument('-o', '--output', dest='output', action='store', help='Output file', default='plot')
     parser.add_argument('-c', '--categories', dest='categories', action='store', nargs='+', help='Categories')
+    parser.add_argument('-s', '--source', dest='source', action='store', choices=['lt','blt'], default='lt', help='Labels')
     args = parser.parse_args()
 
     if args.debug:
@@ -35,22 +36,18 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(nrows=len(args.categories), ncols=1, layout='compressed',figsize=(16,8))
     axs_arr = axs.ravel()
 
-    blt = {i : [] for i in args.categories}
+    lts ={ i: {j : [] for j in args.categories} for i in ['lt', 'blt']}
 
-    for idx, n_f in enumerate(args.nrg_file):
-        stream = open(n_f, 'r')
-        nrg_yml = yaml.safe_load(stream)
+    for idx, n_f in enumerate(args.pickle_file):
+        data = pd.read_pickle(n_f)
         logger.debug('filename: '+str(n_f))
-        for i in nrg_yml['nrg_list']:
-            b_nrg_arr = [ n['energy'] for n in i['nodes'] if n['role'] == 'border']
-            if min(b_nrg_arr) == 0:
-                res=i['timestamp']
+        for i in data.columns:
+            if not np.isnan(data[i][0]):
                 for j in args.categories:
                     if j in n_f:
-                        blt[j].append(res)
-                break
+                        lts[i][j].append(data[i][0])
 
-    for idx, data in enumerate(blt.items()):
+    for idx, data in enumerate(lts[args.source].items()):
         counts, bins = np.histogram(data[1])
         axs_arr[idx].hist(bins[:-1], bins, weights=counts)
         axs_arr[idx].set_title(data[0])
