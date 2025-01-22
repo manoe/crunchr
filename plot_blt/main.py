@@ -46,19 +46,21 @@ if __name__ == '__main__':
                 for j in args.categories:
                     if j in n_f:
                         lts[i][j].append(data[i][0])
-    all_values = [ i for i in lts[args.source].values() ]
+    all_values = [ min(i) for i in lts[args.source].values() ]
     min_bin = min(all_values)
     max_bin = max(all_values)
+    logger.debug('min_bin: '+str(min_bin))
+    logger.debug('max_bin: '+str(max_bin))
     min_count = []
     max_count = []
     for idx, data in enumerate(lts[args.source].items()):
-        counts, bins = np.histogram(data[1],20, range=(min_bin, max_bin))
+        counts, bins = np.histogram(data[1],bins=20, range=(min_bin, max_bin))
         axs_arr[idx].hist(bins[:-1], weights=counts)
         axs_arr[idx].set_title(data[0])
         min_count.append(min(counts))
         max_count.append(max(counts))
     for i in axs_arr:
-        i.set_xlim([min(min_bin), max(max_bin)])
+        i.set_xlim([min_bin, max_bin])
         i.set_ylim([min(min_count), max(max_count)])
     if args.image:
         fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
