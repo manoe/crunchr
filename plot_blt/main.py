@@ -46,18 +46,21 @@ if __name__ == '__main__':
                 for j in args.categories:
                     if j in n_f:
                         lts[i][j].append(data[i][0])
-    min_bin=[]
-    max_bin=[]
+    min_bin = []
+    max_bin = []
+    min_count = []
+    max_count = []
     for idx, data in enumerate(lts[args.source].items()):
         counts, bins = np.histogram(data[1])
         axs_arr[idx].hist(bins[:-1], bins, weights=counts)
         axs_arr[idx].set_title(data[0])
         min_bin.append(min(bins))
         max_bin.append(max(bins))
-
+        min_count.append(min(counts))
+        max_count.append(max(counts))
     for i in axs_arr:
         i.set_xlim([min(min_bin), max(max_bin)])
-
+        i.set_ylim([min(min_count), max(max_count)])
     if args.image:
         fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
     else:
