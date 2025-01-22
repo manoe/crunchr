@@ -33,7 +33,7 @@ if __name__ == '__main__':
     if args.debug:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-    fig, axs = plt.subplots(nrows=len(args.categories), ncols=1, layout='compressed',figsize=(16,8))
+    fig, axs = plt.subplots(nrows=len(args.categories), ncols=1, layout='compressed',figsize=(8,8))
     axs_arr = axs.ravel()
 
     lts ={ i: {j : [] for j in args.categories} for i in ['lt', 'blt']}
