@@ -46,16 +46,15 @@ if __name__ == '__main__':
                 for j in args.categories:
                     if j in n_f:
                         lts[i][j].append(data[i][0])
-    min_bin = []
-    max_bin = []
+    all_values = [ i for i in lts[args.source].values() ]
+    min_bin = min(all_values)
+    max_bin = max(all_values)
     min_count = []
     max_count = []
     for idx, data in enumerate(lts[args.source].items()):
         counts, bins = np.histogram(data[1])
-        axs_arr[idx].hist(bins[:-1], bins, weights=counts)
+        axs_arr[idx].hist(bins[:-1], 20, weights=counts, range=(min_bin, max_bin))
         axs_arr[idx].set_title(data[0])
-        min_bin.append(min(bins))
-        max_bin.append(max(bins))
         min_count.append(min(counts))
         max_count.append(max(counts))
     for i in axs_arr:
