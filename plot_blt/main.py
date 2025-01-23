@@ -63,7 +63,7 @@ if __name__ == '__main__':
         max_count.append(max(counts))
     for i in axs_arr:
         i.set_xlim([min_bin, max_bin])
-        i.set_ylim([min(min_count), max(max_count)+1])
+        i.set_ylim([min(min_count), max(max_count)*1.1])
     if args.image:
         fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
     else:
