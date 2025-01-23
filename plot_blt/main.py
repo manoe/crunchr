@@ -47,9 +47,10 @@ if __name__ == '__main__':
                     if j in n_f:
                         lts[i][j].append(data[i][0])
                         logger.debug('Data stored: '+str(data[i][0]))
-    all_values = [ min(i) for i in lts[args.source].values() ]
-    min_bin = min(all_values)
-    max_bin = max(all_values)
+    all_min_values = [ min(i) for i in lts[args.source].values() ]
+    all_max_values = [max(i) for i in lts[args.source].values()]
+    min_bin = min(all_min_values)
+    max_bin = max(all_max_values)
     logger.debug('min_bin: '+str(min_bin))
     logger.debug('max_bin: '+str(max_bin))
     min_count = []
