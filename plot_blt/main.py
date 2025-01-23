@@ -71,7 +71,7 @@ if __name__ == '__main__':
         i.set_xticks(ticks)
         tick_labels = ["{:.0f}".format(i/60) for i in ticks]
         i.set_xticklabels(tick_labels)
-        i.set_xlabel()
+        #i.set_xlabel()
     if args.image:
         fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
     else:
