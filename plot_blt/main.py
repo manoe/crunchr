@@ -57,6 +57,7 @@ if __name__ == '__main__':
     max_count = []
     for idx, data in enumerate(lts[args.source].items()):
         counts, bins = np.histogram(data[1],bins=20, range=(min_bin, max_bin))
+        logger.debug('bins: '+str(bins))
         axs_arr[idx].hist(bins[:-1], weights=counts)
         axs_arr[idx].set_title(data[0])
         min_count.append(min(counts))
