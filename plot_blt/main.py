@@ -68,6 +68,8 @@ if __name__ == '__main__':
         i.set_ylim([min(min_count), max(max_count)*1.1])
         ticks = [ (i[1]-i[0])/2.0+i[0] for i in zip(bins[:-1], bins[1:])]
         i.set_xticks(ticks)
+        tick_labels = ["{:.0f}".format(i/60) for i in ticks]
+        i.set_xticklabels(tick_labels)
     if args.image:
         fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
     else:
