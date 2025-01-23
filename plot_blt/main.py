@@ -46,6 +46,7 @@ if __name__ == '__main__':
                 for j in args.categories:
                     if j in n_f:
                         lts[i][j].append(data[i][0])
+                        logger.debug('Data stored: '+str(data[i][0]))
     all_values = [ min(i) for i in lts[args.source].values() ]
     min_bin = min(all_values)
     max_bin = max(all_values)
