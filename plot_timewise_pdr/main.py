@@ -73,8 +73,8 @@ if __name__ == '__main__':
         axs_arr[0].plot(chebyshev_arr)
         if args.legend:
             axs_arr[0].legend(args.legend)
-        else:
-            axs_arr[0].legend(args.nrg_file)
+        #else:
+        #    axs_arr[0].legend(args.nrg_file)
 
 
         for index, row in values.iterrows():
