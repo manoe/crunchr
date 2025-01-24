@@ -150,6 +150,7 @@ if __name__ == '__main__':
         case 'network':
             figsize = rcParams["figure.figsize"]
             figsize = [i*2 for i in figsize]
+            figsize[0] = figsize[0]*0.85
             fig, axs = plt.subplots(nrows=int(np.ceil(len(record) / 2)), ncols=2, layout='compressed', figsize=figsize)
             axs_arr = axs.ravel()
 
@@ -176,17 +177,19 @@ if __name__ == '__main__':
                         clabel='Path number'
                     case 'border':
                         color = [r['role'][i].value_counts()['border']/r['role'][i].value_counts().sum() if 'border' in r['role'][i].value_counts() else 0 for i in nw.nodes()]
-                        alpha = [ 1 if i > 0 else 0 for i in color]
+                        #alpha = [ 1 if i > 0 else 0 for i in color]
                         edgecolors = [  '#1f78b4ff' for i in color]
                         vmin.append(min(color))
                         vmax.append(max(color))
-                        clabel='Border node probability'
+                        clabel='Border role probability'
                     case _:
                         'none'
                 edgecolors = ['#1f78b4ff' for i in color]
                 pos = nx.get_node_attributes(nw, 'pos')
-
-                nx.draw_networkx_nodes(nw, ax=axs_arr[idx_r], pos=pos, node_color=colormaps['viridis']([i/max(vmax) for i in color]), node_size=200, alpha=alpha, edgecolors=edgecolors)
+                node_colors=colormaps['viridis']([i/max(vmax) for i in color])
+                if args.plot_data == 'border':
+                    node_colors = [ i if color[idx] != 0 else [1, 1, 1, 1.      ] for idx, i in enumerate(node_colors)]
+                nx.draw_networkx_nodes(nw, ax=axs_arr[idx_r], pos=pos, node_color=node_colors, node_size=200, alpha=alpha, edgecolors=edgecolors)
                 nx.draw_networkx_edges(nw, ax=axs_arr[idx_r], pos=pos)
                 axs_arr[idx_r].axis('off')
                 axs_arr[idx_r].set_title(title[idx_r], loc='left', pad=5, x=x)
