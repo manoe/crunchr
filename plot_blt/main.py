@@ -57,12 +57,14 @@ if __name__ == '__main__':
     min_count = []
     max_count = []
     for idx, data in enumerate(lts[args.source].items()):
-        counts, bins = np.histogram(data[1],bins=20, range=(min_bin, max_bin))
+        counts, bins = np.histogram(data[1],bins=20, range=(min_bin, max_bin), density=args.cdf)
         logger.debug('bins: '+str(bins))
         logger.debug('counts: ' + str(counts))
         if args.cdf:
             counts = np.cumsum(counts)
-        axs_arr[idx].hist(bins[:-1], bins, weights=counts,rwidth=0.9)
+            axs_arr[idx].hist(bins[:-1], bins, weights=counts, rwidth=0.9)
+        else:
+            axs_arr[idx].hist(bins[:-1], bins, weights=counts,rwidth=0.9)
         axs_arr[idx].set_title(data[0])
         min_count.append(min(counts))
         max_count.append(max(counts))
