@@ -61,10 +61,10 @@ if __name__ == '__main__':
         logger.debug('bins: '+str(bins))
         logger.debug('counts: ' + str(counts))
         if args.cdf:
-            counts = np.cumsum(counts)
-            axs_arr[idx].hist(bins[:-1], bins, weights=counts, rwidth=0.9)
+            #counts = np.cumsum(counts)
+            axs_arr[idx].hist(bins[:-1], bins, weights=counts, rwidth=0.9, cumulative=True, density=True)
         else:
-            axs_arr[idx].hist(bins[:-1], bins, weights=counts,rwidth=0.9)
+            axs_arr[idx].hist(bins[:-1], bins, weights=counts, rwidth=0.9)
         axs_arr[idx].set_title(data[0])
         min_count.append(min(counts))
         max_count.append(max(counts))
