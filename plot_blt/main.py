@@ -28,6 +28,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', dest='output', action='store', help='Output file', default='plot')
     parser.add_argument('-c', '--categories', dest='categories', action='store', nargs='+', help='Categories')
     parser.add_argument('-s', '--source', dest='source', action='store', choices=['lt','blt'], default='lt', help='Labels')
+    parser.add_argument('-cdf', '--cdf', dest='cdf', action='store_true', default='false', help='Plot cdf')
     args = parser.parse_args()
 
     if args.debug:
@@ -59,6 +60,8 @@ if __name__ == '__main__':
         counts, bins = np.histogram(data[1],bins=20, range=(min_bin, max_bin))
         logger.debug('bins: '+str(bins))
         logger.debug('counts: ' + str(counts))
+        if args.cdf:
+            counts = np.cumsum(counts)
         axs_arr[idx].hist(bins[:-1], bins, weights=counts,rwidth=0.9)
         axs_arr[idx].set_title(data[0])
         min_count.append(min(counts))
