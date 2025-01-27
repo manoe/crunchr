@@ -4,6 +4,7 @@ import argparse
 import logging
 import matplotlib
 import pandas as pd
+from matplotlib.lines import lineStyles
 
 logger = logging.getLogger(__name__)
 import sys
@@ -57,6 +58,8 @@ if __name__ == '__main__':
         values = pd.DataFrame()
         colors = pd.DataFrame()
         alpha = pd.DataFrame()
+        styles = pd.DataFrame()
+
         for i in nrg_yml['nrg_list']:
             b_nrg_arr = [ n[s_sel] for n in i['nodes'] if n['role'] == 'border']
             chebyshev_arr.append(calculate_chebyshev(b_nrg_arr))
@@ -66,6 +69,7 @@ if __name__ == '__main__':
             role_arr = [n['role'] for n in  i['nodes']]
             role_arr.append('avg_border')
             colors[i['timestamp']] = [ 'blue' if i == 'border' else 'red' if i == 'avg_border' else 'grey' for i in role_arr ]
+            styles[i['timestamp']] = [ 'dotted' if i == 'avg_border' else 'solid' for i in role_arr ]
             alpha[i['timestamp']] = [ 1.0 if i == 'border' else  1 if i == 'avg_border' else 0.5 for i in role_arr ]
 
         axs_arr[0].plot(chebyshev_arr)
@@ -76,10 +80,10 @@ if __name__ == '__main__':
 
 
         for index, row in values.iterrows():
-            xy = list(map(list, zip(row.index,row.values,colors.loc[index].values,alpha.loc[index].values)))
+            xy = list(map(list, zip(row.index,row.values,colors.loc[index].values,alpha.loc[index].values, styles.loc[index].values)))
             for start, stop in zip(xy[:-1], xy[1:]):
-                x, y, z, v = zip(start, stop)
-                axs_arr[idx+1].plot(x, y, color=z[1],alpha=v[1])
+                x, y, z, v, w = zip(start, stop)
+                axs_arr[idx+1].plot(x, y, color=z[1],alpha=v[1], linestyle=w[1])
 
     if args.image:
         fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
