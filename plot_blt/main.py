@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
         if args.cdf:
             yticks = i.get_xticks()
-            yticklabels = ["{:.02}".format(i/100.0) for i in yticks]
+            yticklabels = ["{:.02}".format(i/max(max_count)) for i in yticks]
             i.set_yticklabels(yticklabels)
         #ticks = [ (i[1]-i[0])/2.0+i[0] for i in zip(bins[:-1], bins[1:])]
         ticks = bins
