@@ -15,6 +15,8 @@ import yaml
 from matplotlib import rcParams
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
+rcParams["text.usetex"] = True
+
 
 def get_border_nodes(nw_yml):
     return [ i['node'] for i in nw_yml if 'border' in [j['role'] for j in i['engines']]]
@@ -31,6 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--output', dest='output', action='store', help='Output file', default='plot')
     parser.add_argument('-s', '--source', dest='source', choices=['l_energy','c_energy', 'pkt'], default='l_energy', help='Data source')
     parser.add_argument('-l', '--legend', dest='legend', action='store', nargs='+')
+    parser.add_argument('-t', '--to', dest='to', action='store', type=int)
     args = parser.parse_args()
 
     if args.debug:
@@ -43,17 +46,20 @@ if __name__ == '__main__':
             s_sel = 'energy'
         case 'pkt':
             s_sel = 'pkt_forw'
-
+    title = ['(' + i + ')' for i in 'abcdefg']
     fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed', figsize=(8,16))
     axs_arr = axs.ravel()
     for idx, n_f in enumerate(args.nrg_file):
         stream = open(n_f, 'r')
         nrg_yml = yaml.safe_load(stream)
+        if args.to:
+            nrg_yml['nrg_list'] = nrg_yml['nrg_list'][:args.to]
 
         chebyshev_arr = []
         node_nrg_arr = []
 
         ts = [i['timestamp'] for i in nrg_yml['nrg_list']]
+
 
         values = pd.DataFrame()
         colors = pd.DataFrame()
@@ -72,7 +78,7 @@ if __name__ == '__main__':
             styles[i['timestamp']] = [ 'dotted' if i == 'avg_border' else 'solid' for i in role_arr ]
             alpha[i['timestamp']] = [ 1.0 if i == 'border' else  1 if i == 'avg_border' else 0.5 for i in role_arr ]
 
-        axs_arr[0].plot(chebyshev_arr)
+        axs_arr[0].plot(ts,chebyshev_arr)
         if args.legend:
             axs_arr[0].legend(args.legend)
         else:
@@ -85,6 +91,14 @@ if __name__ == '__main__':
                 x, y, z, v, w = zip(start, stop)
                 axs_arr[idx+1].plot(x, y, color=z[1],alpha=v[1], linestyle=w[1])
 
+    for idx,axs in enumerate(axs_arr):
+        axs.set_title(title[idx], loc='left', pad=5, x=-0.07)
+        axs.set_xlabel('Time (s)')
+        if idx != 0:
+            axs.set_ylabel('Energy (J)')
+        else:
+            axs.set_ylabel(r'Energy balance ($\Phi$)')
+        axs.set_yticklabels(["{:0.2f}".format(i) for i in axs.get_yticks()])
     if args.image:
         fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
     else:
