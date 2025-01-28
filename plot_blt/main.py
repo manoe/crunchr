@@ -68,7 +68,7 @@ if __name__ == '__main__':
         else:
             axs_arr[idx].hist(bins[:-1], bins, weights=counts, rwidth=0.9)
         #axs_arr[idx].set_title(data[0])
-        axs_arr[idx].set_title(title[idx], loc='left', pad=5, x=0)
+        axs_arr[idx].set_title(title[idx], loc='left', pad=5, x=-0.5)
         axs_arr[idx].set_xlabel('Time (min)')
         if args.source == 'lt':
             axs_arr[idx].set_ylabel('First node failure (probability)')
