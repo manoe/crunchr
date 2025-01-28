@@ -31,6 +31,8 @@ if __name__ == '__main__':
     parser.add_argument('-cdf', '--cdf', dest='cdf', action='store_true', default='false', help='Plot cdf')
     args = parser.parse_args()
 
+    title = [ '('+i+')' for i in 'abcdefg']
+
     if args.debug:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
@@ -65,13 +67,15 @@ if __name__ == '__main__':
             axs_arr[idx].hist(bins[:-1], bins, weights=counts, rwidth=0.9, cumulative=True, density=True)
         else:
             axs_arr[idx].hist(bins[:-1], bins, weights=counts, rwidth=0.9)
-        axs_arr[idx].set_title(data[0])
+        #axs_arr[idx].set_title(data[0])
+        axs_arr[idx].set_title(title[idx], loc='left', pad=5, x=0.04)
         min_count.append(min(counts))
         max_count.append(max(counts))
-    for i in axs_arr:
+    for idx,i in enumerate(axs_arr):
         i.set_xlim([min_bin, max_bin])
         if not args.cdf:
             i.set_ylim([min(min_count), max(max_count)*1.1])
+
 
         #ticks = [ (i[1]-i[0])/2.0+i[0] for i in zip(bins[:-1], bins[1:])]
         ticks = bins
