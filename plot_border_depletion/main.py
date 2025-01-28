@@ -15,7 +15,7 @@ import yaml
 from matplotlib import rcParams
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
-rcParams["text.usetex"] = True
+#rcParams["text.usetex"] = True
 
 
 def get_border_nodes(nw_yml):
@@ -99,6 +99,7 @@ if __name__ == '__main__':
         else:
             axs.set_ylabel(r'Energy balance ($\Phi$)')
         axs.set_yticklabels(["{:0.2f}".format(i) for i in axs.get_yticks()])
+        axs.set_xticklabels(["{:0.0f}".format(i/60) for i in axs.get_xticks()])
     if args.image:
         fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
     else:
