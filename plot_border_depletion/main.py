@@ -36,6 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--source', dest='source', choices=['l_energy','c_energy', 'pkt'], default='l_energy', help='Data source')
     parser.add_argument('-l', '--legend', dest='legend', action='store', nargs='+')
     parser.add_argument('-t', '--to', dest='to', action='store', type=int)
+    parser.add_argument('-p', '--period', dest='period', action='store', type=int, default=30)
     args = parser.parse_args()
 
     if args.debug:
@@ -52,6 +53,8 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed', figsize=(8,12))
     axs_arr = axs.ravel()
     ax2 = axs_arr[0].twinx()
+    axs.set_xlabel('Dead node (count)')
+
     for idx, n_f in enumerate(args.nrg_file):
         stream = open(n_f, 'r')
         nrg_yml = yaml.safe_load(stream)
@@ -107,7 +110,9 @@ if __name__ == '__main__':
         axs.margins(0.0, 0.02)
         axs.set_yticklabels(["{:0.2f}".format(i) for i in axs.get_yticks()])
         axs.set_xticklabels(["{:0.0f}".format(i/60) for i in axs.get_xticks()])
-
+        for i in range(len(ts+1)):
+            if i*args.period == 3600:
+                axs.axvline(x=i, color = 'grey', linestyle = 'dotted', alpha=0.5)
 
     colors = ['red', 'blue', 'grey']
     styles = ['dotted', 'solid', 'solid']
