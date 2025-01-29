@@ -77,7 +77,7 @@ if __name__ == '__main__':
             role_arr.append('avg_border')
             colors[i['timestamp']] = [ 'blue' if i == 'border' else 'red' if i == 'avg_border' else 'grey' for i in role_arr ]
             styles[i['timestamp']] = [ 'dotted' if i == 'avg_border' else 'solid' for i in role_arr ]
-            alpha[i['timestamp']] = [ 1.0 if i == 'border' else  1 if i == 'avg_border' else 0.5 for i in role_arr ]
+            alpha[i['timestamp']] = [ 1.0 if i == 'border' else  1 if i == 'avg_border' else 0.25 for i in role_arr ]
 
         axs_arr[0].plot(ts,chebyshev_arr)
         if args.legend:
