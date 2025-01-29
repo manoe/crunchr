@@ -53,7 +53,7 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed', figsize=(8,12))
     axs_arr = axs.ravel()
     ax2 = axs_arr[0].twinx()
-    ax2.set_xlabel('Dead node (count)')
+    ax2.set_ylabel('Dead node (count)')
 
     for idx, n_f in enumerate(args.nrg_file):
         stream = open(n_f, 'r')
@@ -111,7 +111,7 @@ if __name__ == '__main__':
         axs.set_yticklabels(["{:0.2f}".format(i) for i in axs.get_yticks()])
         axs.set_xticklabels(["{:0.0f}".format(i/60) for i in axs.get_xticks()])
         for i in range(len(ts)+1):
-            if i*args.period == 3600:
+            if i*args.period % 3600 == 0:
                 axs.axvline(x=i, color = 'grey', linestyle = 'dotted', alpha=0.5)
 
     colors = ['red', 'blue', 'grey']
