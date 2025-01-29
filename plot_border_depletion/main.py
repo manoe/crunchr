@@ -36,7 +36,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--source', dest='source', choices=['l_energy','c_energy', 'pkt'], default='l_energy', help='Data source')
     parser.add_argument('-l', '--legend', dest='legend', action='store', nargs='+')
     parser.add_argument('-t', '--to', dest='to', action='store', type=int)
-    parser.add_argument('-p', '--period', dest='period', action='store', type=int, default=30)
+    parser.add_argument('-p', '--period', dest='period', action='store', type=int, default=60)
     args = parser.parse_args()
 
     if args.debug:
