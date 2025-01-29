@@ -24,7 +24,7 @@ def get_border_nodes(nw_yml):
     return [ i['node'] for i in nw_yml if 'border' in [j['role'] for j in i['engines']]]
 
 def calculate_chebyshev(arr):
-    return np.sum(np.power(arr, 2))**2/ ( len(arr)* np.sum(np.power(arr, 4)))
+    return np.sum(np.power(arr, 1))**2/ ( len(arr)* np.sum(np.power(arr, 2)))
 
 
 if __name__ == '__main__':
@@ -68,7 +68,7 @@ if __name__ == '__main__':
         styles = pd.DataFrame()
 
         for i in nrg_yml['nrg_list']:
-            b_nrg_arr = [ n[s_sel] for n in i['nodes'] if n['role'] == 'border']
+            b_nrg_arr = [ n[s_sel] for n in i['nodes'] if n['role'] == 'border' and n[s_sel] > 0]
             chebyshev_arr.append(calculate_chebyshev(b_nrg_arr))
             tmp_values = [n[s_sel] for n in  i['nodes'] if n['role'] != 'central']
             tmp_values.append(np.average(b_nrg_arr))
