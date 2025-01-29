@@ -59,6 +59,7 @@ if __name__ == '__main__':
 
         chebyshev_arr = []
         node_nrg_arr = []
+        dead_node_arr = []
 
         ts = [i['timestamp'] for i in nrg_yml['nrg_list']]
 
@@ -69,6 +70,7 @@ if __name__ == '__main__':
 
         for i in nrg_yml['nrg_list']:
             b_nrg_arr = [ n[s_sel] for n in i['nodes'] if n['role'] == 'border' and n[s_sel] > 0]
+            dead_node_arr.append(len( [n for n in i['nodes'] if n['role'] == 'border' and n[s_sel] == 0]))
             chebyshev_arr.append(calculate_chebyshev(b_nrg_arr))
             tmp_values = [n[s_sel] for n in  i['nodes'] if n['role'] != 'central']
             tmp_values.append(np.average(b_nrg_arr))
@@ -80,6 +82,8 @@ if __name__ == '__main__':
             alpha[i['timestamp']] = [ 1.0 if i == 'border' else  1 if i == 'avg_border' else 0.25 for i in role_arr ]
 
         axs_arr[0].plot(ts,chebyshev_arr)
+        ax2 = axs_arr[0].twinx()
+        ax2.plot(ts,dead_node_arr)
         if args.legend:
             axs_arr[0].legend(args.legend)
         else:
