@@ -53,7 +53,7 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed', figsize=(8,12))
     axs_arr = axs.ravel()
     ax2 = axs_arr[0].twinx()
-    axs.set_xlabel('Dead node (count)')
+    ax2.set_xlabel('Dead node (count)')
 
     for idx, n_f in enumerate(args.nrg_file):
         stream = open(n_f, 'r')
