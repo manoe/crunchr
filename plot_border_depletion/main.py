@@ -107,7 +107,7 @@ if __name__ == '__main__':
     colors = ['red', 'blue', 'grey']
     styles = ['dotted', 'solid', 'solid']
     lines = [Line2D([0], [0], color=c, linewidth=3, linestyle=s) for c,s in zip(colors,styles)]
-    labels = ['black data', 'red data', 'green data']
+    labels = ['Border node average', 'Border node', 'Sensor node']
     axs_arr[-1].legend(lines, labels)
 
     if args.image:
