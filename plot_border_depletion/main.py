@@ -71,10 +71,10 @@ if __name__ == '__main__':
         for i in nrg_yml['nrg_list']:
             b_nrg_arr = [ n[s_sel] for n in i['nodes'] if n['role'] == 'border']
             chebyshev_arr.append(calculate_chebyshev(b_nrg_arr))
-            tmp_values = [n[s_sel] for n in  i['nodes']]
+            tmp_values = [n[s_sel] for n in  i['nodes'] if n['role'] != 'central']
             tmp_values.append(np.average(b_nrg_arr))
             values[i['timestamp']] = tmp_values
-            role_arr = [n['role'] for n in  i['nodes']]
+            role_arr = [n['role'] for n in  i['nodes'] if n['role'] != 'central']
             role_arr.append('avg_border')
             colors[i['timestamp']] = [ 'blue' if i == 'border' else 'red' if i == 'avg_border' else 'grey' for i in role_arr ]
             styles[i['timestamp']] = [ 'dotted' if i == 'avg_border' else 'solid' for i in role_arr ]
