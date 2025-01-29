@@ -49,7 +49,7 @@ if __name__ == '__main__':
         case 'pkt':
             s_sel = 'pkt_forw'
     title = ['(' + i + ')' for i in 'abcdefg']
-    fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed', figsize=(8,16))
+    fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed', figsize=(8,12))
     axs_arr = axs.ravel()
     for idx, n_f in enumerate(args.nrg_file):
         stream = open(n_f, 'r')
@@ -100,6 +100,7 @@ if __name__ == '__main__':
             axs.set_ylabel('Energy (J)')
         else:
             axs.set_ylabel(r'Energy balance ($\Phi$)')
+        axs.margins(0.0, 0.02)
         axs.set_yticklabels(["{:0.2f}".format(i) for i in axs.get_yticks()])
         axs.set_xticklabels(["{:0.0f}".format(i/60) for i in axs.get_xticks()])
 
