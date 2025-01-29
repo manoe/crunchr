@@ -51,6 +51,7 @@ if __name__ == '__main__':
     title = ['(' + i + ')' for i in 'abcdefg']
     fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed', figsize=(8,12))
     axs_arr = axs.ravel()
+    ax2 = axs_arr[0].twinx()
     for idx, n_f in enumerate(args.nrg_file):
         stream = open(n_f, 'r')
         nrg_yml = yaml.safe_load(stream)
@@ -82,8 +83,8 @@ if __name__ == '__main__':
             alpha[i['timestamp']] = [ 1.0 if i == 'border' else  1 if i == 'avg_border' else 0.25 for i in role_arr ]
 
         axs_arr[0].plot(ts,chebyshev_arr)
-        ax2 = axs_arr[0].twinx()
-        ax2.plot(ts,dead_node_arr)
+        ax2.plot(ts,dead_node_arr, linestyle='dotted')
+
         if args.legend:
             axs_arr[0].legend(args.legend)
         else:
