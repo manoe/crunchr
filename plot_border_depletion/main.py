@@ -5,7 +5,9 @@ import logging
 import matplotlib
 import pandas as pd
 from matplotlib.lines import lineStyles
+from matplotlib.lines import Line2D
 
+import matplotlib.patches as mpatches
 logger = logging.getLogger(__name__)
 import sys
 import matplotlib.pyplot as plt
@@ -93,13 +95,21 @@ if __name__ == '__main__':
 
     for idx,axs in enumerate(axs_arr):
         axs.set_title(title[idx], loc='left', pad=5, x=-0.07)
-        axs.set_xlabel('Time (s)')
+        axs.set_xlabel('Time (m)')
         if idx != 0:
             axs.set_ylabel('Energy (J)')
         else:
             axs.set_ylabel(r'Energy balance ($\Phi$)')
         axs.set_yticklabels(["{:0.2f}".format(i) for i in axs.get_yticks()])
         axs.set_xticklabels(["{:0.0f}".format(i/60) for i in axs.get_xticks()])
+
+
+    colors = ['red', 'blue', 'grey']
+    styles = ['dotted', 'solid', 'solid']
+    lines = [Line2D([0], [0], color=c, linewidth=3, linestyle=s) for c,s in zip(colors,styles)]
+    labels = ['black data', 'red data', 'green data']
+    axs_arr[-1].legend(lines, labels)
+
     if args.image:
         fig.savefig(str(args.output)+'.pdf', bbox_inches='tight')
     else:
