@@ -62,7 +62,6 @@ if __name__ == '__main__':
 
         ts = [i['timestamp'] for i in nrg_yml['nrg_list']]
 
-
         values = pd.DataFrame()
         colors = pd.DataFrame()
         alpha = pd.DataFrame()
