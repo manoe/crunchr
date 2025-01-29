@@ -110,7 +110,7 @@ if __name__ == '__main__':
         axs.margins(0.0, 0.02)
         axs.set_yticklabels(["{:0.2f}".format(i) for i in axs.get_yticks()])
         axs.set_xticklabels(["{:0.0f}".format(i/60) for i in axs.get_xticks()])
-        for i in range(len(ts+1)):
+        for i in range(len(ts)+1):
             if i*args.period == 3600:
                 axs.axvline(x=i, color = 'grey', linestyle = 'dotted', alpha=0.5)
 
