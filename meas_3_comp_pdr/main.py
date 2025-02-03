@@ -25,7 +25,7 @@ if __name__ == '__main__':
     parser.add_argument('-p2', '--proto2', dest='proto2', nargs='+', help='Versus protocols')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-s', '--seed-set', dest='seed_set', nargs='+', type=str,  help='Seed set')
-    parser.add_argument('-o', '--out', dest='out', nargs='?', type=str, help='Out filename')
+    parser.add_argument('-o', '--out', dest='out', nargs='?', type=str, help='Out filename', default='out')
     parser.add_argument('-i', '--info', dest='info', choices=['report_pdr', 'event_pdr'], default='report_pdr', help='What info to use')
     args = parser.parse_args()
 
@@ -55,5 +55,5 @@ if __name__ == '__main__':
         ax.set_ylim([0, 1])
         ax.set_title(proto)
     plt.show()
-    fig.savefig(str(args.plot) + '_' + str(args.plot_data) + ".pdf", bbox_inches='tight')
+    fig.savefig(args.out+'.pdf', bbox_inches='tight')
 
