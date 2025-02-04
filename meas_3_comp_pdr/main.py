@@ -19,7 +19,7 @@ rcParams['font.serif'] = ['Times New Roman']
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='msr2mrp_meas_1_plot', description='Process MSR2MRP border node related stats', epilog=':-(')
+    parser = argparse.ArgumentParser(prog='meas_3_comp_pdr', description='Process MSR2MRP border node related stats', epilog=':-(')
     parser.add_argument('filename', help='Input filename template, use $1 for protocol, $2 for seed as wildcard')
     parser.add_argument('-p1', '--proto1', dest='proto1', nargs='?', help='Base protocol')
     parser.add_argument('-p2', '--proto2', dest='proto2', nargs='+', help='Versus protocols')
