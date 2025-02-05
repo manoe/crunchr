@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
         nx.draw_networkx_nodes(nw, ax=ax, pos=pos, alpha=n_alpha, node_color=colors)
         nx.draw_networkx_labels(nw, ax=ax, pos=pos, font_size=9)
-        nx.draw_networkx_edges(nw, ax=ax, pos=pos, alpha=e_alpha)
+        nx.draw_networkx_edges(nw, ax=ax, pos=pos, alpha=e_alpha, connectionstyle="arc3,rad=0.2")
         #nx.draw_networkx_edge_labels(nw, ax=ax, pos=pos, edge_labels=nx.get_edge_attributes(nw, 'pathid'))
         ax.set_aspect(ratio, anchor=anchor)
         ax.axis('off')
