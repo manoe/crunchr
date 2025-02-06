@@ -100,10 +100,11 @@ if __name__ == '__main__':
     for i in loader:
         if i['node'] == args.node:
             for j in i['engines']:
-                for k in j['routing_table']:
-                    for l in k['pathid']:
-                        if l['pathid'] == args.path:
-                            sent_pkt = k['orig_pkt_count']
+                if 'routing_table' in j:
+                    for k in j['routing_table']:
+                        for l in k['pathid']:
+                            if l['pathid'] == args.path:
+                                sent_pkt = k['orig_pkt_count']
 
     if sent_pkt > 0:
         print('Node: '+str(args.node))
