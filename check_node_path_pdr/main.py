@@ -46,6 +46,8 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--config', dest='config', action='store_true', help='Generate config')
     parser.add_argument('-q', '--query', dest='query', action='store_true', help='Query')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
+    parser.add_argument('-l', '--limit', dest='limit', type=int, default=4, help='Limit the number of levels')
+    parser.add_argument('-m', '--minimal', dest='minimal', action='store_true', help='Minimal data only')
     args = parser.parse_args()
 
     if args.debug:
@@ -77,7 +79,8 @@ if __name__ == '__main__':
                 print('from '+str(args.node)+' via pathid '+str(p)+' node are '+str(nodes))
             else:
                 for idx,node in enumerate(nodes):
-                    print(str(p)+' '+str(idx+1)+' '+str(node))
+                    if idx <= 4:
+                        print(str(p)+' '+str(idx+1)+' '+str(node))
         exit(0)
 
     if not args.path:
@@ -109,9 +112,17 @@ if __name__ == '__main__':
                             if l['pathid'] == args.path:
                                 sent_pkt = k['orig_pkt_count']
 
-    if sent_pkt > 0:
+    if args.minimal:
+        if sent_pkt > 0:
+            print(str(float(recv_pkt) / float(sent_pkt)))
+        else:
+            print(float(0))
+    else:
         print('Node: '+str(args.node))
         print('Path: '+str(args.path))
         print('Sent packet: '+str(sent_pkt))
         print('Received packet: '+str(recv_pkt))
-        print('PDR: '+str(float(recv_pkt)/float(sent_pkt)))
+        if sent_pkt > 0:
+            print('PDR: '+str(float(recv_pkt)/float(sent_pkt)))
+        else:
+            print('PDR: 0')
