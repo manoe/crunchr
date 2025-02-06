@@ -43,6 +43,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--node', dest='node', type=int, help='Node')
     parser.add_argument('-p', '--path', dest='path', type=int, help='Path', nargs='?')
     parser.add_argument('-f', '--file', dest='file', type=str, help='File')
+    parser.add_argument('-c', '--config', dest='config', action='store_true', help='Generate config')
     parser.add_argument('-q', '--query', dest='query', action='store_true', help='Query')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     args = parser.parse_args()
@@ -69,7 +70,11 @@ if __name__ == '__main__':
                 logger.error('Several paths available')
                 exit(1)
             nodes = [i[1] for i in spath[0]]
-            print('from '+str(args.node)+' via pathid '+str(p)+' node are '+str(nodes))
+            if not args.config:
+                print('from '+str(args.node)+' via pathid '+str(p)+' node are '+str(nodes))
+            else:
+                for idx,node in enumerate(nodes):
+                    print(str(p)+' '+str(idx+1)+' '+str(node))
         exit(0)
 
     if not args.path:
