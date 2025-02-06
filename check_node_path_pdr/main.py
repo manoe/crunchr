@@ -56,7 +56,7 @@ if __name__ == '__main__':
     loader = yaml.safe_load(stream)
 
     if args.query:
-        paths = [l['pathid'] for i in loader if i['node'] == args.node for j in i['engines'] for k in j['routing_table'] for l in k['pathid'] ]
+        paths = [l['pathid'] for i in loader if i['node'] == args.node for j in i['engines'] if 'routing_table' in j for k in j['routing_table'] for l in k['pathid'] ]
         nw = construct_graph(loader)
 
         for p in paths:
@@ -68,6 +68,9 @@ if __name__ == '__main__':
 
             if len(spath) > 1:
                 logger.error('Several paths available')
+                exit(1)
+            if len(spath) == 0:
+                logger.error('No paths available')
                 exit(1)
             nodes = [i[1] for i in spath[0]]
             if not args.config:
