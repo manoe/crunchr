@@ -33,6 +33,6 @@ if __name__ == '__main__':
 
     pdr = np.average(pdr_arr)
     if args.pandas:
-        pd.DataFrame(pdr).to_pickle(args.out)
+        pd.Series(pdr).to_pickle(args.out)
     else:
         print('Average PDR: '+str(pdr))
