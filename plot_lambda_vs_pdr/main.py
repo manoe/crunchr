@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     results = { i:{j:[] for j in args.lambda_p} for i in args.proto }
     for proto in args.proto:
-        results[proto]= {np.average(raw_results[proto][j]) for j in args.lambda_p}
+        results[proto]= {j: np.average(raw_results[proto][j]) for j in args.lambda_p}
 
     fig,axs = plt.subplots(nrows=1, ncols=1,constrained_layout=True)
     x_axis = [float(i) for i in args.lambda_p]
