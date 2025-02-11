@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file', dest='file', type=str, help='Template file, $3 is seed $1 is protocol $2 is lambda')
     parser.add_argument('-s', '--seed', dest='seed', type=int, help='Seeds', nargs='*')
     parser.add_argument('-p', '--proto', dest='proto', type=str, help='protocols', nargs='*')
-    parser.add_argument('-l', '--lambda', dest='lambda_p', type=float, help='Lambda parameter', nargs='*')
+    parser.add_argument('-l', '--lambda', dest='lambda_p', type=str, help='Lambda parameter', nargs='*')
     parser.add_argument('-la', '--labels', dest='labels', type=str, help='Labels', nargs='*')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     args = parser.parse_args()
@@ -36,6 +36,7 @@ if __name__ == '__main__':
         results[proto]= {np.average(raw_results[proto][j]) for j in args.lambda_p}
 
     fig,axs = plt.subplot(nrows=1, ncols=1,constrained_layout=True)
+    x_axis = [float(i) for i in args.lambda_p]
     for proto in args.proto:
         axs.plot(args.lambda_p, results[proto].values())
         axs.legend(args.labels)
