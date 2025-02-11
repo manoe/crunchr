@@ -202,9 +202,11 @@ if __name__ == '__main__':
             plt.colorbar(cmap, cax=cax, **kw, label=clabel)
         case 'hist':
             #fig, axs = plt.subplots(nrows=int(np.ceil(len(record[1:]) / 2)), ncols=2)
-            fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(rcParams["figure.figsize"][0], rcParams["figure.figsize"][1]*0.75))
+            fig, axs = plt.subplots(nrows=1, ncols=1, figsize=(rcParams["figure.figsize"][0]*0.75, rcParams["figure.figsize"][1]*0.75))
             x=-0.23
             axs.set_ylabel('Probability')
+            all_counts = []
+            bins = []
             for idx_r, r in enumerate(record):
                 match  args.plot_data:
                     case 'disjoint':
@@ -212,7 +214,12 @@ if __name__ == '__main__':
                         orig_bins = np.arange(0,1.1,0.1)
                         axs.set_xlabel('d-score')
                         counts, bins = np.histogram(data_src, bins=orig_bins)
-                        axs.stairs(counts / sum(counts), bins + 0.002 * (idx_r - 1))
+                        all_counts.append(counts)
+                        #plt.hist(bins[:-1], bins, weights=counts/sum(counts))
+                        plt.bar(bins[:-1]+(0.025*(0.5+idx_r)), counts/sum(counts), width=0.020, align='center')
+                        plt.xticks(bins)
+                        #plt.hist(counts/sum(counts), bins)
+                        #axs.stairs(counts / sum(counts), bins + 0.002 * (idx_r - 1))
                     case 'pathnum':
                         data_src = [i for i in r['rm'].values.ravel() if not np.isnan(i)]
                         orig_bins = np.arange(0, max(r['rm'].values.ravel())+1)
@@ -233,8 +240,11 @@ if __name__ == '__main__':
                         exit(1)
                 axs.legend(labels=args.params, title='Sink amount', ncol=5, loc='upper left')
                 axs.set_ylim([0, 1.01])
-
-
+            #if args.plot_data == 'disjoint':
+            #    all_counts = [i/sum(i) for i in all_counts]
+            #    plt.hist(all_counts,bins[:-1], histtype='bar')
+            #    axs.legend(labels=args.params, title='Sink amount', ncol=5, loc='upper left')
+            #    axs.set_ylim([0, 1.01])
         case _:
             logger.error('Plot param unknown')
             exit(1)
