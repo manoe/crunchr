@@ -206,7 +206,6 @@ if __name__ == '__main__':
             x=-0.23
             axs.set_ylabel('Probability')
             all_counts = []
-            bins = []
             for idx_r, r in enumerate(record):
                 match  args.plot_data:
                     case 'disjoint':
