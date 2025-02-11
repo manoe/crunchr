@@ -12,6 +12,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file', dest='file', required=True)
     parser.add_argument('-p', '--pandas', dest='pandas', action='store_true')
     parser.add_argument('-o', '--out', dest='out', default='out.pickle')
+    parser.add_argument('-m', '--minimal', dest='minimal', action='store_true')
 
     args = parser.parse_args()
 
@@ -35,4 +36,7 @@ if __name__ == '__main__':
     if args.pandas:
         pd.Series(pdr).to_pickle(args.out)
     else:
-        print('Average PDR: '+str(pdr))
+        if args.minimal:
+            print(pdr)
+        else:
+            print('Average PDR: '+str(pdr))
