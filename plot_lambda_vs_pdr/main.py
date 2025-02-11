@@ -28,7 +28,7 @@ if __name__ == '__main__':
     for proto in args.proto:
         for lmbd in args.lambda_p:
             for seed in args.seed:
-                filename = args.file.replace('$3', seed).replace('$1', proto).replace('$2', str(lmbd))
+                filename = args.file.replace('$3', str(seed)).replace('$1', proto).replace('$2', str(lmbd))
                 raw_results[proto][lmbd].append(pd.read_pickle(filename))
 
     results = { i:{j:[] for j in args.lambda_p} for i in args.proto }
