@@ -48,4 +48,6 @@ if __name__ == '__main__':
         axs.legend(args.labels)
     axs.set_xlabel(r'$\lambda$ parameter')
     axs.set_ylabel('PDR')
+    axs.grid(True)
+    axs.xlim([min(x_axis), max(x_axis)])
     plt.savefig('lambda_vs_pdr.pdf')
