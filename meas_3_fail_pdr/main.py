@@ -83,5 +83,5 @@ if __name__ == '__main__':
     ax.set_xticklabels(['No failure', r'1$^\mathregular{st}$ hop failre', r'2$^\mathregular{nd}$ hop failure',
                         r'3$^\mathregular{rd}$ hop failure'])
     ax.grid(True, axis='y')
-    plt.show()
+    #plt.show()
     plt.savefig('single_node_fail_path.pdf')
