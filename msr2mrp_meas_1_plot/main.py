@@ -215,19 +215,23 @@ if __name__ == '__main__':
                         counts, bins = np.histogram(data_src, bins=orig_bins)
                         all_counts.append(counts)
                         #plt.hist(bins[:-1], bins, weights=counts/sum(counts))
-                        plt.bar(bins[:-1]+(0.025*(0.5+idx_r)), counts/sum(counts), width=0.020, align='center')
-                        plt.xticks(bins)
+                        axs.bar(bins[:-1]+(0.025*(0.5+idx_r)), counts/sum(counts), width=0.020, align='center')
+                        axs.set_xticks(bins)
+                        axs.grid(True)
                         #plt.hist(counts/sum(counts), bins)
                         #axs.stairs(counts / sum(counts), bins + 0.002 * (idx_r - 1))
                     case 'pathnum':
                         data_src = [i for i in r['rm'].values.ravel() if not np.isnan(i)]
-                        orig_bins = np.arange(0, max(r['rm'].values.ravel())+1)
+                        orig_bins = np.arange(1, max(r['rm'].values.ravel())+1)
                         axs.set_xticks(orig_bins)
+
                         axs.set_xticklabels(["{0:.0f}".format(x) for x in orig_bins])
                         axs.set_xlabel('Path number')
                         #bins = 'auto'
                         counts, bins = np.histogram(data_src, bins=orig_bins)
-                        axs.stairs(counts / sum(counts), bins + 0.01 * (idx_r - 1))
+                        print(counts)
+                        #axs.stairs(counts / sum(counts), bins + 0.01 * (idx_r - 1))
+                        axs.bar(bins[:-1] + (0.25 * (0.5 + idx_r)), counts / sum(counts), width=0.20, align='center')
                     case 't-pdr':
                         data_src = [i for i in r['t_pdr'].values.ravel() if not np.isnan(i)]
                         orig_bins = np.arange(0, 1.1, 0.1)

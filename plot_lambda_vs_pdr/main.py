@@ -29,7 +29,10 @@ if __name__ == '__main__':
         for lmbd in args.lambda_p:
             for seed in args.seed:
                 filename = args.file.replace('$3', str(seed)).replace('$1', proto).replace('$2', str(lmbd))
-                raw_results[proto][lmbd].append(pd.read_pickle(filename))
+                try:
+                    raw_results[proto][lmbd].append(pd.read_pickle(filename))
+                except FileNotFoundError:
+                    logger.error(f'File {filename} not found')
 
     results = { i:{j:[] for j in args.lambda_p} for i in args.proto }
     for proto in args.proto:
