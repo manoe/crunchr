@@ -42,7 +42,8 @@ if __name__ == '__main__':
     x_axis = [float(i) for i in args.lambda_p]
     for proto in args.proto:
         axs.plot(args.lambda_p, results[proto].values())
-        if args.labels:
-            axs.legend(args.labels)
-
+    if args.labels:
+        axs.legend(args.labels)
+    axs.set_xlabel(r'\lambda')
+    axs.set_ylabel('PDR')
     plt.savefig('lambda_vs_pdr.pdf')
