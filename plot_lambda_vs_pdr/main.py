@@ -43,11 +43,11 @@ if __name__ == '__main__':
     fig,axs = plt.subplots(nrows=1, ncols=1,constrained_layout=True)
     x_axis = [float(i) for i in args.lambda_p]
     for proto in args.proto:
-        axs.plot(x_axis, results[proto].values())
+        axs.plot(args.lambda_p, results[proto].values())
     if args.labels:
         axs.legend(args.labels)
     axs.set_xlabel(r'$\lambda$ parameter')
     axs.set_ylabel('PDR')
     axs.grid(True)
-    axs.set_xlim([min(x_axis), max(x_axis)])
+    axs.set_xlim([min(axs.get_xticks()), max(axs.get_xticks())])
     plt.savefig('lambda_vs_pdr.pdf')
