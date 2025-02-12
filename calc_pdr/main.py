@@ -9,6 +9,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='calc_pdr.py', description='Calculate PDR', epilog=':-(')
     parser.add_argument('-e', '--event', dest='event', action='store_true')
     parser.add_argument('-n', '--node', dest='node', type=float)
+    parser.add_argument('-x', '--exclude', dest='exclude', type=int, nargs='*')
     parser.add_argument('-f', '--file', dest='file', required=True)
     parser.add_argument('-p', '--pandas', dest='pandas', action='store_true')
     parser.add_argument('-o', '--out', dest='out', default='out.pickle')
@@ -30,7 +31,10 @@ if __name__ == '__main__':
     if args.node:
         pdr_arr = [i[pkt_cat] for i in data_source['pdr'] if pkt_cat in i and i['node'] == args.node]
     else:
-        pdr_arr = [i[pkt_cat] for i in data_source['pdr'] if pkt_cat in i]
+        if args.exclude:
+            pdr_arr = [i[pkt_cat] for i in data_source['pdr'] if pkt_cat in i and i['node'] not in args.exclude]
+        else:
+            pdr_arr = [i[pkt_cat] for i in data_source['pdr'] if pkt_cat in i]
 
     pdr = np.average(pdr_arr)
     if args.pandas:
