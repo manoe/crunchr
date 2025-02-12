@@ -8,7 +8,9 @@ import sys
 import logging
 logger = logging.getLogger(__name__)
 
-
+from matplotlib import rcParams
+rcParams['font.family'] = ['serif']
+rcParams['font.serif'] = ['Times New Roman']
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser(prog='plot_lambda_vs_pdr', description='Plot average pdr against lambda',
@@ -44,6 +46,6 @@ if __name__ == '__main__':
         axs.plot(args.lambda_p, results[proto].values())
     if args.labels:
         axs.legend(args.labels)
-    axs.set_xlabel(r'\lambda')
+    axs.set_xlabel(r'$\lambda$')
     axs.set_ylabel('PDR')
     plt.savefig('lambda_vs_pdr.pdf')
