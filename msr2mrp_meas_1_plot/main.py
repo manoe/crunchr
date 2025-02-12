@@ -232,6 +232,7 @@ if __name__ == '__main__':
                         print(counts)
                         #axs.stairs(counts / sum(counts), bins + 0.01 * (idx_r - 1))
                         axs.bar(bins[:-1] + (0.25 * (0.5 + idx_r)), counts / sum(counts), width=0.20, align='center')
+                        axs.grid(True)
                     case 't-pdr':
                         data_src = [i for i in r['t_pdr'].values.ravel() if not np.isnan(i)]
                         orig_bins = np.arange(0, 1.1, 0.1)
