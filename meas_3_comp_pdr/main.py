@@ -48,7 +48,8 @@ if __name__ == '__main__':
 
     fig, axs = plt.subplots(nrows=len(args.proto2), ncols=1, layout='compressed', figsize=(4, 12))
     for proto, ax in zip(args.proto2, axs.ravel()):
-        ax.plot(data[args.proto1],data[proto],'o')
+        ax.plot(data[args.proto1],data[proto],'o', zorder=1)
+        ax.plot(np.average(data[args.proto1]), np.average(data[proto]),'o',color='r',zorder=2)
         ax.plot([0, 1], [0, 1], 'k-', alpha=0.75, zorder=0)
         ax.set_aspect('equal')
         ax.set_xlim([0, 1])
