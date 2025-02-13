@@ -66,7 +66,7 @@ if __name__ == '__main__':
             ax.set_xlabel(args.label1+' average PDR')
         if args.label2:
             ax.set_ylabel(args.label2[idx] + ' average PDR')
-        ax.set_title(titles[idx], loc='left', pad=15, x=-0.09)
+        ax.set_title(titles[idx], loc='left', pad=15, x=-0.1)
 
     plt.show()
     fig.savefig(args.out+'.pdf', bbox_inches='tight')
