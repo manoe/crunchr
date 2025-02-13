@@ -54,6 +54,7 @@ if __name__ == '__main__':
         ax.plot(np.average(data[args.proto1]), np.average(data[proto]),'o',color='r',zorder=2)
         ax.plot([0, 1], [0, 1], 'k-', alpha=0.75, zorder=0)
         ax.set_aspect('equal')
+        ax.grid(True)
         ax.set_xlim([0, 1])
         ax.set_ylim([0, 1])
         ax.set_title(proto)
