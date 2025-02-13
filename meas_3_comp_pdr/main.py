@@ -12,6 +12,7 @@ from matplotlib import colormaps
 from matplotlib import cm
 import numpy as np
 import yaml
+import string
 
 from matplotlib import rcParams
 rcParams['font.family'] = ['serif']
@@ -36,6 +37,7 @@ if __name__ == '__main__':
 
     data = {i: [] for i in [args.proto1] + args.proto2}
 
+    titles = list(string.ascii_lowercase)
 
     for seed in args.seed_set:
         for proto in [args.proto1] + args.proto2:
@@ -64,7 +66,8 @@ if __name__ == '__main__':
             ax.set_xlabel(args.label1+' average PDR')
         if args.label2:
             ax.set_ylabel(args.label2[idx] + ' average PDR')
-        ax.set_title(proto)
+        ax.set_title(titles[idx], loc='left', padding=20, x=-0.09)
+
     plt.show()
     fig.savefig(args.out+'.pdf', bbox_inches='tight')
 
