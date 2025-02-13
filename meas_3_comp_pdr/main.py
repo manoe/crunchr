@@ -37,7 +37,7 @@ if __name__ == '__main__':
 
     data = {i: [] for i in [args.proto1] + args.proto2}
 
-    titles = list(string.ascii_lowercase)
+    titles = ['('+i+')' for i in string.ascii_lowercase]
 
     for seed in args.seed_set:
         for proto in [args.proto1] + args.proto2:
