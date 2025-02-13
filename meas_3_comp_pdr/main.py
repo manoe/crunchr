@@ -23,6 +23,8 @@ if __name__ == '__main__':
     parser.add_argument('filename', help='Input filename template, use $1 for protocol, $2 for seed as wildcard')
     parser.add_argument('-p1', '--proto1', dest='proto1', nargs='?', help='Base protocol')
     parser.add_argument('-p2', '--proto2', dest='proto2', nargs='+', help='Versus protocols')
+    parser.add_argument('-l1','--label1', dest='label1', nargs='?', help='Base protocol Label')
+    parser.add_argument('-l2', '--label2', dest='label2', nargs='+', help='Versus protocol Label')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-s', '--seed-set', dest='seed_set', nargs='+', type=str,  help='Seed set')
     parser.add_argument('-o', '--out', dest='out', nargs='?', type=str, help='Out filename', default='out')
@@ -47,16 +49,21 @@ if __name__ == '__main__':
 
 
     fig, axs = plt.subplots(nrows=len(args.proto2), ncols=1, layout='compressed', figsize=(4, 12))
-    for proto, ax in zip(args.proto2, axs.ravel()):
+    for idx, (proto, ax) in enumerate(zip(args.proto2, axs.ravel())):
         ax.plot(data[args.proto1],data[proto],'o', zorder=1)
         logger.debug('Average PDR for '+str(args.proto1)+': '+str(np.average(data[args.proto1])))
         logger.debug('Average PDR for ' + str(proto) + ': ' + str(np.average(data[proto])))
         ax.plot(np.average(data[args.proto1]), np.average(data[proto]),'o',color='r',zorder=2)
         ax.plot([0, 1], [0, 1], 'k-', alpha=0.75, zorder=0)
         ax.set_aspect('equal')
+
         ax.grid(True)
         ax.set_xlim([0, 1])
         ax.set_ylim([0, 1])
+        if args.label1:
+            ax.set_xlabel(args.label1+' average PDR')
+        if args.label2:
+            ax.set_ylabel(args.label2[idx] + ' average PDR')
         ax.set_title(proto)
     plt.show()
     fig.savefig(args.out+'.pdf', bbox_inches='tight')
