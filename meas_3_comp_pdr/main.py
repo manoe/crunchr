@@ -49,6 +49,8 @@ if __name__ == '__main__':
     fig, axs = plt.subplots(nrows=len(args.proto2), ncols=1, layout='compressed', figsize=(4, 12))
     for proto, ax in zip(args.proto2, axs.ravel()):
         ax.plot(data[args.proto1],data[proto],'o', zorder=1)
+        logger.debug('Average PDR for '+str(args.proto1)+': '+str(np.average(data[args.proto1])))
+        logger.debug('Average PDR for ' + str(proto) + ': ' + str(np.average(data[proto])))
         ax.plot(np.average(data[args.proto1]), np.average(data[proto]),'o',color='r',zorder=2)
         ax.plot([0, 1], [0, 1], 'k-', alpha=0.75, zorder=0)
         ax.set_aspect('equal')
