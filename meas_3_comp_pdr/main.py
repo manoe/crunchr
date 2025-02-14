@@ -55,6 +55,8 @@ if __name__ == '__main__':
         ax.plot(data[args.proto1],data[proto],'o', zorder=1)
         logger.debug('Average PDR for '+str(args.proto1)+': '+str(np.average(data[args.proto1])))
         logger.debug('Average PDR for ' + str(proto) + ': ' + str(np.average(data[proto])))
+        logger.debug('Minimum PDR for ' + str(args.proto1) + ': ' + str(np.min(data[args.proto1])))
+        logger.debug('Minimum PDR for ' + str(proto) + ': ' + str(np.min(data[proto])))
         ax.plot(np.average(data[args.proto1]), np.average(data[proto]),'o',color='r',zorder=2)
         ax.plot([0, 1], [0, 1], 'k-', alpha=0.75, zorder=0)
         ax.set_aspect('equal')
