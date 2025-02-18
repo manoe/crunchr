@@ -1,4 +1,5 @@
 #!/bin/env python3
+from unittest import case
 
 import matplotlib.animation as anm
 import yaml
@@ -28,19 +29,30 @@ class CellState(Enum):
     BURNING     = 2
     BURNED_DOWN = 3
 
+
 def map_value(value):
-    if value == '1':
-        return 0.0
-    else:
-        return 1.0
+    alpha = 128
+    logger.debug(int(value))
+    match CellState(int(value)):
+        case CellState.NO_FUEL:
+            return 0, 0, 0, alpha
+        case CellState.NOT_IGNITED:
+            return 255, 255, 255, alpha
+        case CellState.BURNING:
+            return 201, 14, 14, alpha
+        case CellState.BURNED_DOWN:
+            return 122, 89, 62, alpha
+        case _:
+            raise ValueError("Invalid cell state")
 
 
 def gen_frame(plane):
     logger.debug('Array\'s shape (x,y): ' + str((len(plane), len(str(plane[0]['y'])))))
-    frame = np.ndarray(shape=(len(plane), len(str(plane[0]['y']))))
+    frame = np.ndarray(shape=(len(plane), len(str(plane[0]['y'])),4), dtype=np.uint8)
     for idx, i in enumerate(plane):
         logger.debug('Array\'s idx: ' + str(idx))
-        frame[:, idx] = [map_value(j) for j in str(i['y'])]
+
+        frame[:, idx,:] = [map_value(j) for j in str(i['y'])]
     logger.debug(frame)
     return frame
 
