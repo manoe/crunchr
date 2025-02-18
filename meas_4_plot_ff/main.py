@@ -54,12 +54,13 @@ def gen_frame(plane):
 
         frame[:, idx,:] = [map_value(j) for j in str(i['y'])]
     logger.debug(frame)
-    return frame
+    return np.flipud(frame)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='meas_4_plot_ff', description='Plot ', epilog=':-(')
     parser.add_argument('-f', '--file', dest='filename', help='Filename')
+    parser.add_argument('-v','--video', dest='video', action='store_true', help='Write video')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     args = parser.parse_args()
 
@@ -71,9 +72,12 @@ if __name__ == '__main__':
     stream = open(args.filename, 'r')
     loader = yaml.safe_load(stream)
 
-    fig, ax = plt.subplots(nrows=1, ncols=1)
+    fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed')
     frames = [gen_frame(i['plane']) for i in loader]
     artists = [ [ax.imshow(frame, animated=True)] for frame in frames]
     ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=True, repeat_delay = 1000)
 
-    plt.show()
+    if args.video:
+        ani.save("out.gif", dpi=300, writer=anm.PillowWriter(fps=2))
+    else:
+        plt.show()
