@@ -1,6 +1,4 @@
 #!/bin/env python3
-from unittest import case
-
 import matplotlib.animation as anm
 import yaml
 import numpy as np
@@ -22,6 +20,8 @@ rcParams['font.serif'] = ['Times New Roman']
 #    BURNING,
 #    BURNED_DOWN
 #};
+
+#Hint: /home/uveges/devCastalia/Castalia/Simulations/shmrp_ff_event
 
 class CellState(Enum):
     NO_FUEL     = 0
@@ -51,7 +51,6 @@ def gen_frame(plane):
     frame = np.ndarray(shape=(len(plane), len(str(plane[0]['y'])),4), dtype=np.uint8)
     for idx, i in enumerate(plane):
         logger.debug('Array\'s idx: ' + str(idx))
-
         frame[:, idx,:] = [map_value(j) for j in str(i['y'])]
     logger.debug(frame)
     return np.flipud(frame)
@@ -73,6 +72,7 @@ if __name__ == '__main__':
     loader = yaml.safe_load(stream)
 
     fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed')
+
     frames = [gen_frame(i['plane']) for i in loader]
     artists = [ [ax.imshow(frame, animated=True)] for frame in frames]
     ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=True, repeat_delay = 1000)
