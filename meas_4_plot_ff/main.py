@@ -120,7 +120,7 @@ if __name__ == '__main__':
     stream = open(args.filename, 'r')
     loader = yaml.safe_load(stream)
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed')
+    fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed', figsize=(15, 15))
 
     frames = [gen_frame(i['plane']['plane']) for i in loader['nrg_list']]
 
@@ -134,6 +134,7 @@ if __name__ == '__main__':
         nw_artists = [ nw_axes(nw,ax) for nw in nw_frames ]
         artists = [ nw_artist+[artist] for nw_artist, artist in zip(nw_artists, artists) ]
 
+    ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
     ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=True, repeat_delay=1000)
 
     if args.video:
