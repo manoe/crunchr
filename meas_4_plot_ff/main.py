@@ -145,9 +145,10 @@ if __name__ == '__main__':
                 nw_artist = nw_axes(nw, ax)
                 artist += nw_artist
             artists.append(artist)
+            if args.static:
+                ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+                fig.savefig(filename + '.png', bbox_inches='tight', dpi=300)
         if args.static:
-            ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-            fig.savefig(args.out + '.png', bbox_inches='tight', dpi=300)
             exit(0)
     else:
         logger.info('Base filename: ' + str(args.filename))
