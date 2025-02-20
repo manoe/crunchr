@@ -114,6 +114,7 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--network', dest='network', action='store_true', default=False, help='Plot also network')
     parser.add_argument('-p', '--per-frame', dest='per_frame', action='store_true', default=False, help='Per frame files')
     parser.add_argument('-c', '--count', dest='count', type=int, help='Count of frames')
+    parser.add_argument('-s', '--static', dest='static', action='store_true', help='Generate still images')
     args = parser.parse_args()
 
     if args.debug:
@@ -144,9 +145,12 @@ if __name__ == '__main__':
                 nw_artist = nw_axes(nw, ax)
                 artist += nw_artist
             artists.append(artist)
-
+        if args.static:
+            ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+            fig.savefig(args.out + '.png', bbox_inches='tight', dpi=300)
+            exit(0)
     else:
-        logger.debug('Base filename: ' + str(args.filename))
+        logger.info('Base filename: ' + str(args.filename))
 
         stream = open(args.filename, 'r')
         loader = yaml.safe_load(stream)
