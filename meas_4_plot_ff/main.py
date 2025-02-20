@@ -104,35 +104,61 @@ def nw_axes(nw, ax):
     e_axes = nx.draw_networkx_edges(nw, ax=ax, pos=pos, alpha=e_alpha, connectionstyle="arc3,rad=0.2")
     return [n_axes] +list(l_axes.values()) + e_axes
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='meas_4_plot_ff', description='Plot ', epilog=':-(')
-    parser.add_argument('-f', '--file', dest='filename', help='Filename')
+    parser.add_argument('-f', '--file', dest='filename', help='Filename, use $1 for frame counter')
     parser.add_argument('-v', '--video', dest='video', action='store_true', help='Write video')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-n', '--network', dest='network', action='store_true', default=False, help='Plot also network')
+    parser.add_argument('-p', '--per-frame', dest='per_frame', action='store_true', default=False, help='Per frame files')
+    parser.add_argument('-c', '--count', dest='count', type=int, help='Count of frames')
     args = parser.parse_args()
 
     if args.debug:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-    logger.debug('Base filename: ' + str(args.filename))
-
-    stream = open(args.filename, 'r')
-    loader = yaml.safe_load(stream)
-
     fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed', figsize=(15, 15))
 
-    frames = [gen_frame(i['plane']['plane']) for i in loader['nrg_list']]
+    if args.per_frame:
+        logger.debug('Base filename: ' + str(args.filename))
+        frames = []
+        nw_frames = []
+        artists = []
+        for i in range(args.count):
+            filename = args.filename.replace('$1', str(i))
+            logger.debug('Base filename: ' + str(filename))
 
-    #x = np.arange(0, 100)
-    #im, = ax.plot(x, x) # what does the , do?
+            stream = open(filename, 'r')
+            loader = yaml.safe_load(stream)
 
-    artists = [ax.imshow(frame, animated=True, origin='lower', zorder=0) for frame in frames]
+            frame = gen_frame(loader['plane']['plane'])
+            frames.append(frame)
+            artist = [ax.imshow(frame, animated=True, origin='lower', zorder=0)]
+            if args.network:
+                nw = construct_graph(loader['routing'])
+                nw_frames.append(nw)
+                nw_artist = nw_axes(nw, ax)
+                artist += nw_artist
+            artists.append(artist)
 
-    if args.network:
-        nw_frames = [construct_graph(i['routing']) for i in loader['nrg_list']]
-        nw_artists = [ nw_axes(nw,ax) for nw in nw_frames ]
-        artists = [ nw_artist+[artist] for nw_artist, artist in zip(nw_artists, artists) ]
+    else:
+        logger.debug('Base filename: ' + str(args.filename))
+
+        stream = open(args.filename, 'r')
+        loader = yaml.safe_load(stream)
+
+        frames = [gen_frame(i['plane']['plane']) for i in loader['nrg_list']]
+
+        #x = np.arange(0, 100)
+        #im, = ax.plot(x, x) # what does the , do?
+
+        artists = [ax.imshow(frame, animated=True, origin='lower', zorder=0) for frame in frames]
+
+        if args.network:
+            nw_frames = [construct_graph(i['routing']) for i in loader['nrg_list']]
+            nw_artists = [ nw_axes(nw,ax) for nw in nw_frames ]
+            artists = [ nw_artist+[artist] for nw_artist, artist in zip(nw_artists, artists) ]
 
     ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
     ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=True, repeat_delay=1000)
