@@ -110,6 +110,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--file', dest='filename', help='Filename, use $1 for frame counter')
     parser.add_argument('-v', '--video', dest='video', action='store_true', help='Write video')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
+    parser.add_argument('-i', '--info', dest='info', action='store_true', default=False, help='Info mode')
     parser.add_argument('-n', '--network', dest='network', action='store_true', default=False, help='Plot also network')
     parser.add_argument('-p', '--per-frame', dest='per_frame', action='store_true', default=False, help='Per frame files')
     parser.add_argument('-c', '--count', dest='count', type=int, help='Count of frames')
@@ -117,17 +118,19 @@ if __name__ == '__main__':
 
     if args.debug:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    elif args.info:
+        logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
     fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed', figsize=(15, 15))
 
     if args.per_frame:
-        logger.debug('Base filename: ' + str(args.filename))
+        logger.info('Base filename: ' + str(args.filename))
         frames = []
         nw_frames = []
         artists = []
         for i in range(args.count):
             filename = args.filename.replace('$1', str(i))
-            logger.debug('Base filename: ' + str(filename))
+            logger.info('Base filename: ' + str(filename))
 
             stream = open(filename, 'r')
             loader = yaml.safe_load(stream)
