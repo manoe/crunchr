@@ -61,11 +61,11 @@ def gen_frame(plane):
 def construct_graph(run):
     nw = nx.MultiDiGraph()
     for node in run:
-        nw.add_node(node['node'], master=node['master'], pos=[node['x'], node['y']])
+        nw.add_node(node['node'], master=node['master'], pos=[node['x'], node['y']], state=node['state'])
         if 'engines' in node:
             roles = []
             for engine in node['engines']:
-                if 'routing_table' in engine:
+                if 'routing_table' in engine and node['state'] == 'ALIVE':
                     for re in engine['routing_table']:
                         pathid = [pe['pathid'] for pe in re['pathid']]
                         if engine['role'] == 'external':
@@ -83,6 +83,8 @@ def construct_graph(run):
                                             engine=engine['engine'])
                         else:
                             nw.add_edge(node['node'], re['node'], pathid=[], secl=re['secl'], engine=engine['engine'])
+                if node['state'] == 'DEAD':
+                    roles=['dead']
                 roles.append((engine['engine'], engine['role']))
             if len(roles) == 0:
                 roles = ['none']
@@ -91,14 +93,16 @@ def construct_graph(run):
 
 
 def create_nw_color_list(nw):
-    return ['tab:blue' if 'external' in i[0][1] else 'tab:brown' if 'border' in i[0][1] else 'tab:pink' if 'central' in i[0][1] else 'tab:cyan'
+    return ['tab:blue' if 'external' in i[0][1] else 'tab:brown' if 'border' in i[0][1] else 'tab:pink' if 'central' in i[0][1] else 'tab:grey' if 'dead' else 'tab:cyan'
             for i in nx.get_node_attributes(nw, 'roles').values()]
 
+def create_nw_alpha_list(nw):
+    return [1 if 'dead' not in i[0][1] else 0.5 for i in nx.get_node_attributes(nw, 'roles').values()]
 
 def nw_axes(nw, ax):
     pos = nx.get_node_attributes(nw, 'pos')
-    n_alpha=1
-    n_axes = nx.draw_networkx_nodes(nw, ax=ax, pos=pos, alpha=n_alpha, node_color=create_nw_color_list(nw))
+
+    n_axes = nx.draw_networkx_nodes(nw, ax=ax, pos=pos, alpha=create_nw_alpha_list(nw), node_color=create_nw_color_list(nw))
     l_axes = nx.draw_networkx_labels(nw, ax=ax, pos=pos, font_size=9)
     e_alpha=1
     e_axes = nx.draw_networkx_edges(nw, ax=ax, pos=pos, alpha=e_alpha, connectionstyle="arc3,rad=0.2")
@@ -115,6 +119,7 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--per-frame', dest='per_frame', action='store_true', default=False, help='Per frame files')
     parser.add_argument('-c', '--count', dest='count', type=int, help='Count of frames')
     parser.add_argument('-s', '--static', dest='static', action='store_true', help='Generate still images')
+    parser.add_argument('-r', '--resolution', dest='resolution', type=int, default=72, help='DPI')
     args = parser.parse_args()
 
     if args.debug:
@@ -172,6 +177,6 @@ if __name__ == '__main__':
     ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=True, repeat_delay=1000)
 
     if args.video:
-        ani.save("out.gif", dpi=300, writer=anm.PillowWriter(fps=2))
+        ani.save("out.gif", dpi=args.resolution, writer=anm.PillowWriter(fps=2))
     else:
         plt.show()
