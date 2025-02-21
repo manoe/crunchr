@@ -152,7 +152,7 @@ if __name__ == '__main__':
             artists.append(artist)
             if args.static:
                 ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-                fig.savefig(filename + '.png', bbox_inches='tight', dpi=300)
+                fig.savefig(filename + '.png', bbox_inches='tight', dpi=args.resolution)
         if args.static:
             exit(0)
     else:
