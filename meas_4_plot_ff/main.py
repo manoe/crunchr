@@ -153,7 +153,7 @@ if __name__ == '__main__':
                 nw_artist = nw_axes(nw, ax)
                 artist += nw_artist
 
-            title = ax.text(1, 1, "Timestamp: {:.2f}".format(timestamp),
+            title = ax.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
                             size=plt.rcParams["axes.titlesize"],
                             ha="right", transform=ax.transAxes )
             artist.append(title)
