@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import argparse
 import logging
+import pandas as pd
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -108,6 +109,20 @@ def nw_axes(nw, ax):
     e_axes = nx.draw_networkx_edges(nw, ax=ax, pos=pos, alpha=e_alpha, connectionstyle="arc3,rad=0.2")
     return [n_axes] +list(l_axes.values()) + e_axes
 
+def get_attribute_list(pkt_list, attribute):
+    res = pd.Series()
+    for i in pkt_list:
+        if i['role'] != 'central':
+            res.at[i['node']] = i[attribute]
+    return res
+
+def gen_diff(table):
+    res = pd.DataFrame(index=table.index, columns=table.columns[1:])
+
+    for i in table.index:
+        row = list(table.loc[i])
+        res.loc[i] = [b-a for a,b in zip(row[:-1], row[1:])]
+    return res
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='meas_4_plot_ff', description='Plot ', epilog=':-(')
@@ -128,7 +143,8 @@ if __name__ == '__main__':
     elif args.info:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed', figsize=(15, 15))
+    fig, (ax_nw, ax_pkt) = plt.subplots(nrows=2, ncols=1, layout='compressed', figsize=(15, 20), height_ratios = [15, 5])
+
 
     if args.per_frame:
         logger.info('Base filename: ' + str(args.filename))
@@ -136,9 +152,20 @@ if __name__ == '__main__':
         nw_frames = []
         artists = []
         timestamps = []
+
+        if args.messages:
+            filename = args.filename.replace('$1', str(0))
+            logger.info('Init filename: ' + str(filename))
+            stream = open(filename, 'r')
+            loader = yaml.safe_load(stream)
+            pkt_frame = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
+                                 columns=[i for i in np.arange(-1,args.count)], data=0)
+            pkt_frames = [pkt_frame]
+
+
         for i in range(args.count):
             filename = args.filename.replace('$1', str(i))
-            logger.info('Base filename: ' + str(filename))
+            logger.info('Actual filename: ' + str(filename))
 
             stream = open(filename, 'r')
             loader = yaml.safe_load(stream)
@@ -146,23 +173,33 @@ if __name__ == '__main__':
             timestamps.append(timestamp)
             frame = gen_frame(loader['plane']['plane'])
             frames.append(frame)
-            artist = [ax.imshow(frame, animated=True, origin='lower', zorder=0)]
+            artist = [ax_nw.imshow(frame, animated=True, origin='lower', zorder=0)]
+
             if args.network:
                 nw = construct_graph(loader['routing'])
                 nw_frames.append(nw)
-                nw_artist = nw_axes(nw, ax)
+                nw_artist = nw_axes(nw, ax_nw)
                 artist += nw_artist
 
-            title = ax.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
+            if args.messages:
+                pkt_frame = pd.DataFrame(data=pkt_frames[-1])
+                pkt_frame[i]=get_attribute_list(loader['nodes'], 'report_recv')
+                pkt_frames.append(pkt_frame)
+                dframe = gen_diff(pkt_frame)
+                image = dframe.map(lambda x: 1 if x > 0 else 0, na_action='ignore')
+                artist.append(ax_pkt.imshow(image, origin='lower', animated=True, aspect='auto', interpolation='none'))
+
+            title = ax_nw.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
                             size=plt.rcParams["axes.titlesize"],
-                            ha="right", transform=ax.transAxes )
+                            ha="right", transform=ax_nw.transAxes )
             artist.append(title)
             artists.append(artist)
             if args.static:
-                ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+                ax_nw.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
                 fig.savefig(filename + '.png', bbox_inches='tight', dpi=args.resolution)
         if args.static:
             exit(0)
+        ax_nw.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
     else:
         logger.info('Base filename: ' + str(args.filename))
 
@@ -175,16 +212,16 @@ if __name__ == '__main__':
         #x = np.arange(0, 100)
         #im, = ax.plot(x, x) # what does the , do?
 
-        artists = [ax.imshow(frame, animated=True, origin='lower', zorder=0) for frame in frames]
+        artists = [ax_nw.imshow(frame, animated=True, origin='lower', zorder=0) for frame in frames]
 
         if args.network:
             nw_frames = [construct_graph(i['routing']) for i in loader['nrg_list']]
-            nw_artists = [ nw_axes(nw,ax) for nw in nw_frames ]
+            nw_artists = [ nw_axes(nw,ax_nw) for nw in nw_frames ]
 
             artists = [ nw_artist+[artist] for nw_artist, artist in zip(nw_artists, artists) ]
 
-    ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-    ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=True, repeat_delay=1000)
+        ax_nw.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+    ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=False, repeat_delay=1000)
 
     if args.video:
         ani.save("out.gif", dpi=args.resolution, writer=anm.PillowWriter(fps=3))
