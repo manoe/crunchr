@@ -152,7 +152,11 @@ if __name__ == '__main__':
                 nw_frames.append(nw)
                 nw_artist = nw_axes(nw, ax)
                 artist += nw_artist
-            artist.append(ax.set_title("{:.2f}".format(timestamp), loc='right'))
+
+            title = ax.text(0.5, 1.05, "Timestamp: {:.2f}".format(timestamp),
+                            size=plt.rcParams["axes.titlesize"],
+                            ha="right", transform=ax.transAxes )
+            artist.append(title)
             artists.append(artist)
             if args.static:
                 ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
