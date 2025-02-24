@@ -120,7 +120,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--count', dest='count', type=int, help='Count of frames')
     parser.add_argument('-s', '--static', dest='static', action='store_true', help='Generate still images')
     parser.add_argument('-r', '--resolution', dest='resolution', type=int, default=72, help='DPI')
-    parser.add_argument('-r', '--resolution', dest='resolution', type=int, default=72, help='DPI')
+    parser.add_argument('-m', '--messages', dest='messages', action='store_true', default=False, help='Show message arrivals')
     args = parser.parse_args()
 
     if args.debug:
@@ -183,6 +183,6 @@ if __name__ == '__main__':
     ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=True, repeat_delay=1000)
 
     if args.video:
-        ani.save("out.gif", dpi=args.resolution, writer=anm.PillowWriter(fps=4))
+        ani.save("out.gif", dpi=args.resolution, writer=anm.PillowWriter(fps=3))
     else:
         plt.show()
