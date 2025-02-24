@@ -134,13 +134,14 @@ if __name__ == '__main__':
         frames = []
         nw_frames = []
         artists = []
+        timestamps = []
         for i in range(args.count):
             filename = args.filename.replace('$1', str(i))
             logger.info('Base filename: ' + str(filename))
 
             stream = open(filename, 'r')
             loader = yaml.safe_load(stream)
-
+            timestamps.append(loader['timestamp'])
             frame = gen_frame(loader['plane']['plane'])
             frames.append(frame)
             artist = [ax.imshow(frame, animated=True, origin='lower', zorder=0)]
@@ -149,6 +150,7 @@ if __name__ == '__main__':
                 nw_frames.append(nw)
                 nw_artist = nw_axes(nw, ax)
                 artist += nw_artist
+            artist.append(ax.set_title("{:.2f}".format(timestamps[-1]), loc='right'))
             artists.append(artist)
             if args.static:
                 ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
@@ -162,6 +164,7 @@ if __name__ == '__main__':
         loader = yaml.safe_load(stream)
 
         frames = [gen_frame(i['plane']['plane']) for i in loader['nrg_list']]
+        timestamps = [i['timestamp'] for i in loader['nrg_list']]
 
         #x = np.arange(0, 100)
         #im, = ax.plot(x, x) # what does the , do?
@@ -171,6 +174,7 @@ if __name__ == '__main__':
         if args.network:
             nw_frames = [construct_graph(i['routing']) for i in loader['nrg_list']]
             nw_artists = [ nw_axes(nw,ax) for nw in nw_frames ]
+
             artists = [ nw_artist+[artist] for nw_artist, artist in zip(nw_artists, artists) ]
 
     ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
