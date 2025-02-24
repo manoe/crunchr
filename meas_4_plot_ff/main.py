@@ -120,6 +120,7 @@ if __name__ == '__main__':
     parser.add_argument('-c', '--count', dest='count', type=int, help='Count of frames')
     parser.add_argument('-s', '--static', dest='static', action='store_true', help='Generate still images')
     parser.add_argument('-r', '--resolution', dest='resolution', type=int, default=72, help='DPI')
+    parser.add_argument('-r', '--resolution', dest='resolution', type=int, default=72, help='DPI')
     args = parser.parse_args()
 
     if args.debug:
@@ -141,7 +142,8 @@ if __name__ == '__main__':
 
             stream = open(filename, 'r')
             loader = yaml.safe_load(stream)
-            timestamps.append(loader['timestamp'])
+            timestamp = loader['timestamp']
+            timestamps.append(timestamp)
             frame = gen_frame(loader['plane']['plane'])
             frames.append(frame)
             artist = [ax.imshow(frame, animated=True, origin='lower', zorder=0)]
@@ -150,7 +152,7 @@ if __name__ == '__main__':
                 nw_frames.append(nw)
                 nw_artist = nw_axes(nw, ax)
                 artist += nw_artist
-            artist.append(ax.set_title("{:.2f}".format(timestamps[-1]), loc='right'))
+            artist.append(ax.set_title("{:.2f}".format(timestamp), loc='right'))
             artists.append(artist)
             if args.static:
                 ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
