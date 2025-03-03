@@ -221,7 +221,7 @@ if __name__ == '__main__':
             artists = [ nw_artist+[artist] for nw_artist, artist in zip(nw_artists, artists) ]
 
         ax_nw.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-    ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=False, repeat_delay=1000)
+    ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=True, repeat_delay=1000)
 
     if args.video:
         ani.save("out.gif", dpi=args.resolution, writer=anm.PillowWriter(fps=3))
