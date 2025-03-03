@@ -61,6 +61,5 @@ if __name__ == '__main__':
 
     fig, axs = plt.subplots(nrows=1, ncols=1, layout='compressed')
 
-
-    axs.imshow(image)
+    axs.imshow(image, origin='lower')
     plt.show()
