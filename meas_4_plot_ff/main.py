@@ -3,6 +3,7 @@ import matplotlib.animation as anm
 import yaml
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
 import networkx as nx
 import argparse
 import logging
@@ -49,6 +50,21 @@ def map_value(value):
         case _:
             raise ValueError("Invalid cell state")
 
+def map_pkt_value(value):
+    logger.debug(int(value))
+    if value > 0:
+        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:green'])
+    if value == 0:
+        return mcolors.to_rgb(mcolors.BASE_COLORS['w'])
+    else:
+        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:grey'])
+
+def custom_to_numpy(dframe):
+    frame = np.ndarray(shape=(len(dframe.index), len(dframe.columns), 3), dtype=float)
+    for i, index in enumerate(dframe.index):
+        for j, column in enumerate(dframe.columns):
+            frame[i][j] = map_pkt_value(dframe[column][index])
+    return frame
 
 def gen_frame(plane):
     logger.debug('Array\'s shape (y,x): ' + str((len(plane), len(str(plane[0]['y'])))))
@@ -161,7 +177,8 @@ if __name__ == '__main__':
             pkt_frame = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
                                  columns=[i for i in np.arange(-1,args.count)], data=0)
             pkt_frames = [pkt_frame]
-
+            mobility_frame = pd.DataFrame(data=pkt_frame)
+            state_frame = pd.DataFrame(data=pkt_frame)
 
         for i in range(args.count):
             filename = args.filename.replace('$1', str(i))
@@ -184,9 +201,20 @@ if __name__ == '__main__':
             if args.messages:
                 pkt_frame = pd.DataFrame(data=pkt_frames[-1])
                 pkt_frame[i]=get_attribute_list(loader['nodes'], 'report_recv')
+                state_frame[i]=get_attribute_list(loader['nodes'], 'state')
+                mobility_frame[i]=get_attribute_list(loader['nodes'], 'mobility')
+
                 pkt_frames.append(pkt_frame)
                 dframe = gen_diff(pkt_frame)
-                image = dframe.map(lambda x: 1 if x > 0 else 0, na_action='ignore')
+                if i < args.count - 1:
+                    dframe[i+1] = 0
+
+                for k in dframe.index:
+                    for j in dframe.columns:
+                        if state_frame[j][k] == 'dead':
+                            dframe[j][k] = -1
+                image = custom_to_numpy(dframe)
+
                 artist.append(ax_pkt.imshow(image, origin='lower', animated=True, aspect='auto', interpolation='none'))
 
             title = ax_nw.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
