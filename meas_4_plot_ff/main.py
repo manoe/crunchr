@@ -59,11 +59,25 @@ def map_pkt_value(value):
     else:
         return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:grey'])
 
+def map_mob_value(value):
+    logger.debug(int(value))
+    if value:
+        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:brown'])
+    else:
+        return mcolors.to_rgb(mcolors.BASE_COLORS['w'])
+
 def custom_to_numpy(dframe):
     frame = np.ndarray(shape=(len(dframe.index), len(dframe.columns), 3), dtype=float)
     for i, index in enumerate(dframe.index):
         for j, column in enumerate(dframe.columns):
             frame[i][j] = map_pkt_value(dframe[column][index])
+    return frame
+
+def mob_custom_to_numpy(dframe):
+    frame = np.ndarray(shape=(len(dframe.index), len(dframe.columns), 3), dtype=float)
+    for i, index in enumerate(dframe.index):
+        for j, column in enumerate(dframe.columns):
+            frame[i][j] = map_mob_value(dframe[column][index])
     return frame
 
 def gen_frame(plane):
@@ -159,7 +173,7 @@ if __name__ == '__main__':
     elif args.info:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    fig, (ax_nw, ax_pkt) = plt.subplots(nrows=2, ncols=1, layout='compressed', figsize=(15, 20), height_ratios = [15, 5])
+    fig, (ax_nw, ax_pkt, ax_mob) = plt.subplots(nrows=3, ncols=1, layout='compressed', figsize=(15, 25), height_ratios = [15, 5, 5])
 
 
     if args.per_frame:
@@ -177,7 +191,9 @@ if __name__ == '__main__':
             pkt_frame = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
                                  columns=[i for i in np.arange(-1,args.count)], data=0)
             pkt_frames = [pkt_frame]
-            mobility_frame = pd.DataFrame(data=pkt_frame)
+            mobility_frame = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
+                                 columns=[i for i in np.arange(0,args.count)], data=False)
+
             state_frame = pd.DataFrame(data=pkt_frame)
 
         for i in range(args.count):
@@ -215,7 +231,10 @@ if __name__ == '__main__':
                             dframe[j][k] = -1
                 image = custom_to_numpy(dframe)
 
+                mob_image = mob_custom_to_numpy(mobility_frame)
+
                 artist.append(ax_pkt.imshow(image, origin='lower', animated=True, aspect='auto', interpolation='none'))
+                artist.append(ax_mob.imshow(mob_image, origin='lower', aspect='auto', interpolation='none'))
 
             title = ax_nw.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
                             size=plt.rcParams["axes.titlesize"],
