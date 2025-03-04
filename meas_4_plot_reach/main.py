@@ -24,9 +24,8 @@ if __name__ == '__main__':
     parser.add_argument('-o', '--out', dest='out_file', type=str, help='Out file', default='out')
     args = parser.parse_args()
 
-    match args.debug:
-        case 'debug':
-            logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+    if args.debug:
+        logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     if args.labels:
         if len(args.labels) != len(args.proto) * len(args.param1) * len(args.param2):
