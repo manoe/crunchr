@@ -62,4 +62,5 @@ if __name__ == '__main__':
         for d,l in zip(['l','d'], [':','--']):
             ax.plot(timestamps, res[t][d], color=color, ls=l)
     ax.legend(list(res.keys())+['DM-living']+['DM-dead']+['NoDM-living']+['NoDM-dead'])
+    ax.grid(True)
     plt.savefig(args.out_file + '.pdf', dpi=300)
