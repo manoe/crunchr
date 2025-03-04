@@ -44,6 +44,7 @@ if __name__ == '__main__':
                 tables = {i: pd.DataFrame() for i in 'rld'}
                 for s in args.seeds:
                     data = pd.read_pickle(filename.replace('$3', s))
+                    logger.debug('seed: ' + str(s))
                     for d in data.columns:
                         tables[d][s] = data[d].values
                         timestamps = data[d].index.values
