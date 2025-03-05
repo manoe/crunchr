@@ -9,6 +9,11 @@ from matplotlib.colors import TABLEAU_COLORS
 
 logger = logging.getLogger(__name__)
 
+from matplotlib import rcParams
+
+rcParams['font.family'] = ['serif']
+rcParams['font.serif'] = ['Times New Roman']
+
 import sys
 
 if __name__ == '__main__':
@@ -18,7 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Log level')
     parser.add_argument('-p', '--proto', dest='proto', type=str, help='Protocols, $0', nargs='+')
     parser.add_argument('-p1', '--param-1', dest='param1', type=str, help='Parameter 1, $1', nargs='+')
-    parser.add_argument('-l', '--labels', dest='labels', type=str, help='Labels for param 1', nargs='+')
+    parser.add_argument('-l', '--labels', dest='labels', type=str, help='Labels for param 1', nargs='*')
     parser.add_argument('-p2', '--param-2', dest='param2', type=str, help='Parameter 2, $2', nargs='+')
     parser.add_argument('-s', '--seeds', dest='seeds', type=str, help='Seeds, $3', nargs='+')
     parser.add_argument('-o', '--out', dest='out_file', type=str, help='Out file', default='out')
@@ -26,11 +31,6 @@ if __name__ == '__main__':
 
     if args.debug:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-
-    if args.labels:
-        if len(args.labels) != len(args.proto) * len(args.param1) * len(args.param2):
-            logger.error('Number of labels does not match product number of parameters')
-            exit(1)
 
     res = {p + '_' + p1 + '_' + p2: {'r': [], 'l': [], 'd': []} for p in args.proto for p1 in args.param1 for p2 in
            args.param2}
@@ -53,6 +53,11 @@ if __name__ == '__main__':
     for p in args.proto:
         del res[p+'_false'+'_true']
 
+    if args.labels:
+        if len(args.labels) != len(res.keys()):
+            logger.error('Number of labels does not match product number of parameters')
+            exit(1)
+
     fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed')
     for k, color in zip(res.keys(), TABLEAU_COLORS):
         ax.plot(timestamps, res[k]['r'], color=color)
@@ -61,6 +66,14 @@ if __name__ == '__main__':
     for t, color in zip([args.proto[0]+'_true_true', args.proto[0]+'_false_false'], list(TABLEAU_COLORS.keys())[len(res.keys()):]):
         for d,l in zip(['l','d'], [':','--']):
             ax.plot(timestamps, res[t][d], color=color, ls=l)
-    ax.legend(list(res.keys())+['DM-living']+['DM-dead']+['NoDM-living']+['NoDM-dead'])
+    node_state_labels = ['Living-Limited mobility'] + ['Destroyed-Limited mobility'] + ['Living-No mobility'] + ['Destroyed-No mobility']
+    if args.labels:
+        labels=args.labels+node_state_labels
+    else:
+        labels=list(res.keys())+node_state_labels
+    ax.legend(labels)
+    ax.set_xlabel('Time (s)')
+    ax.set_ylabel('Node number')
+    ax.set_xlim([0, max(timestamps)])
     ax.grid(True)
     plt.savefig(args.out_file + '.pdf', dpi=300)
