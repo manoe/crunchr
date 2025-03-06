@@ -170,11 +170,11 @@ if __name__ == '__main__':
     elif args.info:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    fig, (ax_nw1, ax_nw2, ax_nw3, ax_pkt, ax_mob) = plt.subplot_mosaic([['upper left', 'upper mid', 'upper right'],
-                                  ['mid', 'mid','mid'],
-                                   ['bottom','bottom','bottom']],
+    fig, axs = plt.subplot_mosaic([[0, 1, 2],
+                                  ['pkt', 'pkt','pkt'],
+                                   ['mob','mob','mob']],
                                    layout="constrained", height_ratios=[15,5,5], figsize=(8.27, 11.69))
-    ax_nw_arr = {args.snapshots[0]: ax_nw1, args.snapshots[1]: ax_nw2, args.snapshots[2]: ax_nw3}
+
     #fig, (ax_nw, ax_pkt, ax_mob) = plt.subplots(nrows=3, ncols=1, layout='compressed', figsize=(15, 25), height_ratios = [15, 5, 5])
 
     logger.info('Base filename: ' + str(args.filename))
@@ -200,13 +200,14 @@ if __name__ == '__main__':
 
         if i in args.snapshots:
             frame = gen_frame(loader['plane']['plane'])
-            ax_nw_arr[i].imshow(frame, animated=True, origin='lower', zorder=0)
+            ax = axs[args.snapshots.index(i)]
+            ax.imshow(frame, animated=True, origin='lower', zorder=0)
             nw = construct_graph(loader['routing'])
-            nw_axes(nw, ax_nw_arr[i])
-            ax_nw_arr[i].tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-            ax_nw_arr[i].text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
+            nw_axes(nw, ax)
+            ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
+            ax.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
                    size=plt.rcParams["axes.titlesize"],
-                   ha="right", transform=ax_nw_arr[i].transAxes)
+                   ha="right", transform=ax.transAxes)
 
         pkt_frame[i]=get_attribute_list(loader['nodes'], 'report_recv')
         state_frame[i]=get_attribute_list(loader['nodes'], 'state')
@@ -221,8 +222,8 @@ if __name__ == '__main__':
     image = custom_to_numpy(dframe)
     mob_image = mob_custom_to_numpy(mobility_frame)
 
-    ax_pkt.imshow(image, origin='lower', aspect='auto', interpolation='none')
-    ax_mob.imshow(mob_image, origin='lower', aspect='auto', interpolation='none')
+    axs['pkt'].imshow(image, origin='lower', aspect='auto', interpolation='none')
+    axs['mob'].imshow(mob_image, origin='lower', aspect='auto', interpolation='none')
 
 
 
