@@ -50,6 +50,7 @@ def map_value(value):
         case _:
             raise ValueError("Invalid cell state")
 
+
 def map_pkt_value(value):
     logger.debug(int(value))
     if value > 0:
@@ -57,7 +58,8 @@ def map_pkt_value(value):
     if value == 0:
         return mcolors.to_rgb(mcolors.BASE_COLORS['w'])
     else:
-        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:grey'])
+        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:gray'])
+
 
 def map_mob_value(value):
     logger.debug(int(value))
@@ -66,6 +68,7 @@ def map_mob_value(value):
     else:
         return mcolors.to_rgb(mcolors.BASE_COLORS['w'])
 
+
 def custom_to_numpy(dframe):
     frame = np.ndarray(shape=(len(dframe.index), len(dframe.columns), 3), dtype=float)
     for i, index in enumerate(dframe.index):
@@ -73,12 +76,14 @@ def custom_to_numpy(dframe):
             frame[i][j] = map_pkt_value(dframe[column][index])
     return frame
 
+
 def mob_custom_to_numpy(dframe):
     frame = np.ndarray(shape=(len(dframe.index), len(dframe.columns), 3), dtype=float)
     for i, index in enumerate(dframe.index):
         for j, column in enumerate(dframe.columns):
             frame[i][j] = map_mob_value(dframe[column][index])
     return frame
+
 
 def gen_frame(plane):
     logger.debug('Array\'s shape (y,x): ' + str((len(plane), len(str(plane[0]['y'])))))
@@ -88,6 +93,7 @@ def gen_frame(plane):
         frame[idx, :, :] = [map_value(j) for j in str(i['y'])]
     logger.debug(frame)
     return frame
+
 
 def construct_graph(run):
     nw = nx.MultiDiGraph()
@@ -115,7 +121,7 @@ def construct_graph(run):
                         else:
                             nw.add_edge(node['node'], re['node'], pathid=[], secl=re['secl'], engine=engine['engine'])
                 if node['state'] == 'DEAD':
-                    roles=['dead']
+                    roles = ['dead']
                 roles.append((engine['engine'], engine['role']))
             if len(roles) == 0:
                 roles = ['none']
@@ -124,20 +130,26 @@ def construct_graph(run):
 
 
 def create_nw_color_list(nw):
-    return ['tab:blue' if 'external' in i[0][1] else 'tab:brown' if 'border' in i[0][1] else 'tab:pink' if 'central' in i[0][1] else 'tab:grey' if 'dead' else 'tab:cyan'
+    return ['tab:blue' if 'external' in i[0][1] else 'tab:brown' if 'border' in i[0][1] else 'tab:pink' if 'central' in
+                                                                                                           i[0][
+                                                                                                               1] else 'tab:grey' if 'dead' else 'tab:cyan'
             for i in nx.get_node_attributes(nw, 'roles').values()]
+
 
 def create_nw_alpha_list(nw):
     return [1 if 'dead' not in i[0][1] else 0.5 for i in nx.get_node_attributes(nw, 'roles').values()]
 
+
 def nw_axes(nw, ax):
     pos = nx.get_node_attributes(nw, 'pos')
 
-    n_axes = nx.draw_networkx_nodes(nw, ax=ax, pos=pos, alpha=create_nw_alpha_list(nw), node_color=create_nw_color_list(nw))
+    n_axes = nx.draw_networkx_nodes(nw, ax=ax, pos=pos, alpha=create_nw_alpha_list(nw),
+                                    node_color=create_nw_color_list(nw))
     l_axes = nx.draw_networkx_labels(nw, ax=ax, pos=pos, font_size=9)
-    e_alpha=1
+    e_alpha = 1
     e_axes = nx.draw_networkx_edges(nw, ax=ax, pos=pos, alpha=e_alpha, connectionstyle="arc3,rad=0.2")
-    return [n_axes] +list(l_axes.values()) + e_axes
+    return [n_axes] + list(l_axes.values()) + e_axes
+
 
 def get_attribute_list(pkt_list, attribute):
     res = pd.Series()
@@ -146,13 +158,15 @@ def get_attribute_list(pkt_list, attribute):
             res.at[i['node']] = i[attribute]
     return res
 
+
 def gen_diff(table):
     res = pd.DataFrame(index=table.index, columns=table.columns[1:])
 
     for i in table.index:
         row = list(table.loc[i])
-        res.loc[i] = [b-a for a,b in zip(row[:-1], row[1:])]
+        res.loc[i] = [b - a for a, b in zip(row[:-1], row[1:])]
     return res
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='meas_4_plot_ff_still', description='Plot ', epilog=':-(')
@@ -162,6 +176,7 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--info', dest='info', action='store_true', default=False, help='Info mode')
     parser.add_argument('-c', '--count', dest='count', type=int, help='Count of frames')
     parser.add_argument('-s', '--snapshots', dest='snapshots', type=int, help='Count of frames', nargs=3)
+    parser.add_argument('-S', '--scale', dest='scale', type=float, help='Count of frames', default=1.0)
     parser.add_argument('-r', '--resolution', dest='resolution', type=int, default=72, help='DPI')
     args = parser.parse_args()
 
@@ -170,10 +185,13 @@ if __name__ == '__main__':
     elif args.info:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
+    figsize = (11.69, 8.27)
+    figsize = tuple(i * args.scale for i in figsize)
+
     fig, axs = plt.subplot_mosaic([[0, 1, 2],
-                                  ['pkt', 'pkt','pkt'],
-                                   ['mob','mob','mob']],
-                                   layout="constrained", height_ratios=[15,5,5], figsize=(8.27, 11.69))
+                                   ['pkt', 'pkt', 'pkt'],
+                                   ['mob', 'mob', 'mob']],
+                                  layout="constrained", height_ratios=[15, 5, 5], figsize=figsize)
 
     #fig, (ax_nw, ax_pkt, ax_mob) = plt.subplots(nrows=3, ncols=1, layout='compressed', figsize=(15, 25), height_ratios = [15, 5, 5])
 
@@ -184,9 +202,9 @@ if __name__ == '__main__':
     stream = open(filename, 'r')
     loader = yaml.safe_load(stream)
     pkt_frame = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
-                         columns=[i for i in np.arange(-1,args.count)], data=0)
+                             columns=[i for i in np.arange(-1, args.count)], data=0)
     mobility_frame = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
-                         columns=[i for i in np.arange(0,args.count)], data=False)
+                                  columns=[i for i in np.arange(0, args.count)], data=False)
 
     state_frame = pd.DataFrame(data=pkt_frame)
 
@@ -206,12 +224,12 @@ if __name__ == '__main__':
             nw_axes(nw, ax)
             ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
             ax.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
-                   size=plt.rcParams["axes.titlesize"],
-                   ha="right", transform=ax.transAxes)
+                    size=plt.rcParams["axes.titlesize"],
+                    ha="right", transform=ax.transAxes)
 
-        pkt_frame[i]=get_attribute_list(loader['nodes'], 'report_recv')
-        state_frame[i]=get_attribute_list(loader['nodes'], 'state')
-        mobility_frame[i]=get_attribute_list(loader['nodes'], 'mobility')
+        pkt_frame[i] = get_attribute_list(loader['nodes'], 'report_recv')
+        state_frame[i] = get_attribute_list(loader['nodes'], 'state')
+        mobility_frame[i] = get_attribute_list(loader['nodes'], 'mobility')
 
     dframe = gen_diff(pkt_frame)
     for k in dframe.index:
@@ -223,10 +241,8 @@ if __name__ == '__main__':
     mob_image = mob_custom_to_numpy(mobility_frame)
 
     axs['pkt'].imshow(image, origin='lower', aspect='auto', interpolation='none')
+    axs['pkt'].set_xlabel('Time (min)')
     axs['mob'].imshow(mob_image, origin='lower', aspect='auto', interpolation='none')
-
-
-
 
     if args.picture:
         plt.savefig('out.pdf', dpi=args.resolution)
