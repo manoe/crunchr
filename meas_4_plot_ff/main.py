@@ -57,7 +57,7 @@ def map_pkt_value(value):
     if value == 0:
         return mcolors.to_rgb(mcolors.BASE_COLORS['w'])
     else:
-        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:grey'])
+        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:gray'])
 
 def map_mob_value(value):
     logger.debug(int(value))
