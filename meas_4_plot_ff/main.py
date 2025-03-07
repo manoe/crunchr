@@ -272,6 +272,6 @@ if __name__ == '__main__':
     ani = anm.ArtistAnimation(fig=fig, artists=artists, interval=400, repeat=True, blit=True, repeat_delay=1000)
 
     if args.video:
-        ani.save("out.gif", dpi=args.resolution, writer=anm.PillowWriter(fps=3))
+        ani.save("out.mp4", dpi=args.resolution, writer=anm.FFMpegWriter(fps=2))
     else:
         plt.show()
