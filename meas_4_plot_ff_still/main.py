@@ -241,12 +241,14 @@ if __name__ == '__main__':
 
     image = custom_to_numpy(dframe)
     mob_image = mob_custom_to_numpy(mobility_frame)
+    mob_tup = [(tuple(x)[0], tuple(x)[1]) for x in mobility_frame.stack().reset_index().values.tolist() if x[2] == True]
 
     axs['pkt'].imshow(image, origin='lower', aspect='auto', interpolation='none')
     axs['pkt'].set_xlabel('Time (min)')
     for i in args.snapshots:
         axs['pkt'].axvline(i)
         axs['pkt'].text(i, 0, 'blah', rotation=90)
+    axs['pkt'].scatter([x[1] for x in mob_tup], [x[0] for x in mob_tup], color='red', marker='X', s=20)
     axs['pkt'].set_ylabel('Nodes')
     axs['mob'].imshow(mob_image, origin='lower', aspect='auto', interpolation='none')
 
