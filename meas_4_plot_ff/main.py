@@ -235,7 +235,7 @@ if __name__ == '__main__':
 
                 mob_tup = [(tuple(x)[0], tuple(x)[1]) for x in mobility_frame.stack().reset_index().values.tolist() if x[2] == True]
                 artist.append(ax_pkt.imshow(image, origin='lower', animated=True, aspect='auto', interpolation='none'))
-                artist.append(ax_pkt.scatter([x[1] for x in mob_tup ], [x[0] for x in mob_tup], color='red', marker='X'))
+                artist.append(ax_pkt.scatter([x[1] for x in mob_tup ], [x[0] for x in mob_tup], color='red', marker='X', s=12))
 
                 artist.append(ax_mob.imshow(mob_image, origin='lower', aspect='auto', interpolation='none'))
 
