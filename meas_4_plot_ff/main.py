@@ -173,8 +173,7 @@ if __name__ == '__main__':
     elif args.info:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    fig, (ax_nw, ax_pkt, ax_mob) = plt.subplots(nrows=3, ncols=1, layout='compressed', figsize=(15, 25), height_ratios = [15, 5, 5])
-
+    fig, (ax_nw, ax_pkt) = plt.subplots(nrows=2, ncols=1, layout='compressed', figsize=(15, 20), height_ratios = [15, 5])
 
     if args.per_frame:
         logger.info('Base filename: ' + str(args.filename))
@@ -237,7 +236,6 @@ if __name__ == '__main__':
                 artist.append(ax_pkt.imshow(image, origin='lower', animated=True, aspect='auto', interpolation='none'))
                 artist.append(ax_pkt.scatter([x[1] for x in mob_tup ], [x[0] for x in mob_tup], color='red', marker='X', s=40))
 
-                artist.append(ax_mob.imshow(mob_image, origin='lower', aspect='auto', interpolation='none'))
 
             title = ax_nw.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
                             size=plt.rcParams["axes.titlesize"],
