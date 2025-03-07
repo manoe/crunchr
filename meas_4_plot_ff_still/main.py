@@ -226,6 +226,8 @@ if __name__ == '__main__':
             ax.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
                     size=plt.rcParams["axes.titlesize"],
                     ha="right", transform=ax.transAxes)
+            ax.set_xlabel('Position X (meter)')
+            ax.set_ylabel('Position Y (meter)')
 
         pkt_frame[i] = get_attribute_list(loader['nodes'], 'report_recv')
         state_frame[i] = get_attribute_list(loader['nodes'], 'state')
@@ -242,6 +244,10 @@ if __name__ == '__main__':
 
     axs['pkt'].imshow(image, origin='lower', aspect='auto', interpolation='none')
     axs['pkt'].set_xlabel('Time (min)')
+    for i in args.snapshots:
+        axs['pkt'].axvline(i)
+        axs['pkt'].text(i, 0, 'blah', rotation=90)
+    axs['pkt'].set_ylabel('Nodes')
     axs['mob'].imshow(mob_image, origin='lower', aspect='auto', interpolation='none')
 
     if args.picture:
