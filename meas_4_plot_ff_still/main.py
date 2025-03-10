@@ -8,6 +8,7 @@ import networkx as nx
 import argparse
 import logging
 import pandas as pd
+import string
 from enum import Enum
 
 logger = logging.getLogger(__name__)
@@ -17,6 +18,7 @@ from matplotlib import rcParams
 
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
+rcParams['font.size'] = 14.0
 
 
 #enum CellState {
@@ -56,9 +58,9 @@ def map_pkt_value(value):
     if value > 0:
         return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:green'])
     if value == 0:
-        return mcolors.to_rgb(mcolors.BASE_COLORS['w'])
-    else:
         return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:gray'])
+    else:
+        return mcolors.to_rgb(mcolors.BASE_COLORS['w'])
 
 
 def map_mob_value(value):
@@ -175,7 +177,7 @@ if __name__ == '__main__':
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-i', '--info', dest='info', action='store_true', default=False, help='Info mode')
     parser.add_argument('-c', '--count', dest='count', type=int, help='Count of frames')
-    parser.add_argument('-s', '--snapshots', dest='snapshots', type=int, help='Count of frames', nargs=3)
+    parser.add_argument('-s', '--snapshots', dest='snapshots', type=int, help='Count of frames', nargs=4)
     parser.add_argument('-S', '--scale', dest='scale', type=float, help='Count of frames', default=1.0)
     parser.add_argument('-r', '--resolution', dest='resolution', type=int, default=72, help='DPI')
     args = parser.parse_args()
@@ -185,13 +187,14 @@ if __name__ == '__main__':
     elif args.info:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    figsize = (11.69, 8.27)
+    titles = ['('+i+')' for i in string.ascii_lowercase]
+
+    figsize = (8.27, 11.69)
     figsize = tuple(i * args.scale for i in figsize)
 
-    fig, axs = plt.subplot_mosaic([[0, 1, 2],
-                                   ['pkt', 'pkt', 'pkt'],
-                                   ['mob', 'mob', 'mob']],
-                                  layout="constrained", height_ratios=[15, 5, 5], figsize=figsize)
+    fig, axs = plt.subplot_mosaic([[0, 1],[2, 3],
+                                   ['pkt', 'pkt']],
+                                  layout="constrained", height_ratios=[10, 10, 5], figsize=figsize)
 
     #fig, (ax_nw, ax_pkt, ax_mob) = plt.subplots(nrows=3, ncols=1, layout='compressed', figsize=(15, 25), height_ratios = [15, 5, 5])
 
@@ -216,14 +219,16 @@ if __name__ == '__main__':
         loader = yaml.safe_load(stream)
         timestamp = loader['timestamp']
 
+
         if i in args.snapshots:
             frame = gen_frame(loader['plane']['plane'])
             ax = axs[args.snapshots.index(i)]
+            ax.set_title(titles.pop(0), loc='left', pad=15, x=-0.05)
             ax.imshow(frame, animated=True, origin='lower', zorder=0)
             nw = construct_graph(loader['routing'])
             nw_axes(nw, ax)
             ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-            ax.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
+            ax.text(1, 1.02, "Timestamp: {:.0f}".format(timestamp),
                     size=plt.rcParams["axes.titlesize"],
                     ha="right", transform=ax.transAxes)
             ax.set_xlabel('Position X (meter)')
@@ -245,12 +250,12 @@ if __name__ == '__main__':
 
     axs['pkt'].imshow(image, origin='lower', aspect='auto', interpolation='none')
     axs['pkt'].set_xlabel('Time (min)')
-    for i in args.snapshots:
-        axs['pkt'].axvline(i)
-        axs['pkt'].text(i, 0, 'blah', rotation=90)
+    for i,j in zip(args.snapshots, ['('+i+')' for i in string.ascii_lowercase]):
+        axs['pkt'].axvline(i, color='tab:blue')
+        axs['pkt'].text(i, 1, j+' timestamp: '+str(i), rotation=90)
     axs['pkt'].scatter([x[1] for x in mob_tup], [x[0] for x in mob_tup], color='red', marker='X', s=20)
     axs['pkt'].set_ylabel('Nodes')
-    axs['mob'].imshow(mob_image, origin='lower', aspect='auto', interpolation='none')
+    #axs['mob'].imshow(mob_image, origin='lower', aspect='auto', interpolation='none')
 
     if args.picture:
         plt.savefig('out.pdf', dpi=args.resolution)
