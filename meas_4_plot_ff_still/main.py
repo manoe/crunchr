@@ -228,12 +228,12 @@ if __name__ == '__main__':
         if i in args.snapshots:
             frame = gen_frame(loader['plane']['plane'])
             ax = axs[args.snapshots.index(i)]
-            ax.set_title(titles.pop(0), loc='left', pad=15, x=-0.05)
+            ax.set_title(titles.pop(0), loc='left', pad=15, x=-0.06)
             ax.imshow(frame, origin='lower', zorder=0, interpolation='none')
             nw = construct_graph(loader['routing'])
             nw_axes(nw, ax)
             ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-            ax.text(1, 1.02, "Timestamp: {:.0f}".format(timestamp),
+            ax.text(1, 1.02, "Timestamp: {:.0f} min".format(timestamp/60),
                     size=plt.rcParams["axes.titlesize"],
                     ha="right", transform=ax.transAxes)
             ax.set_xlabel('Position X (meter)')
@@ -261,16 +261,19 @@ if __name__ == '__main__':
 
     axs['pkt'].imshow(image, origin='lower', aspect='auto', interpolation='none')
     axs['pkt'].set_xlabel('Time (min)')
+    axs['pkt'].set_title(titles.pop(0), loc='left', pad=15, x=-0.03)
+
     for i,j in zip(args.snapshots, ['('+i+')' for i in string.ascii_lowercase]):
-        axs['pkt'].axvline(i, color='tab:blue')
-        axs['pkt'].text(i, 1, j+' timestamp: '+str(i), rotation=90)
+        vline = axs['pkt'].axvline(i, color='tab:blue', label='Snapshot')
+        axs['pkt'].text(i, 1, j, rotation=90)
 #    axs['pkt'].scatter([x[1] for x in mob_tup], [x[0] for x in mob_tup], color='tab:orange', marker='X', s=20)
     axs['pkt'].set_ylabel('Nodes')
     patch_1 = mpatches.Patch(color='tab:gray', label='Not reachable')
     patch_2 = mpatches.Patch(color='tab:green', label='Reachable')
     patch_3 = mpatches.Patch(color='w', label='Destroyed')
     patch_4 = mpatches.Patch(color='tab:orange', label='Mobile')
-    axs['pkt'].legend(handles=[patch_1, patch_2, patch_3, patch_4])
+
+    axs['pkt'].legend(handles=[patch_1, patch_2, patch_3, patch_4, vline], loc='lower left')
 
     #axs['mob'].imshow(mob_image, origin='lower', aspect='auto', interpolation='none')
 
