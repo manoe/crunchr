@@ -229,7 +229,7 @@ if __name__ == '__main__':
             frame = gen_frame(loader['plane']['plane'])
             ax = axs[args.snapshots.index(i)]
             ax.set_title(titles.pop(0), loc='left', pad=15, x=-0.05)
-            ax.imshow(frame, origin='lower', zorder=0)
+            ax.imshow(frame, origin='lower', zorder=0, interpolation='none')
             nw = construct_graph(loader['routing'])
             nw_axes(nw, ax)
             ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
