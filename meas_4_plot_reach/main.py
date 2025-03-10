@@ -6,7 +6,7 @@ import pandas as pd
 import argparse
 import logging
 from matplotlib.colors import TABLEAU_COLORS
-
+from matplotlib.ticker import FuncFormatter
 logger = logging.getLogger(__name__)
 
 from matplotlib import rcParams
@@ -66,14 +66,16 @@ if __name__ == '__main__':
     for t, color in zip([args.proto[0]+'_true_true', args.proto[0]+'_false_false'], list(TABLEAU_COLORS.keys())[len(res.keys()):]):
         for d,l in zip(['l','d'], [':','--']):
             ax.plot(timestamps, res[t][d], color=color, ls=l)
-    node_state_labels = ['Living-Limited mobility'] + ['Destroyed-Limited mobility'] + ['Living-No mobility'] + ['Destroyed-No mobility']
+    node_state_labels = ['Living nodes-Limited mobility'] + ['Destroyed nodes -Limited mobility'] + ['Living nodes-No mobility'] + ['Destroyed nodes-No mobility']
     if args.labels:
         labels=args.labels+node_state_labels
     else:
         labels=list(res.keys())+node_state_labels
     ax.legend(labels)
-    ax.set_xlabel('Time (s)')
+    ax.set_xlabel('Time (min)')
     ax.set_ylabel('Node number')
+    #ax.set_xticklabels([i for i in ax.get_xticklabels()])
     ax.set_xlim([0, max(timestamps)])
+    ax.xaxis.set_major_formatter(FuncFormatter(lambda x, p: '{0:.0f}'.format(x/60)))
     ax.grid(True)
     plt.savefig(args.out_file + '.pdf', dpi=300)
