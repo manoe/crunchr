@@ -4,6 +4,7 @@ import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import matplotlib.patches as mpatches
 import networkx as nx
 import argparse
 import logging
@@ -56,11 +57,12 @@ def map_value(value):
 def map_pkt_value(value):
     logger.debug(int(value))
     if value > 0:
-        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:green'])
+        c = mcolors.to_rgba(mcolors.TABLEAU_COLORS['tab:green'])
+        return c[0], c[1], c[2], 0.8
     if value == 0:
-        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:gray'])
+        return mcolors.to_rgba(mcolors.TABLEAU_COLORS['tab:gray'])
     else:
-        return mcolors.to_rgb(mcolors.BASE_COLORS['w'])
+        return mcolors.to_rgba(mcolors.BASE_COLORS['w'])
 
 
 def map_mob_value(value):
@@ -72,7 +74,7 @@ def map_mob_value(value):
 
 
 def custom_to_numpy(dframe):
-    frame = np.ndarray(shape=(len(dframe.index), len(dframe.columns), 3), dtype=float)
+    frame = np.ndarray(shape=(len(dframe.index), len(dframe.columns), 4), dtype=float)
     for i, index in enumerate(dframe.index):
         for j, column in enumerate(dframe.columns):
             frame[i][j] = map_pkt_value(dframe[column][index])
@@ -156,8 +158,11 @@ def nw_axes(nw, ax):
 def get_attribute_list(pkt_list, attribute):
     res = pd.Series()
     for i in pkt_list:
-        if i['role'] != 'central':
+        if attribute in i:
             res.at[i['node']] = i[attribute]
+        else:
+            res.at[i['node']] = pd.NA
+
     return res
 
 
@@ -204,9 +209,9 @@ if __name__ == '__main__':
     logger.info('Init filename: ' + str(filename))
     stream = open(filename, 'r')
     loader = yaml.safe_load(stream)
-    pkt_frame = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
+    pkt_frame = pd.DataFrame(index=[i['node'] for i in loader['nodes'] ],
                              columns=[i for i in np.arange(-1, args.count)], data=0)
-    mobility_frame = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
+    mobility_frame = pd.DataFrame(index=[i['node'] for i in loader['nodes']],
                                   columns=[i for i in np.arange(0, args.count)], data=False)
 
     state_frame = pd.DataFrame(data=pkt_frame)
@@ -224,7 +229,7 @@ if __name__ == '__main__':
             frame = gen_frame(loader['plane']['plane'])
             ax = axs[args.snapshots.index(i)]
             ax.set_title(titles.pop(0), loc='left', pad=15, x=-0.05)
-            ax.imshow(frame, animated=True, origin='lower', zorder=0)
+            ax.imshow(frame, origin='lower', zorder=0)
             nw = construct_graph(loader['routing'])
             nw_axes(nw, ax)
             ax.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
@@ -238,7 +243,9 @@ if __name__ == '__main__':
         state_frame[i] = get_attribute_list(loader['nodes'], 'state')
         mobility_frame[i] = get_attribute_list(loader['nodes'], 'mobility')
 
+    pkt_frame.fillna(1, inplace=True)
     dframe = gen_diff(pkt_frame)
+
     for k in dframe.index:
         for j in dframe.columns:
             if state_frame[j][k] == 'dead':
@@ -246,15 +253,25 @@ if __name__ == '__main__':
 
     image = custom_to_numpy(dframe)
     mob_image = mob_custom_to_numpy(mobility_frame)
+
     mob_tup = [(tuple(x)[0], tuple(x)[1]) for x in mobility_frame.stack().reset_index().values.tolist() if x[2] == True]
+
+    for y,x in mob_tup:
+        image[y,x]= mcolors.to_rgba(mcolors.TABLEAU_COLORS['tab:orange'])
 
     axs['pkt'].imshow(image, origin='lower', aspect='auto', interpolation='none')
     axs['pkt'].set_xlabel('Time (min)')
     for i,j in zip(args.snapshots, ['('+i+')' for i in string.ascii_lowercase]):
         axs['pkt'].axvline(i, color='tab:blue')
         axs['pkt'].text(i, 1, j+' timestamp: '+str(i), rotation=90)
-    axs['pkt'].scatter([x[1] for x in mob_tup], [x[0] for x in mob_tup], color='red', marker='X', s=20)
+#    axs['pkt'].scatter([x[1] for x in mob_tup], [x[0] for x in mob_tup], color='tab:orange', marker='X', s=20)
     axs['pkt'].set_ylabel('Nodes')
+    patch_1 = mpatches.Patch(color='tab:gray', label='Not reachable')
+    patch_2 = mpatches.Patch(color='tab:green', label='Reachable')
+    patch_3 = mpatches.Patch(color='w', label='Destroyed')
+    patch_4 = mpatches.Patch(color='tab:orange', label='Mobile')
+    axs['pkt'].legend(handles=[patch_1, patch_2, patch_3, patch_4])
+
     #axs['mob'].imshow(mob_image, origin='lower', aspect='auto', interpolation='none')
 
     if args.picture:
