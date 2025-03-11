@@ -199,7 +199,7 @@ if __name__ == '__main__':
 
     fig, axs = plt.subplot_mosaic([[0, 1],[2, 3],
                                    ['pkt', 'pkt']],
-                                  layout="constrained", height_ratios=[10, 10, 5], figsize=figsize)
+                                  layout="constrained", height_ratios=[10, 10, 10], figsize=figsize)
 
     #fig, (ax_nw, ax_pkt, ax_mob) = plt.subplots(nrows=3, ncols=1, layout='compressed', figsize=(15, 25), height_ratios = [15, 5, 5])
 
