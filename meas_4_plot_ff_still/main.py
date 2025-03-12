@@ -194,7 +194,8 @@ if __name__ == '__main__':
 
     titles = ['('+i+')' for i in string.ascii_lowercase]
 
-    figsize = (8.27, 11.69)
+    #figsize = (8.27, 11.69)
+    figsize = (8.27,9.2)
     figsize = tuple(i * args.scale for i in figsize)
 
     fig, axs = plt.subplot_mosaic([[0, 1],[2, 3],
@@ -228,7 +229,7 @@ if __name__ == '__main__':
         if i in args.snapshots:
             frame = gen_frame(loader['plane']['plane'])
             ax = axs[args.snapshots.index(i)]
-            ax.set_title(titles.pop(0), loc='left', pad=15, x=-0.06)
+            ax.set_title(titles.pop(0), loc='left', pad=15, x=-0.065)
             ax.imshow(frame, origin='lower', zorder=0, interpolation='none')
             nw = construct_graph(loader['routing'])
             nw_axes(nw, ax)
@@ -273,7 +274,7 @@ if __name__ == '__main__':
     patch_3 = mpatches.Patch(color='w', label='Destroyed')
     patch_4 = mpatches.Patch(color='tab:orange', label='Mobile')
 
-    axs['pkt'].legend(handles=[patch_1, patch_2, patch_3, patch_4, vline], loc='lower left')
+    axs['pkt'].legend(handles=[patch_1, patch_2, patch_3, patch_4, vline], loc='lower left', bbox_to_anchor=(0.0, 0.05))
 
     #axs['mob'].imshow(mob_image, origin='lower', aspect='auto', interpolation='none')
 
