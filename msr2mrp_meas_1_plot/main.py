@@ -97,6 +97,7 @@ if __name__ == '__main__':
                     axs[0].errorbar(args.params, sink_num, sink_err, fmt='.', color='Black', elinewidth=2, capthick=1,
                                     errorevery=1, alpha=0.5, ms=4, capsize=5)
 
+
                     path_num = [np.average(r['rm'].mean(axis=1)) for r in record]
                     path_err = [np.average(r['rm'].std(axis=1)) for r in record]
                     axs[1].set_title('(b)', loc='left', pad=15, x=x)
@@ -107,10 +108,14 @@ if __name__ == '__main__':
                     axs[1].set_ylim([0, 9])
                     axs[1].errorbar(args.params, path_num, path_err, fmt='.', color='Black', elinewidth=2, capthick=1,
                                     errorevery=1, alpha=0.5, ms=4, capsize=5)
-                case 'disjoint':
-                    x = -0.08
 
-                    fig, axs = plt.subplots(nrows=2, ncols=1, layout='compressed')
+                case 'disjoint':
+                    figsize = rcParams["figure.figsize"]
+                    figsize[0]=figsize[0]*0.8
+
+                    x = -0.11
+
+                    fig, axs = plt.subplots(nrows=2, ncols=1, layout='compressed', figsize=figsize)
 
                     dmp_num = [np.average(r['dmp'].mean(axis=1)) for r in record]
                     dmp_err = [np.average(r['dmp'].std(axis=1)) for r in record]
@@ -150,6 +155,8 @@ if __name__ == '__main__':
         case 'network':
             figsize = rcParams["figure.figsize"]
             figsize = [i*2 for i in figsize]
+            rcParams['font.size'] = 18.0
+
             figsize[0] = figsize[0]*0.85
             fig, axs = plt.subplots(nrows=int(np.ceil(len(record) / 2)), ncols=2, layout='compressed', figsize=figsize)
             axs_arr = axs.ravel()
@@ -184,11 +191,18 @@ if __name__ == '__main__':
                         clabel='Border role probability'
                     case _:
                         'none'
+
                 edgecolors = ['#1f78b4ff' for i in color]
                 pos = nx.get_node_attributes(nw, 'pos')
                 node_colors=colormaps['viridis']([i/max(vmax) for i in color])
+
                 if args.plot_data == 'border':
                     node_colors = [ i if color[idx] != 0 else [1, 1, 1, 1.      ] for idx, i in enumerate(node_colors)]
+
+                for idx, i in enumerate(nx.get_node_attributes(nw, 'roles').values()):
+                    if 'central' in i[0][1]:
+                        node_colors[idx] = matplotlib.colors.to_rgba('tab:pink')
+
                 nx.draw_networkx_nodes(nw, ax=axs_arr[idx_r], pos=pos, node_color=node_colors, node_size=200, alpha=alpha, edgecolors=edgecolors)
                 nx.draw_networkx_edges(nw, ax=axs_arr[idx_r], pos=pos)
                 axs_arr[idx_r].axis('off')

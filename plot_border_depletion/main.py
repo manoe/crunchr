@@ -50,7 +50,7 @@ if __name__ == '__main__':
         case 'pkt':
             s_sel = 'pkt_forw'
     title = ['(' + i + ')' for i in 'abcdefg']
-    fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed', figsize=(8,12))
+    fig, axs = plt.subplots(nrows=len(args.nrg_file)+1, ncols=1, layout='compressed', figsize=(6,10))
     axs_arr = axs.ravel()
     ax2 = axs_arr[0].twinx()
     ax2.set_ylabel('Dead border node (count)')

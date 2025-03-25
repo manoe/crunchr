@@ -17,6 +17,7 @@ import string
 from matplotlib import rcParams
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
+rcParams['font.size'] = 15.0
 
 
 if __name__ == '__main__':
