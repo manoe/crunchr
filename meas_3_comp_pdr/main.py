@@ -66,10 +66,10 @@ if __name__ == '__main__':
         ax.set_xlim([0, 1])
         ax.set_ylim([0, 1])
         if args.label1:
-            ax.set_xlabel('End-to-end PDR ('+args.label1+')')
+            ax.set_xlabel('E2e PDR ('+args.label1+')')
         if args.label2:
-            ax.set_ylabel('End-to-end PDR ('+args.label2[idx]+')')
-        ax.set_title(titles[idx], loc='left', pad=15, x=-0.15)
+            ax.set_ylabel('E2e PDR ('+args.label2[idx]+')')
+        ax.set_title(titles[idx], loc='left', pad=15, x=-0.24)
 
     plt.show()
     fig.savefig(args.out+'.pdf', bbox_inches='tight')
