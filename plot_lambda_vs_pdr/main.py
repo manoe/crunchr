@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 from matplotlib import rcParams
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
-rcParams['text.size'] = 13
+rcParams['font.size'] = 15
 
 if __name__ == '__main__':
     parser = ap.ArgumentParser(prog='plot_lambda_vs_pdr', description='Plot average pdr against lambda',
