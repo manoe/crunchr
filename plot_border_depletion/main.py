@@ -18,6 +18,7 @@ from matplotlib import rcParams
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
 #rcParams["text.usetex"] = True
+rcParams['font.size'] = 12
 
 
 def get_border_nodes(nw_yml):
@@ -101,10 +102,11 @@ if __name__ == '__main__':
                 axs_arr[idx+1].plot(x, y, color=z[1],alpha=v[1], linestyle=w[1])
 
     for idx,axs in enumerate(axs_arr):
-        axs.set_title(title[idx], loc='left', pad=5, x=-0.07)
+        axs.set_title(title[idx], loc='left', pad=5, x=-0.135)
         axs.set_xlabel('Time (m)')
         if idx != 0:
             axs.set_ylabel('Energy (J)')
+            axs.set_ylim([0, 5])
         else:
             axs.set_ylabel(r'Energy balance ($\Phi$)')
         axs.margins(0.0, 0.02)

@@ -15,7 +15,7 @@ import yaml
 from matplotlib import rcParams
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
-rcParams['font.size'] = 13.0
+rcParams['font.size'] = 15.0
 
 
 def calculate_chebyshev(arr):
@@ -64,7 +64,7 @@ if __name__ == '__main__':
         max_count = []
         for source in ['lt', 'blt']:
             for idx, data in enumerate(lts[source].items()):
-                counts, bins = np.histogram(data[1], bins=30, range=(min_bin, max_bin))
+                counts, bins = np.histogram(data[1], bins=20, range=(min_bin, max_bin))
                 logger.debug('bins: ' + str(bins))
                 logger.debug('counts: ' + str(counts))
                 if source == 'lt':

@@ -84,7 +84,9 @@ if __name__ == '__main__':
         case 'bar':
             match args.plot_data:
                 case 'sinkpath':
-                    x = -0.07
+                    rcParams['font.size'] = 13.0
+
+                    x = -0.1
                     fig, axs = plt.subplots(nrows=2, ncols=1, layout='compressed')
                     sink_num = [np.average(r['sink'].mean(axis=1)) for r in record]
                     sink_err = [np.average(r['sink'].std(axis=1)) for r in record]
@@ -196,8 +198,8 @@ if __name__ == '__main__':
                 pos = nx.get_node_attributes(nw, 'pos')
                 node_colors=colormaps['viridis']([i/max(vmax) for i in color])
 
-                if args.plot_data == 'border':
-                    node_colors = [ i if color[idx] != 0 else [1, 1, 1, 1.      ] for idx, i in enumerate(node_colors)]
+                #if args.plot_data == 'border':
+                node_colors = [ i if color[idx] != 0 else [1, 1, 1, 1.      ] for idx, i in enumerate(node_colors)]
 
                 for idx, i in enumerate(nx.get_node_attributes(nw, 'roles').values()):
                     if 'central' in i[0][1]:

@@ -20,6 +20,7 @@ from matplotlib import rcParams
 
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
+rcParams['font.size'] = 15
 
 
 def construct_graph(run):
