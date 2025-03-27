@@ -19,7 +19,7 @@ from matplotlib import rcParams
 
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
-rcParams['font.size'] = 14.0
+rcParams['font.size'] = 16.0
 
 
 #enum CellState {
@@ -77,7 +77,11 @@ def custom_to_numpy(dframe):
     frame = np.ndarray(shape=(len(dframe.index), len(dframe.columns), 4), dtype=float)
     for i, index in enumerate(dframe.index):
         for j, column in enumerate(dframe.columns):
-            frame[i][j] = map_pkt_value(dframe[column][index])
+            if i in args.sinks:
+                c = mcolors.to_rgba(mcolors.TABLEAU_COLORS['tab:green'])
+                frame[i][j] = (c[0], c[1], c[2], 0.8)
+            else:
+                frame[i][j] = map_pkt_value(dframe[column][index])
     return frame
 
 
@@ -185,6 +189,7 @@ if __name__ == '__main__':
     parser.add_argument('-s', '--snapshots', dest='snapshots', type=int, help='Count of frames', nargs=4)
     parser.add_argument('-S', '--scale', dest='scale', type=float, help='Count of frames', default=1.0)
     parser.add_argument('-r', '--resolution', dest='resolution', type=int, default=72, help='DPI')
+    parser.add_argument('-ss', '--sinks', dest='sinks', type=int, nargs='*', help='Output mode')
     args = parser.parse_args()
 
     if args.debug:

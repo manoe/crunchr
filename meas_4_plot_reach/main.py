@@ -13,7 +13,7 @@ from matplotlib import rcParams
 
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
-
+rcParams['font.size'] = 12
 import sys
 
 if __name__ == '__main__':
@@ -71,7 +71,7 @@ if __name__ == '__main__':
         labels=args.labels+node_state_labels
     else:
         labels=list(res.keys())+node_state_labels
-    ax.legend(labels)
+    ax.legend(labels, loc='lower left', bbox_to_anchor=(0, 0.1))
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Node number')
     #ax.set_xticklabels([i for i in ax.get_xticklabels()])
