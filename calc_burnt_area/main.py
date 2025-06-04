@@ -40,7 +40,7 @@ def map_value(value):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='meas_4_plot_ff', description='Plot ', epilog=':-(')
+    parser = argparse.ArgumentParser(prog='calc_burnt_area', description='Plot ', epilog=':-(')
     parser.add_argument('-f', '--file', dest='filename', help='Filename, use $1 for frame counter')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-i', '--info', dest='info', action='store_true', default=False, help='Info mode')
