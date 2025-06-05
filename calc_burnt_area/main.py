@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     stream = open(args.filename, 'r')
     loader = yaml.safe_load(stream)
-    frame = gen_frame(loader['plane']['plane'])
+    frame = gen_frame(loader['plane'])
 
     unique, counts = np.unique(frame, return_counts=True)
     res = dict(zip(unique, counts))
