@@ -43,10 +43,11 @@ def map_value(value):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='calc_burnt_area', description='Plot ', epilog=':-(')
-    parser.add_argument('-f', '--file', dest='filename', help='Filename, use $1 for frame counter')
+    parser.add_argument('-f', '--file', dest='filename', help='Filename, use $1 for param, $2 for seed')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Debug mode')
     parser.add_argument('-i', '--info', dest='info', action='store_true', default=False, help='Info mode')
-
+    parser.add_argument('-s', '--seeds', dest='seeds', type=str, help='Seeds, $2', nargs='+')
+    parser.add_argument('-p', '--param', dest='param', type=str, help='Parameter, $1', nargs='+')
     args = parser.parse_args()
 
     if args.debug:
@@ -54,11 +55,17 @@ if __name__ == '__main__':
     elif args.info:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    stream = open(args.filename, 'r')
-    loader = yaml.safe_load(stream)
-    frame = gen_frame(loader['plane'])
+    data = {i: [] for i in args.param}
+    for i in args.param:
+        for j in args.seeds:
+            filename = args.filename.replace('$1', i).replace('$2', j)
+            stream = open(filename, 'r')
+            loader = yaml.safe_load(stream)
+            frame = gen_frame(loader['plane'])
 
-    unique, counts = np.unique(frame, return_counts=True)
-    res = dict(zip(unique, counts))
+            unique, counts = np.unique(frame, return_counts=True)
+            res = dict(zip(unique, counts))
+            data[i].append(res[CellState.NOT_IGNITED] / sum(counts))
 
-    print('Not ignited ratio: '+str(res[CellState.NOT_IGNITED]/sum(counts)))
+    for key, value in data.items():
+        print(str(key)+' - average: '+str(np.average(value))+', std: '+str(np.std(value)))
