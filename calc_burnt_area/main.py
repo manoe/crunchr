@@ -59,6 +59,7 @@ if __name__ == '__main__':
     for i in args.param:
         for j in args.seeds:
             filename = args.filename.replace('$1', i).replace('$2', j)
+            print('filename: {}'.format(filename))
             stream = open(filename, 'r')
             loader = yaml.safe_load(stream)
             frame = gen_frame(loader['plane'])
