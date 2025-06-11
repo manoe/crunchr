@@ -55,10 +55,11 @@ if __name__ == '__main__':
         if len(args.labels) != len(res.keys()):
             logger.error('Number of labels does not match product number of parameters')
             exit(1)
-
+    handles = []
     fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed')
     for k, color in zip(res.keys(), TABLEAU_COLORS):
-        ax.plot(timestamps, res[k]['r'], color=color)
+        line = ax.plot(timestamps, res[k]['r'], color=color)
+        handles.append(line)
         for d,l in zip(['l','d'], [':','--']):
             ax.plot(timestamps, res[k][d], color=color, ls=l)
         #for d, l in zip(['r', 'l', 'd'], ['-', ':', '--']):
@@ -71,7 +72,8 @@ if __name__ == '__main__':
         labels=args.labels
     else:
         labels=list(res.keys())
-    ax.legend(labels, loc='lower left', bbox_to_anchor=(0, 0.1))
+    #ax.legend(labels, loc='lower left', bbox_to_anchor=(0, 0.1))
+    ax.legend(handles,labels, loc='lower left', bbox_to_anchor=(0, 0.1))
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Node number')
     #ax.set_xticklabels([i for i in ax.get_xticklabels()])
