@@ -50,8 +50,6 @@ if __name__ == '__main__':
                 for i in 'rld':
                     #res[p + '_' + p1 + '_' + p2][i].append(tables[i].mean(axis=1))
                     res[p + '_' + p1 + '_' + p2][i]=tables[i].mean(axis=1)
-    #for p in args.proto:
-    #    del res[p+'_false'+'_true']
 
     if args.labels:
         if len(args.labels) != len(res.keys()):
@@ -63,14 +61,14 @@ if __name__ == '__main__':
         ax.plot(timestamps, res[k]['r'], color=color)
         #for d, l in zip(['r', 'l', 'd'], ['-', ':', '--']):
         #    ax.plot(timestamps, res[k][d], color=color, ls=l)
-    for t, color in zip([args.proto[0]+'_true_true', args.proto[0]+'_false_false'], list(TABLEAU_COLORS.keys())[len(res.keys()):]):
+    for t, color in zip(args.proto[0], list(TABLEAU_COLORS.keys())[len(res.keys()):]):
         for d,l in zip(['l','d'], [':','--']):
             ax.plot(timestamps, res[t][d], color=color, ls=l)
-    node_state_labels = ['Living nodes-Limited mobility'] + ['Destroyed nodes -Limited mobility'] + ['Living nodes-No mobility'] + ['Destroyed nodes-No mobility']
+
     if args.labels:
-        labels=args.labels+node_state_labels
+        labels=args.labels
     else:
-        labels=list(res.keys())+node_state_labels
+        labels=list(res.keys())
     ax.legend(labels, loc='lower left', bbox_to_anchor=(0, 0.1))
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Node number')
