@@ -61,7 +61,7 @@ if __name__ == '__main__':
         ax.plot(timestamps, res[k]['r'], color=color)
         #for d, l in zip(['r', 'l', 'd'], ['-', ':', '--']):
         #    ax.plot(timestamps, res[k][d], color=color, ls=l)
-    for t, color in zip(args.proto[0], list(TABLEAU_COLORS.keys())[len(res.keys()):]):
+    for t, color in zip([args.proto[0]], list(TABLEAU_COLORS.keys())[len(res.keys()):]):
         for d,l in zip(['l','d'], [':','--']):
             ax.plot(timestamps, res[t][d], color=color, ls=l)
 
