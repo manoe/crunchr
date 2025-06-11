@@ -50,8 +50,8 @@ if __name__ == '__main__':
                 for i in 'rld':
                     #res[p + '_' + p1 + '_' + p2][i].append(tables[i].mean(axis=1))
                     res[p + '_' + p1 + '_' + p2][i]=tables[i].mean(axis=1)
-    for p in args.proto:
-        del res[p+'_false'+'_true']
+    #for p in args.proto:
+    #    del res[p+'_false'+'_true']
 
     if args.labels:
         if len(args.labels) != len(res.keys()):
