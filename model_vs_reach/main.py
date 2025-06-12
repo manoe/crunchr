@@ -40,14 +40,14 @@ if __name__ == '__main__':
             for p2 in args.param2:
                 filename = args.filename.replace('$0', p).replace('$1', p1).replace('$2', p2)
                 logger.debug('Init filename: ' + str(filename))
-                tables = {i: pd.DataFrame() for i in 'rld'}
+                tables = {i: pd.DataFrame() for i in 'rldm'}
                 for s in args.seeds:
                     data = pd.read_pickle(filename.replace('$3', s))
                     logger.debug('seed: ' + str(s))
                     for d in data.columns:
                         tables[d][s] = data[d].values
                         timestamps = data[d].index.values
-                for i in 'rld':
+                for i in 'rldm':
                     #res[p + '_' + p1 + '_' + p2][i].append(tables[i].mean(axis=1))
                     res[p + '_' + p1 + '_' + p2][i]=tables[i].mean(axis=1)
 
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     for k, color in zip(res.keys(), TABLEAU_COLORS):
         line, = ax.plot(timestamps, res[k]['r'], color=color, label=k)
         handles.append(line)
-        for d,l in zip(['l','d'], [':','--']):
+        for d,l in zip(['l','d','m'], [':','--','-.']):
             ax.plot(timestamps, res[k][d], color=color, ls=l)
         #for d, l in zip(['r', 'l', 'd'], ['-', ':', '--']):
         #    ax.plot(timestamps, res[k][d], color=color, ls=l)
