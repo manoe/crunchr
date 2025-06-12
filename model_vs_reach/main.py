@@ -58,7 +58,7 @@ if __name__ == '__main__':
     handles = []
     fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed')
     for k, color in zip(res.keys(), TABLEAU_COLORS):
-        line = ax.plot(timestamps, res[k]['r'], color=color)
+        line = ax.plot(timestamps, res[k]['r'], color=color, label=k)
         handles.append(line)
         for d,l in zip(['l','d'], [':','--']):
             ax.plot(timestamps, res[k][d], color=color, ls=l)
@@ -72,6 +72,7 @@ if __name__ == '__main__':
         labels=args.labels
     else:
         labels=list(res.keys())
+
     #ax.legend(labels, loc='lower left', bbox_to_anchor=(0, 0.1))
     ax.legend(handles,labels, loc='lower left', bbox_to_anchor=(0, 0.1))
     ax.set_xlabel('Time (min)')
