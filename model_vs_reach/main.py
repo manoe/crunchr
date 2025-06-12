@@ -74,7 +74,7 @@ if __name__ == '__main__':
         labels=list(res.keys())
 
     #ax.legend(labels, loc='lower left', bbox_to_anchor=(0, 0.1))
-    ax.legend(handles,labels, loc='lower left', bbox_to_anchor=(0, 0.1))
+    ax.legend(handles=handles, loc='lower left', bbox_to_anchor=(0, 0.1))
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Node number')
     #ax.set_xticklabels([i for i in ax.get_xticklabels()])
