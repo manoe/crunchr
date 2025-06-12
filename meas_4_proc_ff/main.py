@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import argparse
 import logging
+import itertools as it
 logger = logging.getLogger(__name__)
 import sys
 
@@ -50,6 +51,9 @@ if __name__ == '__main__':
     living = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
                              columns=[i for i in np.arange(0, args.count)], dtype=bool, data=False)
 
+    mobility = pd.DataFrame(index=[i['node'] for i in loader['nodes']],
+                                  columns=[i for i in np.arange(0, args.count)], data=False)
+
     timestamps = []
     for i in range(args.count):
         filename = args.filename.replace('$1', str(i))
@@ -62,14 +66,18 @@ if __name__ == '__main__':
 
         pkts[i] = get_attribute_list(loader['nodes'], 'report_recv')
         living[i] = get_attribute_list(loader['nodes'], 'state').map(lambda x: True if x == 'live' else False)
+        mobility[i] = get_attribute_list(loader['nodes'], 'mobility')
     reachable = gen_diff(pkts).map(lambda x: True if x > 0 else False)
 
     reachable_count = [reachable[i].value_counts()[True]  for i in reachable]
     living_count = [living[i].value_counts()[True] if True in living[i].value_counts() else 0 for i in living]
     dead_count = [living[i].value_counts()[False] if False in living[i].value_counts() else 0 for i in living]
+    mobility_count  = [mobility[i].value_counts()[False] if False in mobility[i].value_counts() else 0 for i in mobility]
+
 
     out=pd.DataFrame(index=timestamps)
     out['r']=reachable_count
     out['l']=living_count
     out['d']=dead_count
+    out['m']=list(it.accumulate(mobility_count))
     out.to_pickle(args.out_file+'.pickle')
