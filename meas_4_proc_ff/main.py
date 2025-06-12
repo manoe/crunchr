@@ -72,7 +72,7 @@ if __name__ == '__main__':
     reachable_count = [reachable[i].value_counts()[True]  for i in reachable]
     living_count = [living[i].value_counts()[True] if True in living[i].value_counts() else 0 for i in living]
     dead_count = [living[i].value_counts()[False] if False in living[i].value_counts() else 0 for i in living]
-    mobility_count  = [mobility[i].value_counts()[False] if False in mobility[i].value_counts() else 0 for i in mobility]
+    mobility_count  = [mobility[i].value_counts()[True] if True in mobility[i].value_counts() else 0 for i in mobility]
 
 
     out=pd.DataFrame(index=timestamps)
