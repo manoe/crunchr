@@ -81,6 +81,7 @@ if __name__ == '__main__':
     ax.legend(handles=handles, labels=labels, loc='lower left', bbox_to_anchor=(0, 0.1))
     ax.set_xlabel('Time (min)')
     ax.set_ylabel('Node number')
+    t_ax.set_ylabel('Cumulated mobility')
     #ax.set_xticklabels([i for i in ax.get_xticklabels()])
     ax.set_xlim([0, max(timestamps)])
     ax.xaxis.set_major_formatter(FuncFormatter(lambda x, p: '{0:.0f}'.format(x/60)))
