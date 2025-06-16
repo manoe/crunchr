@@ -57,13 +57,13 @@ if __name__ == '__main__':
             exit(1)
     handles = []
     fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed')
+    t_ax = ax.twinx()
     for k, color in zip(res.keys(), TABLEAU_COLORS):
         line, = ax.plot(timestamps, res[k]['r'], color=color, label=k)
         handles.append(line)
         for d,l in zip(['l','d'], [':','--']):
             ax.plot(timestamps, res[k][d], color=color, ls=l)
 
-        t_ax = ax.twinx()
         t_ax.plot(timestamps, res[k]['m'], color=color, ls='-.')
 
         #for d, l in zip(['r', 'l', 'd'], ['-', ':', '--']):
