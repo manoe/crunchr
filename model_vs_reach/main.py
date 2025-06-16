@@ -60,8 +60,12 @@ if __name__ == '__main__':
     for k, color in zip(res.keys(), TABLEAU_COLORS):
         line, = ax.plot(timestamps, res[k]['r'], color=color, label=k)
         handles.append(line)
-        for d,l in zip(['l','d','m'], [':','--','-.']):
+        for d,l in zip(['l','d'], [':','--']):
             ax.plot(timestamps, res[k][d], color=color, ls=l)
+
+        t_ax = ax.twinx()
+        t_ax.plot(timestamps, res[k]['m'], color=color, ls='-.')
+
         #for d, l in zip(['r', 'l', 'd'], ['-', ':', '--']):
         #    ax.plot(timestamps, res[k][d], color=color, ls=l)
 #    for t, color in zip([args.proto[0]], list(TABLEAU_COLORS.keys())[len(res.keys()):]):
