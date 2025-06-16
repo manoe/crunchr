@@ -32,7 +32,7 @@ if __name__ == '__main__':
     if args.debug:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-    res = {p + '_' + p1 + '_' + p2: {'r': [], 'l': [], 'd': []} for p in args.proto for p1 in args.param1 for p2 in
+    res = {p + '_' + p1 + '_' + p2: {'r': [], 'l': [], 'd': [], 'm': []} for p in args.proto for p1 in args.param1 for p2 in
            args.param2}
 
     for p in args.proto:
