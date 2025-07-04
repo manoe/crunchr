@@ -36,14 +36,21 @@ if __name__ == '__main__':
     for idx_angle, angle in enumerate(angle_arr):
         for idx_speed, speed in enumerate(speed_arr):
             value_map[idx_angle, idx_speed] = 1/(1 - f_w_a(angle) * f_w_s(speed))
-    fig = plt.figure(figsize=(9, 8) )
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(9, 7.5))
+
     ax = plt.subplot(1,1,1)
     im = ax.imshow(value_map, origin='lower')
-    cax = cbar_ax = fig.add_axes([0.88, 0.15, 0.04, 0.7])
-    fig.colorbar(im,cax=cax)
+    fig.subplots_adjust(left=-0.05, right=1.1)
+    cax = cbar_ax = fig.add_axes([0.9, 0.11, 0.04, 0.775])
+    fig.colorbar(im,cax=cax, label='Sensing adjustment coefficient')
+
     ax.set_yticks(np.arange(0, len(angle_arr), len(angle_arr)/10))
     ax.set_xticks(np.arange(0, len(speed_arr), len(angle_arr)/10))
     ax.set_yticklabels([ '{:,.2f}'.format(i) for i in np.linspace(0, 2 * np.pi, 1+len(ax.get_yticks()))][:-1])
     ax.set_xticklabels([ '{:,.2f}'.format(i) for i in np.linspace(0, 1, 1+len(ax.get_xticks()))][:-1])
-
+    ax.set_ylabel('Wind angle')
+    ax.set_xlabel('Wind speed')
+#    plt.tight_layout()
+    plt.savefig('out.pdf', bbox_inches='tight')
     plt.show()

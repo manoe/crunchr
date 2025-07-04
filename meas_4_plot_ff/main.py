@@ -4,6 +4,7 @@ import yaml
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import matplotlib.patches as mpatches
 import networkx as nx
 import argparse
 import logging
@@ -53,11 +54,12 @@ def map_value(value):
 def map_pkt_value(value):
     logger.debug(int(value))
     if value > 0:
-        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:green'])
+        c = mcolors.to_rgba(mcolors.TABLEAU_COLORS['tab:green'])
+        return c[0], c[1], c[2], 0.8
     if value == 0:
-        return mcolors.to_rgb(mcolors.BASE_COLORS['w'])
+        return mcolors.to_rgba(mcolors.TABLEAU_COLORS['tab:gray'])
     else:
-        return mcolors.to_rgb(mcolors.TABLEAU_COLORS['tab:gray'])
+        return mcolors.to_rgba(mcolors.BASE_COLORS['w'])
 
 def map_mob_value(value):
     logger.debug(int(value))
@@ -67,7 +69,7 @@ def map_mob_value(value):
         return mcolors.to_rgb(mcolors.BASE_COLORS['w'])
 
 def custom_to_numpy(dframe):
-    frame = np.ndarray(shape=(len(dframe.index), len(dframe.columns), 3), dtype=float)
+    frame = np.ndarray(shape=(len(dframe.index), len(dframe.columns), 4), dtype=float)
     for i, index in enumerate(dframe.index):
         for j, column in enumerate(dframe.columns):
             frame[i][j] = map_pkt_value(dframe[column][index])
@@ -91,6 +93,7 @@ def gen_frame(plane):
 
 def construct_graph(run):
     nw = nx.MultiDiGraph()
+
     for node in run:
         nw.add_node(node['node'], master=node['master'], pos=[node['x'], node['y']], state=node['state'])
         if 'engines' in node:
@@ -124,16 +127,18 @@ def construct_graph(run):
 
 
 def create_nw_color_list(nw):
-    return ['tab:blue' if 'external' in i[0][1] else 'tab:brown' if 'border' in i[0][1] else 'tab:pink' if 'central' in i[0][1] else 'tab:grey' if 'dead' else 'tab:cyan'
+    return ['tab:blue' if 'external' in i[0][1] or 'none' in i[0][1] else 'tab:brown' if 'border' in i[0][1] else 'tab:pink' if 'central' in i[0][1] else 'tab:grey' if 'dead' else 'tab:cyan'
             for i in nx.get_node_attributes(nw, 'roles').values()]
 
 def create_nw_alpha_list(nw):
-    return [1 if 'dead' not in i[0][1] else 0.5 for i in nx.get_node_attributes(nw, 'roles').values()]
+    return [1 if 'dead' not in i[0][1] or 'none' in i[0][1] else 0.5 for i in nx.get_node_attributes(nw, 'roles').values()]
 
 def nw_axes(nw, ax):
     pos = nx.get_node_attributes(nw, 'pos')
+    node_color = create_nw_color_list(nw)
+    node_alpha = create_nw_alpha_list(nw)
 
-    n_axes = nx.draw_networkx_nodes(nw, ax=ax, pos=pos, alpha=create_nw_alpha_list(nw), node_color=create_nw_color_list(nw))
+    n_axes = nx.draw_networkx_nodes(nw, ax=ax, pos=pos, alpha=node_alpha, node_color=node_color)
     l_axes = nx.draw_networkx_labels(nw, ax=ax, pos=pos, font_size=9)
     e_alpha=1
     e_axes = nx.draw_networkx_edges(nw, ax=ax, pos=pos, alpha=e_alpha, connectionstyle="arc3,rad=0.2")
@@ -173,7 +178,7 @@ if __name__ == '__main__':
     elif args.info:
         logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-    fig, (ax_nw, ax_pkt) = plt.subplots(nrows=2, ncols=1, layout='compressed', figsize=(15, 20), height_ratios = [15, 5])
+    fig, (ax_nw, ax_pkt) = plt.subplots(nrows=2, ncols=1, layout='compressed', figsize=(15, 15), height_ratios = [15, 5])
 
     if args.per_frame:
         logger.info('Base filename: ' + str(args.filename))
@@ -196,6 +201,7 @@ if __name__ == '__main__':
             state_frame = pd.DataFrame(data=pkt_frame)
 
         for i in range(args.count):
+            count = i
             filename = args.filename.replace('$1', str(i))
             logger.info('Actual filename: ' + str(filename))
 
@@ -206,7 +212,8 @@ if __name__ == '__main__':
             frame = gen_frame(loader['plane']['plane'])
             frames.append(frame)
             artist = [ax_nw.imshow(frame, animated=True, origin='lower', zorder=0)]
-
+            ax_nw.set_xlabel('Position X (m)')
+            ax_nw.set_ylabel('Position Y (m)')
             if args.network:
                 nw = construct_graph(loader['routing'])
                 nw_frames.append(nw)
@@ -233,18 +240,35 @@ if __name__ == '__main__':
                 mob_image = mob_custom_to_numpy(mobility_frame)
 
                 mob_tup = [(tuple(x)[0], tuple(x)[1]) for x in mobility_frame.stack().reset_index().values.tolist() if x[2] == True]
+                for y, x in mob_tup:
+                    image[y, x] = mcolors.to_rgba(mcolors.TABLEAU_COLORS['tab:orange'])
                 artist.append(ax_pkt.imshow(image, origin='lower', animated=True, aspect='auto', interpolation='none'))
-                artist.append(ax_pkt.scatter([x[1] for x in mob_tup ], [x[0] for x in mob_tup], color='red', marker='X', s=40))
+
+                artist.append(ax_pkt.set_ylabel('Nodes'))
+                legend = ax_pkt.legend(handles=[mpatches.Patch(color='tab:gray', label='Not reachable'),
+                                       mpatches.Patch(color='tab:green', label='Reachable'),
+                                       mpatches.Patch(color='w', label='Destroyed'),
+                                       mpatches.Patch(color='tab:orange', label='Mobile')], loc='lower left',
+                              bbox_to_anchor=(0.0, 0.05), framealpha=0.8)
+                legend.get_frame().set_color('gainsboro')
+                ax_pkt.add_artist(legend)
+
+                #artist.append(ax_pkt.scatter([x[1] for x in mob_tup ], [x[0] for x in mob_tup], color='red', marker='X', s=40))
 
 
-            title = ax_nw.text(1, 1.01, "Timestamp: {:.2f}".format(timestamp),
+            title = ax_nw.text(1, 1.02, "Timestamp: {:.2f}".format(timestamp),
                             size=plt.rcParams["axes.titlesize"],
                             ha="right", transform=ax_nw.transAxes )
+            ax_nw.set_title('(a) MsR2MRP network and hostile event', loc='left', pad=15, x=-0.035)
+            ax_pkt.set_title('(b) Node reachability and status over time', loc='left', pad=15, x=-0.035)
+            ax_pkt.set_xlabel('Time (min)')
             artist.append(title)
             artists.append(artist)
             if args.static:
                 ax_nw.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
-                fig.savefig(filename + '.png', bbox_inches='tight', dpi=args.resolution)
+                fig.savefig(filename + '.pdf', bbox_inches='tight', dpi=args.resolution)
+                fig, (ax_nw, ax_pkt) = plt.subplots(nrows=2, ncols=1, layout='compressed', figsize=(15, 15),
+                                                    height_ratios=[15, 5])
         if args.static:
             exit(0)
         ax_nw.tick_params(left=True, bottom=True, labelleft=True, labelbottom=True)
