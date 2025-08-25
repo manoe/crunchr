@@ -9,7 +9,7 @@ import sys
 from matplotlib import rcParams
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
-rcParams['font.size'] = 12
+rcParams['font.size'] = 18
 
 def f_w_a(angle, c_w_a=0.3):
     if not c_w_a < 1.0:
@@ -53,4 +53,5 @@ if __name__ == '__main__':
     ax.set_xlabel('Wind speed')
 #    plt.tight_layout()
     plt.savefig('out.pdf', bbox_inches='tight')
+
     plt.show()

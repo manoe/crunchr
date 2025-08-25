@@ -7,6 +7,11 @@ from enum import IntEnum
 import argparse
 import yaml
 import sys
+import matplotlib.pyplot as plt
+from matplotlib import rcParams
+rcParams['font.family'] = ['serif']
+rcParams['font.serif'] = ['Times New Roman']
+rcParams['font.size'] = 14
 
 
 def gen_frame(plane):
@@ -48,6 +53,7 @@ if __name__ == '__main__':
     parser.add_argument('-i', '--info', dest='info', action='store_true', default=False, help='Info mode')
     parser.add_argument('-s', '--seeds', dest='seeds', type=str, help='Seeds, $2', nargs='+')
     parser.add_argument('-p', '--param', dest='param', type=str, help='Parameter, $1', nargs='+')
+    parser.add_argument('-g', '--graph', dest='graph', action='store_true', default=False, help='Plot graph')
     args = parser.parse_args()
 
     if args.debug:
@@ -68,5 +74,16 @@ if __name__ == '__main__':
             res = dict(zip(unique, counts))
             data[i].append(res[CellState.NOT_IGNITED] / sum(counts))
 
+
+
     for key, value in data.items():
         print(str(key)+' - average: '+str(np.average(value))+', std: '+str(np.std(value)))
+
+
+    if args.graph:
+        ax = plt.subplot(1, 1, 1)
+        ax.bar([i for i in data.keys()], [1.0 - np.average(value) for value in data.values()])
+        ax.set_ylabel('Ratio of burnt area')
+        ax.set_xlabel('$p_{moist}$ value')
+        plt.savefig('out.pdf', bbox_inches='tight')
+        plt.show()
