@@ -74,8 +74,8 @@ if __name__ == '__main__':
     reachable = gen_diff(pkts).map(lambda x: True if x > 0 else False)
     e_reachable = gen_diff(e_pkts).map(lambda x: True if x > 0 else False)
 
-    reachable_count = [0 if True not in reachable[i].value_counts()[True] else reachable[i].value_counts()[True]  for i in reachable]
-    e_reachable_count = [0 if True not in e_reachable[i].value_counts()[True] else e_reachable[i].value_counts()[True] for i in e_reachable]
+    reachable_count = [0 if True not in reachable[i].value_counts() else reachable[i].value_counts()[True]  for i in reachable]
+    e_reachable_count = [0 if True not in e_reachable[i].value_counts() else e_reachable[i].value_counts()[True] for i in e_reachable]
 
     living_count = [living[i].value_counts()[True] if True in living[i].value_counts() else 0 for i in living]
     dead_count = [living[i].value_counts()[False] if False in living[i].value_counts() else 0 for i in living]
