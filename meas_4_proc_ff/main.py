@@ -48,6 +48,9 @@ if __name__ == '__main__':
     pkts = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
                              columns=[i for i in np.arange(-1, args.count)], data=0)
 
+    e_pkts = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
+                        columns=[i for i in np.arange(-1, args.count)], data=0)
+
     living = pd.DataFrame(index=[i['node'] for i in loader['nodes'] if i['role'] != 'central'],
                              columns=[i for i in np.arange(0, args.count)], dtype=bool, data=False)
 
@@ -65,11 +68,13 @@ if __name__ == '__main__':
         timestamps.append(timestamp)
 
         pkts[i] = get_attribute_list(loader['nodes'], 'report_recv')
+        e_pkts[i] = get_attribute_list(loader['nodes'], 'event_recv')
         living[i] = get_attribute_list(loader['nodes'], 'state').map(lambda x: True if x == 'live' else False)
         mobility[i] = get_attribute_list(loader['nodes'], 'mobility')
     reachable = gen_diff(pkts).map(lambda x: True if x > 0 else False)
-
+    e_reachable = gen_diff(e_pkts).map(lambda x: True if x > 0 else False)
     reachable_count = [reachable[i].value_counts()[True]  for i in reachable]
+    e_reachable_count = [e_reachable[i].value_counts()[True]  for i in e_reachable]
     living_count = [living[i].value_counts()[True] if True in living[i].value_counts() else 0 for i in living]
     dead_count = [living[i].value_counts()[False] if False in living[i].value_counts() else 0 for i in living]
     mobility_count  = [mobility[i].value_counts()[True] if True in mobility[i].value_counts() else 0 for i in mobility]
@@ -77,6 +82,7 @@ if __name__ == '__main__':
 
     out=pd.DataFrame(index=timestamps)
     out['r']=reachable_count
+    out['e']=e_reachable_count
     out['l']=living_count
     out['d']=dead_count
     out['m']=list(it.accumulate(mobility_count))
