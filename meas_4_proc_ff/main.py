@@ -73,8 +73,10 @@ if __name__ == '__main__':
         mobility[i] = get_attribute_list(loader['nodes'], 'mobility')
     reachable = gen_diff(pkts).map(lambda x: True if x > 0 else False)
     e_reachable = gen_diff(e_pkts).map(lambda x: True if x > 0 else False)
-    reachable_count = [reachable[i].value_counts()[True]  for i in reachable]
-    e_reachable_count = [e_reachable[i].value_counts()[True]  for i in e_reachable]
+
+    reachable_count = [0 if True not in reachable[i].value_counts()[True] else reachable[i].value_counts()[True]  for i in reachable]
+    e_reachable_count = [0 if True not in e_reachable[i].value_counts()[True] else e_reachable[i].value_counts()[True] for i in e_reachable]
+
     living_count = [living[i].value_counts()[True] if True in living[i].value_counts() else 0 for i in living]
     dead_count = [living[i].value_counts()[False] if False in living[i].value_counts() else 0 for i in living]
     mobility_count  = [mobility[i].value_counts()[True] if True in mobility[i].value_counts() else 0 for i in mobility]
