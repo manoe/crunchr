@@ -10,13 +10,16 @@ from matplotlib.ticker import FuncFormatter
 logger = logging.getLogger(__name__)
 from scipy.interpolate import interp1d, pchip
 from scipy.signal import savgol_filter
-
+import numpy as np
+import scipy.stats as st
 from matplotlib import rcParams
 from matplotlib import cm
 rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
 rcParams['font.size'] = 12
 import sys
+
+attr_arr = ['r', 'l', 'd', 'm', 'e']#, 'pr', 'pe']
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='plot_sensing_model_surface', description='Process ff related data ', epilog=':-(')
@@ -35,20 +38,25 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--window', dest='window', action='store_true', help='Plot multiple windows (not implemented)')
     parser.add_argument('-std', '--standard-deviation', dest='std', action='store_true',
                         help='Calculate STD instead of mean')
+    parser.add_argument('-conf', '--confidence-interval', dest='conf', action='store_true',
+                        help='Calculate STD instead of mean')
+
 
     args = parser.parse_args()
 
     if args.debug:
         logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
-    res = {p1: {'r': [], 'l': [], 'd': [], 'm': []} for p1 in args.param1 }
-    res_std = {p1: {'r': [], 'l': [], 'd': [], 'm': []} for p1 in args.param1 }
+    res = {p1: {'r': [], 'l': [], 'd': [], 'm': [], 'pr': [], 'pe': []} for p1 in args.param1 }
+    res_std = {p1: {'r': [], 'l': [], 'd': [], 'm': [], 'pr': [], 'pe': []} for p1 in args.param1 }
+    res_conf = {p1: {'r': [], 'l': [], 'd': [], 'm': [], 'pr': [], 'pe': []} for p1 in args.param1 }
+
     #for p in args.smod:
     for p1 in args.param1:
         #filename = args.filename.replace('$0', p).replace('$1', p1)
         filename = args.filename.replace('$1', p1)
         logger.debug('Init filename: ' + str(filename))
-        tables = {i: pd.DataFrame() for i in 'rldme'}
+        tables = {i: pd.DataFrame() for i in attr_arr}
         max_len = 0
         for s in args.seeds:
             data = pd.read_pickle(filename.replace('$3', s))
@@ -65,13 +73,16 @@ if __name__ == '__main__':
                     if len(data[d].values) > max_len:
                         max_len = len(data[d].values)
 
-        for i in 'rldme':
+        for i in attr_arr:
             #res[p + '_' + p1 + '_' + p2][i].append(tables[i].mean(axis=1))
             res_std[p1][i] = tables[i].std(axis=1)
             res[p1][i] = tables[i].mean(axis=1)
+            res_conf[p1][i] = tables[i].apply(lambda x: st.t.interval(0.95, len(x)-1, loc=np.mean(x), scale=st.sem(x)) , axis=1)
+
+            #st.t.interval(0.95, len(a)-1, loc=np.mean(a), scale=st.sem(a))
 
     for p1 in args.param1:
-        for i in 'rldme':
+        for i in attr_arr:
             res[p1][i] = pd.concat([ res[p1][i], pd.Series([res[p1][i].iloc[-1] for j in range(len(res[p1][i]), max_len)])], ignore_index=True)
 
     logger.debug('Max len: ' + str(max_len))
@@ -95,9 +106,13 @@ if __name__ == '__main__':
         if args.std:
             ax.fill_between(X, res[i][args.attribute] - res_std[i][args.attribute],
                             res[i][args.attribute] + res_std[i][args.attribute], color='#888888', alpha=0.2)
+        if args.conf:
+            ax.fill_between(X, res_conf[i][args.attribute].map( lambda x: x[0] ),
+                            res_conf[i][args.attribute].map( lambda x: x[1] ), color='#888888', alpha=0.2)
 
+        print('Std of ' + str(i) + ' std: ' + str(np.std(res_std[i][args.attribute])))
+        print('Sum of 95% confidence: '+str((res_conf[i][args.attribute].map(lambda x: x[1] ) - res_conf[i][args.attribute].map( lambda x: x[0] )).sum()))
 
-            print('Std of '+str(i)+' std: '+str(np.std(res_std[i][args.attribute])))
 
     ax.legend(handle_list, args.param1)
     plt.savefig(args.out_file + '.pdf', dpi=300)

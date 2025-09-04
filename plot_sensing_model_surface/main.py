@@ -29,7 +29,9 @@ if __name__ == '__main__':
 #    parser.add_argument('-p2', '--param-2', dest='param2', type=str, help='Parameter 2, $2', nargs='+')
     parser.add_argument('-s', '--seeds', dest='seeds', type=str, help='Seeds, $3', nargs='+')
     parser.add_argument('-o', '--out', dest='out_file', type=str, help='Out file', default='out')
-    parser.add_argument('-a', '--attribute', dest='attribute', type=str, help='Out file', default='r', choices=['r', 'l', 'b', 'm', 'e'])
+    parser.add_argument('-a', '--attribute', dest='attribute', type=str, help='Plot attribute', default='r', choices=['r', 'l', 'b', 'm', 'e'])
+    parser.add_argument('-m', '--limit', dest='limit', type=int, help='Limit frame processing to nth frame')
+    parser.add_argument('-e', '--extend', dest='extend', action='store_true', help='Extend series to match the longest series')
     args = parser.parse_args()
 
     if args.debug:
@@ -43,15 +45,31 @@ if __name__ == '__main__':
         filename = args.filename.replace('$1', p1)
         logger.debug('Init filename: ' + str(filename))
         tables = {i: pd.DataFrame() for i in 'rldme'}
+        max_len = 0
         for s in args.seeds:
             data = pd.read_pickle(filename.replace('$3', s))
             logger.debug('seed: ' + str(s))
             for d in data.columns:
-                tables[d][s] = data[d].values
-                timestamps = data[d].index.values
+                if args.limit:
+                    tables[d][s] = data[d].iloc[:args.limit].values
+                    timestamps = data[d].iloc[:args.limit].index.values
+                else:
+                    #tables[d][s] = data[d].values
+                    tables[d] = pd.concat([tables[d], pd.Series(data[d].values) ], axis=1)
+                    if 'timestamps' not in locals() or len(timestamps) < len(data[d].index.values):
+                        timestamps = data[d].index.values
+                    if len(data[d].values) > max_len:
+                        max_len = len(data[d].values)
+
         for i in 'rldme':
             #res[p + '_' + p1 + '_' + p2][i].append(tables[i].mean(axis=1))
             res[p1][i]=tables[i].mean(axis=1)
+
+    for p1 in args.param1:
+        for i in 'rldme':
+            res[p1][i] = pd.concat([ res[p1][i], pd.Series([res[p1][i].iloc[-1] for j in range(len(res[p1][i]), max_len)])], ignore_index=True)
+
+    logger.debug('Max len: ' + str(max_len))
 
     if args.labels:
         if len(args.labels) != len(res.keys()):
@@ -66,7 +84,8 @@ if __name__ == '__main__':
     Y = [int(idx) for idx, i in enumerate(list(args.param1))]
 
     for idx, i in enumerate(args.param1):
-        yhat = savgol_filter(res[i][args.attribute], 2, 1)
+        #yhat = savgol_filter(res[i][args.attribute], 2, 1)
+        yhat = res[i][args.attribute]
         ax.plot(xs=X, ys=yhat, zs=idx, zdir='y', alpha=0.8)
         # ax.plot(xs=X, ys = res[i][args.attribute], zs=idx, zdir='y', alpha=0.8)
 #    X, Y = np.meshgrid(X, Y)
