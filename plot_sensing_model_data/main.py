@@ -52,7 +52,7 @@ if __name__ == '__main__':
     res = {p2: {p1: {'r': [], 'l': [], 'd': [], 'm': [], 'pr': [], 'pe': []} for p1 in args.param1 } for p2 in args.param2}
     res_std = {p2: {p1: {'r': [], 'l': [], 'd': [], 'm': [], 'pr': [], 'pe': []} for p1 in args.param1 } for p2 in args.param2}
     res_conf = {p2: {p1: {'r': [], 'l': [], 'd': [], 'm': [], 'pr': [], 'pe': []} for p1 in args.param1 } for p2 in args.param2}
-
+    timestamps = {i: [] for i in args.param1}
     #for p in args.smod:
     for p2 in args.param2:
         for p1 in args.param1:
@@ -67,12 +67,12 @@ if __name__ == '__main__':
                 for d in data.columns:
                     if args.limit:
                         tables[d][s] = data[d].iloc[:args.limit].values
-                        timestamps = data[d].iloc[:args.limit].index.values
+                        timestamps[p1] = data[d].iloc[:args.limit].index.values
                     else:
                         #tables[d][s] = data[d].values
                         tables[d] = pd.concat([tables[d], pd.Series(data[d].values) ], axis=1)
-                        if 'timestamps' not in locals() or len(timestamps) < len(data[d].index.values):
-                            timestamps = data[d].index.values
+                        if 'timestamps' not in locals() or len(timestamps[p1]) < len(data[d].index.values):
+                            timestamps[p1] = data[d].index.values
                         if len(data[d].values) > max_len:
                             max_len = len(data[d].values)
 
@@ -98,7 +98,6 @@ if __name__ == '__main__':
 
         for p1 in args.param1:
             for i in attr_arr:
-
                 res[p2][p1][i] = pd.concat([ res[p2][p1][i], pd.Series([res[p2][p1][i].iloc[-1] for j in range(len(res[p2][p1][i]), max_len)])], ignore_index=True)
 
         logger.debug('Max len: ' + str(max_len))
@@ -116,20 +115,21 @@ if __name__ == '__main__':
         ax_arr = ax.ravel()
         # fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed')
 
-        X = timestamps
+
         #    Y = [int(idx) for idx, i in enumerate(list(args.param1))]
 
         handle_list = []
         for a_idx, a in enumerate(args.param2):
             ax_arr[a_idx].set_title(a)
             for idx, i in enumerate(args.param1):
+                X = timestamps[i]
                 handle, = ax_arr[a_idx].plot(X, res[a][i][args.attribute], alpha=0.8)
                 handle_list.append(handle)
                 if args.std:
                     ax_arr[a_idx].fill_between(X, res[a][i][args.attribute] - res_std[a][i][args.attribute],
                                     res[a][i][args.attribute] + res_std[a][i][args.attribute], color='#888888', alpha=0.2)
                 if args.conf:
-                    ax[a_idx].fill_between(X, res_conf[a][i][args.attribute].map( lambda x: x[0] ).fillna(0),
+                    ax_arr[a_idx].fill_between(X, res_conf[a][i][args.attribute].map( lambda x: x[0] ).fillna(0),
                                     res_conf[a][i][args.attribute].map( lambda x: x[1] ).fillna(0), color='#888888', alpha=0.2)
 
                 print('Std of ' + str(i) + ' std: ' + str(np.std(res_std[a][i][args.attribute])))
@@ -143,8 +143,10 @@ if __name__ == '__main__':
             if args.std:
                 b = ax_arr[a_idx].bar(args.param1, [np.std(res_std[a][i][args.attribute]) for i in args.param1])
             if args.conf:
+                conf_diff = [(res_conf[a][i][args.attribute].map(lambda x: x[1]) - res_conf[a][i][args.attribute].map(lambda x: x[0])) for i in args.param1]
+                conf_n0_val_count = [len( [i for i in conf_diff[j_idx] if i != 0] ) for j_idx,j in enumerate(args.param1)]
                 b= ax_arr[a_idx].bar(args.param1, [(res_conf[a][i][args.attribute].map(lambda x: x[1]) - res_conf[a][i][
-                    args.attribute].map(lambda x: x[0])).sum() for i in args.param1])
+                    args.attribute].map(lambda x: x[0])).sum() / conf_n0_val_count[i_idx] for i_idx,i in enumerate(args.param1)])
             ax_arr[a_idx].bar_label(b)
 
     plt.savefig(args.out_file + '.pdf', dpi=300)
