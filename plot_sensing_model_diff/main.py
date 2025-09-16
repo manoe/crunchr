@@ -43,6 +43,16 @@ if __name__ == '__main__':
                         help='Calculate STD instead of mean')
     parser.add_argument('-conf', '--confidence-interval', dest='conf', action='store_true',
                         help='Calculate STD instead of mean')
+    parser.add_argument('-pr', '--percentage', dest='percentage', action='store_true',
+                        help='Plot percentage instead of actual value')
+    parser.add_argument('-yl', '--y-label', dest='y_label', type=str,
+                        help='Y label', default='Y')
+    parser.add_argument('-xl', '--x-label', dest='x_label', type=str,
+                        help='X label', default='X')
+    parser.add_argument('-xlb', '--x-b-label', dest='x_b_label', type=str,
+                        help='X bar label', default='X')
+    parser.add_argument('-S', '--start-from', dest='start_from', type=int,
+                        help='Start from the nth timestamp', default=0)
 
 
     args = parser.parse_args()
@@ -94,10 +104,13 @@ if __name__ == '__main__':
     for p2 in args.param2:
         for p1 in args.param1:
             for attr in attr_arr:
-                diff[p2][p1][attr] = res[list(res.keys())[1]][p2][p1][attr] - res[list(res.keys())[0]][p2][p1][attr]
+                if args.percentage:
+                    diff[p2][p1][attr] = (res[list(res.keys())[0]][p2][p1][attr]/res[list(res.keys())[1]][p2][p1][attr]-1)*100
+                else:
+                    diff[p2][p1][attr] = res[list(res.keys())[0]][p2][p1][attr] - res[list(res.keys())[1]][p2][p1][attr]
 
     if args.plot == 'graph':
-        nrows = math.ceil(len(args.param2) / 2)
+        nrows = math.ceil((len(args.param2)+1) / 2)
         fig, ax = plt.subplots(nrows=nrows, ncols=2)
         ax_arr = ax.ravel()
         # fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed')
@@ -109,10 +122,35 @@ if __name__ == '__main__':
         for a_idx, a in enumerate(args.param2):
             ax_arr[a_idx].set_title(a)
             for idx, i in enumerate(args.param1):
-                X = timestamps[i]
-                handle, = ax_arr[a_idx].plot(X, diff[a][i][args.attribute], alpha=0.8)
+                X = timestamps[i][args.start_from:]
+                handle, = ax_arr[a_idx].plot(X, diff[a][i][args.attribute][args.start_from:], alpha=0.8)
                 handle_list.append(handle)
+                ax_arr[a_idx].set_xlabel(args.x_label)
+                ax_arr[a_idx].set_ylabel(args.y_label)
         ax_arr[a_idx].legend(handle_list, args.param1)
+
+
+
+        width = 0.9/len(args.param1)
+        multiplier = 0
+
+        for p1 in args.param1:
+            offset = width * multiplier
+            res = [ np.average( diff[p2][p1][args.attribute][args.start_from:] ) for p2 in args.param2 ]
+            x_arr = [idx+offset for idx,i in enumerate(args.param2)]
+            rects = ax_arr[a_idx+1].bar(x_arr, res, width, label=p1)
+            ax_arr[a_idx+1].bar_label(rects, padding=3, fmt='%.2f%%')
+            multiplier += 1
+
+        ax_arr[a_idx+1].set_xlabel(args.x_b_label)
+        ax_arr[a_idx+1].set_ylabel(args.y_label)
+        offset = width * multiplier/2
+        x_arr = [idx + offset for idx, i in enumerate(args.param2)]
+        ax_arr[a_idx + 1].set_xticks(x_arr)
+        ax_arr[a_idx + 1].set_xticklabels(list(args.param2))
+        if(len(ax_arr)-1 > a_idx+1):
+            fig.delaxes(ax_arr[-1])
+
 #    if args.plot == 'bar':
 #        fig, ax = plt.subplots(nrows=len(args.param2), ncols=1)
 #        ax_arr = ax.ravel()
