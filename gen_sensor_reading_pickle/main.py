@@ -19,4 +19,4 @@ if __name__ == '__main__':
         arr['node'].append(i['node'])
         arr['sensor_value'].append(i['sensor_value'])
 
-    pd.DataFrame(arr).to_pickle(args.out)
+    pd.DataFrame(arr).to_pickle(args.out+'.pickle')
