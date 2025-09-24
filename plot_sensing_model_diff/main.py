@@ -53,6 +53,13 @@ if __name__ == '__main__':
                         help='X bar label', default='X')
     parser.add_argument('-S', '--start-from', dest='start_from', type=int,
                         help='Start from the nth timestamp', default=0)
+    parser.add_argument('-t', '--trim', dest='trim', type=int,
+                        help='Trim a specific series from', default=0)
+    parser.add_argument('-ts', '--trim-series', dest='trim_series', type=int,
+                        help='The index of the series', default=0)
+    parser.add_argument('-of', '--offset', dest='offset', type=int,
+                        help='The index of the series', default=0)
+
 
 
     args = parser.parse_args()
@@ -134,9 +141,20 @@ if __name__ == '__main__':
         width = 0.9/len(args.param1)
         multiplier = 0
 
-        for p1 in args.param1:
+        for p1_idx, p1 in enumerate(args.param1):
             offset = width * multiplier
-            res = [ np.average( diff[p2][p1][args.attribute][args.start_from:] ) for p2 in args.param2 ]
+            #res = [ np.average( diff[p2][p1][args.attribute][args.start_from:] ) for p2 in args.param2 ]
+            res = []
+            for p2 in args.param2:
+                if args.offset != 0:
+                    if p1_idx != args.trim_series:
+                        res.append(np.average(diff[p2][p1][args.attribute][args.start_from+args.trim:args.offset]))
+                    else:
+                        res.append(np.average( diff[p2][p1][args.attribute][args.start_from:args.offset] ))
+                else:
+                    res = [ np.average( diff[p2][p1][args.attribute][args.start_from:] ) for p2 in args.param2 ]
+
+
             x_arr = [idx+offset for idx,i in enumerate(args.param2)]
             rects = ax_arr[a_idx+1].bar(x_arr, res, width, label=p1)
             ax_arr[a_idx+1].bar_label(rects, padding=3, fmt='%.2f%%')

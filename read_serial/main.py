@@ -10,7 +10,7 @@ import pandas as pd
 
 def signal_handler(sig, frame):
     print(pd.DataFrame(arr))
-    pd.DataFrame(arr).to_pickle('output.pickle')
+    pd.DataFrame(arr).to_pickle(str(time_start).replace(' ','_')+'.pickle')
     sys.exit(0)
 
 def is_float(s):
@@ -34,7 +34,7 @@ if __name__ == '__main__':
         exit(0)
 
     arr = {'t': [], 's': [], 'm':[], 'l': []}
-
+    time_start = datetime.datetime.now()
     ser = serial.Serial(args.device, args.baud, timeout=1)
     print(ser.portstr)
 
@@ -43,6 +43,10 @@ if __name__ == '__main__':
 
     while True:
         line = ser.readline()
+        try:
+            line.decode('UTF-8')
+        except UnicodeDecodeError:
+            continue
         print(line.decode('UTF-8'))
         res = line.decode('UTF-8').split()
 
