@@ -19,15 +19,17 @@ rcParams['font.family'] = ['serif']
 rcParams['font.serif'] = ['Times New Roman']
 rcParams['font.size'] = 12
 import sys
+import string
+
 
 attr_arr = ['r', 'l', 'd', 'm', 'e', 'pr', 'pe']
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(prog='plot_sensing_model_surface', description='Process ff related data ', epilog=':-(')
+    parser = argparse.ArgumentParser(prog='plot_sensing_model_data', description='Process ff related data ', epilog=':-(')
     parser.add_argument('-f', '--file', dest='filename',
                         help='Filename, use $0, $1 , $2 for param 1, param 2, and $3, for seed, respectively.')
     parser.add_argument('-d', '--debug', dest='debug', action='store_true', default=False, help='Log level')
-    parser.add_argument('-p', '--plot', dest='plot', type=str, help='Plot kind', default='graph', choices=['graph', 'bar'])
+    parser.add_argument('-p', '--plot', dest='plot', type=str, help='Plot kind', default='graph', choices=['graph', 'bar', 'map'])
     parser.add_argument('-p1', '--param-1', dest='param1', type=str, help='Parameter 1, $1', nargs='+')
     parser.add_argument('-p2', '--param-2', dest='param2', type=str, help='Parameter 2, $2', nargs='+')
     parser.add_argument('-l', '--labels', dest='labels', type=str, help='Labels for param 1', nargs='*')
@@ -38,6 +40,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--limit', dest='limit', type=int, help='Limit frame processing to nth frame')
     parser.add_argument('-e', '--extend', dest='extend', action='store_true', help='Extend series to match the longest series')
     parser.add_argument('-w', '--window', dest='window', action='store_true', help='Plot multiple windows (not implemented)')
+    parser.add_argument('-c', '--cumsum', dest='cumsum', action='store_true', help='Cumsum apply')
     parser.add_argument('-std', '--standard-deviation', dest='std', action='store_true',
                         help='Calculate STD instead of mean')
     parser.add_argument('-conf', '--confidence-interval', dest='conf', action='store_true',
@@ -70,7 +73,10 @@ if __name__ == '__main__':
                         timestamps[p1] = data[d].iloc[:args.limit].index.values
                     else:
                         #tables[d][s] = data[d].values
-                        tables[d] = pd.concat([tables[d], pd.Series(data[d].values) ], axis=1)
+                        if args.cumsum:
+                            tables[d] = pd.concat([tables[d], np.cumsum(pd.Series(data[d].values))], axis=1)
+                        else:
+                            tables[d] = pd.concat([tables[d], pd.Series(data[d].values) ], axis=1)
                         if 'timestamps' not in locals() or len(timestamps[p1]) < len(data[d].index.values):
                             timestamps[p1] = data[d].index.values
                         if len(data[d].values) > max_len:
@@ -110,8 +116,8 @@ if __name__ == '__main__':
 
 
     if args.plot == 'graph':
-        nrows = math.ceil(len(args.param2) / 2)
-        fig, ax = plt.subplots(nrows=nrows, ncols=2)
+        nrows = math.ceil(len(args.param2) )
+        fig, ax = plt.subplots(nrows=nrows, ncols=1, figsize=(10,20))
         ax_arr = ax.ravel()
         # fig, ax = plt.subplots(nrows=1, ncols=1, layout='compressed')
 
@@ -119,10 +125,22 @@ if __name__ == '__main__':
         #    Y = [int(idx) for idx, i in enumerate(list(args.param1))]
 
         handle_list = []
+
+        cov_arr = []
+        eu_arr = []
+
         for a_idx, a in enumerate(args.param2):
-            ax_arr[a_idx].set_title(a)
+            ax_arr[a_idx].set_title('('+string.ascii_lowercase[a_idx]+') sensing radius: '+str(a)+' m', loc='left', backgroundcolor='white', zorder=-1)
+            ax_arr[a_idx].grid()
+
+
+
             for idx, i in enumerate(args.param1):
+
+
+
                 X = timestamps[i]
+                cov_arr.append(res[a][i][args.attribute])
                 handle, = ax_arr[a_idx].plot(X, res[a][i][args.attribute], alpha=0.8)
                 handle_list.append(handle)
                 if args.std:
@@ -134,23 +152,104 @@ if __name__ == '__main__':
 
                 print('Std of ' + str(i) + ' std: ' + str(np.std(res_std[a][i][args.attribute])))
                 print('Sum of 95% confidence: '+str((res_conf[a][i][args.attribute].map(lambda x: x[1] ) - res_conf[a][i][args.attribute].map( lambda x: x[0] )).sum()))
-        ax_arr[a_idx].legend(handle_list, args.param1)
+                if a_idx < len(args.param2) -1:
+                    ax_arr[a_idx].set_xticklabels([])
+                #ax_arr[a_idx].set_yticks(np.arange(0,351,50))
+                ax_arr[a_idx].set_ylabel('Cumulative mobility')
+                ax_arr[a_idx].autoscale(enable=True, axis='x', tight=True)
+
+        ax_arr[0].legend(handle_list, args.param1)
+        ax_arr[-1].set_xlabel('Time (s)')
+
+        ax3 = fig.add_subplot(111, zorder=-1)
+        for _, spine in ax3.spines.items():
+            spine.set_visible(False)
+        ax3.tick_params(labelleft=False, labelbottom=False, left=False, right=False)
+        ax3.sharex(ax_arr[0])
+        ax3.grid(axis="x")
+
+        print(np.corrcoef(cov_arr))
+
+        for i in cov_arr:
+            eu_v = []
+            for j in cov_arr:
+                eu_v.append(float(np.linalg.norm(i - j)))
+            eu_arr.append(eu_v)
+        print(eu_arr)
+
+    if args.plot == 'map':
+        cov_arr = []
+        eu_arr = []
+        label = []
+        for a_idx, a in enumerate(args.param2):
+            for idx, i in enumerate(args.param1):
+                label.append(str(a)+'-'+str(i))
+                cov_arr.append(res[a][i][args.attribute])
+
+        cov_m = np.corrcoef(cov_arr)
+        for i in cov_arr:
+            eu_v = []
+            for j in cov_arr:
+                eu_v.append(float(np.linalg.norm(i - j)))
+            eu_arr.append(eu_v)
+        eu_m = np.array(eu_arr)
+        fig, ax = plt.subplots(nrows=2, ncols=1, figsize=(10, 15))
+        ax_arr = ax.ravel()
+
+        # remove baseline
+        base_rm_arr = np.arange(0,cov_m.shape[0],len(args.param1))
+        x = np.delete(cov_m, base_rm_arr , axis=1)
+        x_label = np.delete(label, base_rm_arr , axis=0)
+
+        bench_rm_arr = [i for i in np.arange(0,cov_m.shape[1]) if i not in base_rm_arr]
+        # remove benchmark
+        x = np.delete(x, bench_rm_arr , axis=0)
+        y_label = np.delete(label, bench_rm_arr , axis=0)
+
+        ax[0].imshow(x)
+        ax[0].set_xticks(range(len(x_label)), labels=x_label, rotation=45, ha="right", rotation_mode="anchor")
+        ax[0].set_yticks(range(len(y_label)), labels=y_label)
+
+
+        for i in range(x.shape[0]):
+            for j in range(x.shape[1]):
+                text = ax[0].text(j, i, "{:10.4f}".format( x[i, j]) ,
+                           ha="center", va="center", color="w", fontsize=8)
+
+
+        y = np.delete(eu_m, base_rm_arr , axis=1)
+        x_label = np.delete(label, base_rm_arr , axis=0)
+
+        y = np.delete(y, bench_rm_arr , axis=0)
+        y_label = np.delete(label, bench_rm_arr , axis=0)
+
+        ax[1].imshow(y)
+        ax[1].set_xticks(range(len(x_label)), labels=x_label, rotation=45, ha="right", rotation_mode="anchor")
+        ax[1].set_yticks(range(len(y_label)), labels=y_label)
+
+        for i in range(y.shape[0]):
+            for j in range(y.shape[1]):
+                text = ax[1].text(j, i, "{:10.4f}".format( y[i, j]) ,
+                           ha="center", va="center", color="w", fontsize=8)
+
     if args.plot == 'bar':
         fig, ax = plt.subplots(nrows=len(args.param2), ncols=1)
         ax_arr = ax.ravel()
         for a_idx, a in enumerate(args.param2):
-            ax_arr[a_idx].set_title(a)
+            ax_arr[a_idx].set_title(a, loc='right')
+            b = ax_arr[a_idx].bar(args.param1, [np.mean(res[a][i][args.attribute]) for i in args.param1])
+            ax_arr[a_idx].bar_label(b)
             if args.std:
                 b = ax_arr[a_idx].bar(args.param1, [np.std(res_std[a][i][args.attribute]) for i in args.param1])
+                ax_arr[a_idx].bar_label(b)
             if args.conf:
                 conf_diff = [(res_conf[a][i][args.attribute].map(lambda x: x[1]) - res_conf[a][i][args.attribute].map(lambda x: x[0])) for i in args.param1]
                 conf_n0_val_count = [len( [i for i in conf_diff[j_idx] if i != 0] ) for j_idx,j in enumerate(args.param1)]
                 b= ax_arr[a_idx].bar(args.param1, [(res_conf[a][i][args.attribute].map(lambda x: x[1]) - res_conf[a][i][
                     args.attribute].map(lambda x: x[0])).sum() / conf_n0_val_count[i_idx] for i_idx,i in enumerate(args.param1)])
-            ax_arr[a_idx].bar_label(b)
 
-    plt.savefig(args.out_file + '.pdf', dpi=300)
-    plt.show()
+    plt.savefig(args.out_file + '.pdf', dpi=300, bbox_inches='tight')
+    #plt.show()
         # ax.plot(xs=X, ys = res[i][args.attribute], zs=idx, zdir='y', alpha=0.8)
 #    X, Y = np.meshgrid(X, Y)
 #
