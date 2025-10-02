@@ -33,6 +33,7 @@ def get_attribute_list(pkt_list, attribute):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='meas_4_proc_ff', description='Process ff related data ', epilog=':-(')
     parser.add_argument('-f', '--file', dest='filename', help='Filename, use $1 for frame counter')
+    parser.add_argument('-p', '--pdr-file', dest='pdr_filename', help='Filename, use $1 for frame counter')
     parser.add_argument('-l', '--log-level', dest='log_level', choices=['debug','info','none'], default='none', help='Log level')
     parser.add_argument('-c', '--count', dest='count', type=int, help='Count of frames')
     parser.add_argument('-o', '--out', dest='out_file', type=str, help='Count of frames', default='out')
@@ -116,5 +117,24 @@ if __name__ == '__main__':
     out['m']=list(it.accumulate(mobility_count))
     out['pr']=avg_r_pdr.values
     out['pe']=avg_e_pdr.values
+
+    if args.pdr_file is not None:
+        loader = yaml.safe_load(open(args.pdr_file, 'r'))
+
+        if 'runs' in loader:
+            data_source = loader['runs'][0]
+        else:
+            data_source = loader
+
+
+
+        r_pdr_arr = [i['report_pdr_new'] for i in data_source['pdr'] if 'report_pdr_new' in i]
+
+        e_pdr_arr = [i['event_pdr_new'] for i in data_source['pdr'] if 'event_pdr_new' in i]
+
+        r_pdr = np.average(r_pdr_arr)
+        e_pdr = np.average(e_pdr_arr)
+        out['pr_avg']=r_pdr
+        out['pe_avg']=e_pdr
 
     out.to_pickle(args.out_file+'.pickle')
