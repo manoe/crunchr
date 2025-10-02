@@ -118,8 +118,8 @@ if __name__ == '__main__':
     out['pr']=avg_r_pdr.values
     out['pe']=avg_e_pdr.values
 
-    if args.pdr_file is not None:
-        loader = yaml.safe_load(open(args.pdr_file, 'r'))
+    if args.pdr_filename is not None:
+        loader = yaml.safe_load(open(args.pdr_filename, 'r'))
 
         if 'runs' in loader:
             data_source = loader['runs'][0]
