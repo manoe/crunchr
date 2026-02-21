@@ -19,6 +19,11 @@ def calc_pd(dist):
 def calc_dist(node):
     return math.sqrt(math.pow(node['x'],2)+math.pow(node['y'],2))
 
+def calc_dist_2(node1, node2):
+    res = math.sqrt(math.pow(node1['x']-node2['x'],2)+math.pow(node1['y']-node2['y'],2))
+    return res
+
+
 def calc_q_us(dist):
     # \sum_{k=ceil(n * tau)}{n}
     res = 0.0
@@ -76,11 +81,18 @@ if __name__ == '__main__':
         case 'alpha':
             print('Calculating alpha values:')
             print('Setting initial alpha values for each node')
-            for i,n in enumerate(nodes[1:]):
+            for i,n in enumerate(nodes):
+                if i == 0:
+                    continue
                 nodes[i]['alpha'] = { j: 0.0 for j in range(1,args.node) }
-                nodes[i]['alpha'][str(n['num'])]=calc_q_us(calc_dist(n))
+                nodes[i]['alpha'][n['num']]=calc_q_us(calc_dist(n))
 
             print('Starting iteration')
             for it in range(args.iter):
-                for i,n in enumerate(nodes[1:]):
+                print('Iteration step {}.'.format(it))
+                for i,n in enumerate(nodes):
+                    if i == 0:
+                        continue
+                    for k in n['alpha'].keys():
+                        nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ u['alpha'][k]/math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n,u)) if math.fsum(u['alpha'].values()) > 0 else 0 for u in nodes[1:i] + nodes[i + 1:]]))
 
