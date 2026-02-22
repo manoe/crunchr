@@ -11,9 +11,9 @@ logger = logging.getLogger(__name__)
 import sys
 
 def calc_pd(dist):
-    logger.info('dist={}'.format(dist))
+    logger.debug('dist={}'.format(dist))
     res = 1.0 / (1.0 + math.exp(alpha*(dist-args.d0)))
-    logger.info('res={}'.format(res))
+    logger.debug('res={}'.format(res))
     return res
 
 def calc_dist(node):
@@ -28,8 +28,9 @@ def calc_q_us(dist):
     # \sum_{k=ceil(n * tau)}{n}
     res = 0.0
     for k in range(math.ceil(args.qos * args.nt),args.nt+1):
-        logger.info('k={}'.format(k))
+        logger.debug('k={}'.format(k))
         res += math.comb(args.nt,k) * pow(calc_pd(dist),k) * pow(1 - calc_pd(dist),args.nt-k)
+    logger.info('q_us={}'.format(res))
     return res
 
 def calc_e_p(nodes):
@@ -62,6 +63,8 @@ if __name__ == '__main__':
             logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
         case 'info':
             logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+        case 'none':
+            logging.basicConfig(stream=sys.stdout, level=logging.ERROR)
 
     if args.x * args.y < args.node:
         logging.error('Number of grid points lower than number of nodes')
@@ -94,5 +97,5 @@ if __name__ == '__main__':
                     if i == 0:
                         continue
                     for k in n['alpha'].keys():
-                        nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ u['alpha'][k]/math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n,u)) if math.fsum(u['alpha'].values()) > 0 else 0 for u in nodes[1:i] + nodes[i + 1:]]))
+                        nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ 1 - u['alpha'][k]/math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n,u)) if math.fsum(u['alpha'].values()) > 0 else 1 for u in nodes[1:i] + nodes[i + 1:]]))
 
