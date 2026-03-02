@@ -9,11 +9,22 @@ import math
 import logging
 logger = logging.getLogger(__name__)
 import sys
+import copy
 
-def calc_pd(dist):
+def calc_pd_log(dist):
     logger.debug('dist={}'.format(dist))
     res = 1.0 / (1.0 + math.exp(alpha*(dist-args.d0)))
     logger.debug('res={}'.format(res))
+    return res
+
+def calc_pd_div(dist):
+    logger.info('dist={}'.format(dist))
+    lres = math.log(args.d0/dist, 10)
+    if lres < -1:
+        res = 0
+    else:
+        res = 1 + lres
+    logger.info('res={}'.format(res))
     return res
 
 def calc_dist(node):
@@ -52,6 +63,8 @@ if __name__ == '__main__':
     parser.add_argument('-rd', '--ref_dist', dest='d0', type=float, help='Reference distance', default=1)
     parser.add_argument('-a', '--alpha', dest='alpha', type=float, help='Attenuation coefficient', default=2.5)
     parser.add_argument('-i', '--iter', dest='iter', type=int, help='Number of iterations, if alpha is calculated', default=100)
+    parser.add_argument('-r', '--radio', dest='radio', choices=['log', 'div'], help='Radio channel',
+                        default='log')
 
     args = parser.parse_args()
 
@@ -68,13 +81,19 @@ if __name__ == '__main__':
 
     if args.x * args.y < args.node:
         logging.error('Number of grid points lower than number of nodes')
+        exit(1)
+
+    if args.radio == 'log':
+        calc_pd = calc_pd_log
+    else:
+        calc_pd = calc_pd_div
 
     logger.info('Constructing node array')
     nodes = []
     for i in range(args.x):
         for j in range(args.y):
             if i * args.x + j < args.node:
-                nodes.append({'num': i * args.x + j, 'x': i * args.grid_distance, 'y': j * args.grid_distance, })
+                nodes.append({'num': i * args.x + j, 'x': i * args.grid_distance, 'y': j * args.grid_distance, 'adv': True })
 
     match args.data:
         case 'e_p':
@@ -90,12 +109,19 @@ if __name__ == '__main__':
                 nodes[i]['alpha'] = { j: 0.0 for j in range(1,args.node) }
                 nodes[i]['alpha'][n['num']]=calc_q_us(calc_dist(n))
 
+
             print('Starting iteration')
             for it in range(args.iter):
+                nodes_n_1 = copy.deepcopy(nodes)
                 print('Iteration step {}.'.format(it))
-                for i,n in enumerate(nodes):
+                for i,n in enumerate(nodes_n_1):
                     if i == 0:
                         continue
                     for k in n['alpha'].keys():
-                        nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ 1 - u['alpha'][k]/math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n,u)) if math.fsum(u['alpha'].values()) > 0 else 1 for u in nodes[1:i] + nodes[i + 1:]]))
+                        nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ 1 - u['alpha'][k]/math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n,u)) if math.fsum(u['alpha'].values()) > 0 and u['adv'] else 1 for u in nodes_n_1[1:i] + nodes_n_1[i + 1:]]))
+
+                for i,n in enumerate(nodes[1:]):
+                    for j in n['alpha']:
+                        if n['alpha'][j] > 0:
+                            nodes[i]['adv'] = False
 
