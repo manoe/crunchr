@@ -139,4 +139,15 @@ if __name__ == '__main__':
                         if n['alpha'][j] > 0:
                             nodes[i]['adv'] = False
                 nodes_n_2 = copy.deepcopy(nodes_n_1)
+                #print(str(nodes[1]['alpha'][1])+' '+str(nodes[1]['alpha'][1]-nodes_n_1[1]['alpha'][1]))
                 nodes_n_1 = copy.deepcopy(nodes)
+
+            n_alpha = []
+            n_1_alpha = []
+            for i,j in zip(nodes_n_1[1:], nodes_n_2[1:]):
+                n_alpha += list(i['alpha'].values())
+                n_1_alpha += list(j['alpha'].values())
+
+            alpha_diff = np.subtract(n_alpha,n_1_alpha)
+
+            print('diff L2 norm: '+str(math.sqrt(np.sum(np.power(alpha_diff,2)))))
