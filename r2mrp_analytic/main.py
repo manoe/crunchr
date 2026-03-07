@@ -42,7 +42,7 @@ def calc_q_us(dist):
         logger.debug('k={}'.format(k))
         res += math.comb(args.nt,k) * pow(calc_pd(dist),k) * pow(1 - calc_pd(dist),args.nt-k)
     logger.info('q_us={}'.format(res))
-    return res
+    return calc_pd(dist) * res
 
 def calc_e_p(nodes):
     res = 0.0
@@ -67,6 +67,8 @@ if __name__ == '__main__':
                         default=0.00001)
     parser.add_argument('-r', '--radio', dest='radio', choices=['log', 'div'], help='Radio channel',
                         default='log')
+    parser.add_argument('-m', '--method', dest='method', choices=['old','new'], default='new',
+                        help='Log level')
 
     args = parser.parse_args()
 
@@ -125,7 +127,11 @@ if __name__ == '__main__':
                     if i == 0:
                         continue
                     for k in n['alpha'].keys():
-                        nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ 1 - (u['alpha'][k] - u_1['alpha'][k] )/(math.fsum(u['alpha'].values())-math.fsum(u_1['alpha'].values()) + args.epsilon) * calc_q_us(calc_dist_2(n,u))
+                        if args.method == 'old':
+                            nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([1 - u['alpha'][k] / math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n, u))
+                                            if math.fsum(u['alpha'].values()) > 0  else 1 for u in nodes_n_1[1:i] + nodes_n_1[i + 1:]]))
+                        else:
+                            nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ 1 - (u['alpha'][k] - u_1['alpha'][k] )/(math.fsum(u['alpha'].values())-math.fsum(u_1['alpha'].values()) + args.epsilon) * calc_q_us(calc_dist_2(n,u))
                                                                                                       #if math.fsum(u['alpha'].values())-math.fsum(u_1['alpha'].values()) > 0 and u['adv'] else 1
                                                                                                       for u, u_1 in zip(nodes_n_1[1:i] + nodes_n_1[i + 1:], nodes_n_2[1:i] + nodes_n_2[i+1:])]))
                 for i,n in enumerate(nodes[1:]):
