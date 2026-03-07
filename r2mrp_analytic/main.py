@@ -63,6 +63,8 @@ if __name__ == '__main__':
     parser.add_argument('-rd', '--ref_dist', dest='d0', type=float, help='Reference distance', default=1)
     parser.add_argument('-a', '--alpha', dest='alpha', type=float, help='Attenuation coefficient', default=2.5)
     parser.add_argument('-i', '--iter', dest='iter', type=int, help='Number of iterations, if alpha is calculated', default=100)
+    parser.add_argument('-e', '--epsilon', dest='epsilon', type=float, help='Epsilon',
+                        default=0.00001)
     parser.add_argument('-r', '--radio', dest='radio', choices=['log', 'div'], help='Radio channel',
                         default='log')
 
@@ -103,25 +105,32 @@ if __name__ == '__main__':
         case 'alpha':
             print('Calculating alpha values:')
             print('Setting initial alpha values for each node')
+
             for i,n in enumerate(nodes):
                 if i == 0:
                     continue
                 nodes[i]['alpha'] = { j: 0.0 for j in range(1,args.node) }
-                nodes[i]['alpha'][n['num']]=calc_q_us(calc_dist(n))
+            nodes_n_2 = copy.deepcopy(nodes)
 
+            for i, n in enumerate(nodes):
+                if i == 0:
+                    continue
+                nodes[i]['alpha'][n['num']]=calc_q_us(calc_dist(n))
+            nodes_n_1 = copy.deepcopy(nodes)
 
             print('Starting iteration')
             for it in range(args.iter):
-                nodes_n_1 = copy.deepcopy(nodes)
                 print('Iteration step {}.'.format(it))
                 for i,n in enumerate(nodes_n_1):
                     if i == 0:
                         continue
                     for k in n['alpha'].keys():
-                        nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ 1 - u['alpha'][k]/math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n,u)) if math.fsum(u['alpha'].values()) > 0 and u['adv'] else 1 for u in nodes_n_1[1:i] + nodes_n_1[i + 1:]]))
-
+                        nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ 1 - (u['alpha'][k] - u_1['alpha'][k] )/(math.fsum(u['alpha'].values())-math.fsum(u_1['alpha'].values()) + args.epsilon) * calc_q_us(calc_dist_2(n,u))
+                                                                                                      #if math.fsum(u['alpha'].values())-math.fsum(u_1['alpha'].values()) > 0 and u['adv'] else 1
+                                                                                                      for u, u_1 in zip(nodes_n_1[1:i] + nodes_n_1[i + 1:], nodes_n_2[1:i] + nodes_n_2[i+1:])]))
                 for i,n in enumerate(nodes[1:]):
                     for j in n['alpha']:
                         if n['alpha'][j] > 0:
                             nodes[i]['adv'] = False
-
+                nodes_n_2 = copy.deepcopy(nodes_n_1)
+                nodes_n_1 = copy.deepcopy(nodes)
