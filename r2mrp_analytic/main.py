@@ -129,6 +129,7 @@ if __name__ == '__main__':
                 nodes[i]['alpha'][n['num']]=calc_q_us(calc_dist(n))
             nodes_n_1 = copy.deepcopy(nodes)
 
+
             print('Starting iteration')
             for it in range(args.iter):
                 print('Iteration step {}.'.format(it))
@@ -136,6 +137,8 @@ if __name__ == '__main__':
                     if i == 0:
                         continue
                     for k in n['alpha'].keys():
+                        if k == n:
+                            continue
                         if args.method == 'old':
                             nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([1 - u['alpha'][k] / math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n, u))
                                             if math.fsum(u['alpha'].values()) > 0  else 1 for u in peer_arr(nodes_n_1[1:], n)]))
