@@ -50,6 +50,13 @@ def calc_e_p(nodes):
         res += calc_q_us(calc_dist(node))
     return res
 
+def peer_arr(nodes, node):
+    res = []
+    for n in nodes:
+        if calc_dist_2(n, node) < args.pr and n['num'] != node['num']:
+            res.append(n)
+    return res
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='r2mrp_analytic', description='Calculate R2MRP-specific data analytically', epilog=':-(')
     parser.add_argument('-d', '--data', dest='data', choices=['e_p', 'alpha'], help='Data that should be calculated', default='e_p')
@@ -69,6 +76,8 @@ if __name__ == '__main__':
                         default='log')
     parser.add_argument('-m', '--method', dest='method', choices=['old','new'], default='new',
                         help='Log level')
+    parser.add_argument('-pr', '--peer-radius', dest='pr', type=float, default=40,
+                        help='Distance of peers')
 
     args = parser.parse_args()
 
@@ -129,11 +138,11 @@ if __name__ == '__main__':
                     for k in n['alpha'].keys():
                         if args.method == 'old':
                             nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([1 - u['alpha'][k] / math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n, u))
-                                            if math.fsum(u['alpha'].values()) > 0  else 1 for u in nodes_n_1[1:i] + nodes_n_1[i + 1:]]))
+                                            if math.fsum(u['alpha'].values()) > 0  else 1 for u in peer_arr(nodes_n_1[1:], n)]))
                         else:
                             nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ 1 - (u['alpha'][k] - u_1['alpha'][k] )/(math.fsum(u['alpha'].values())-math.fsum(u_1['alpha'].values()) + args.epsilon) * calc_q_us(calc_dist_2(n,u))
                                                                                                       #if math.fsum(u['alpha'].values())-math.fsum(u_1['alpha'].values()) > 0 and u['adv'] else 1
-                                                                                                      for u, u_1 in zip(nodes_n_1[1:i] + nodes_n_1[i + 1:], nodes_n_2[1:i] + nodes_n_2[i+1:])]))
+                                                                                                      for u, u_1 in zip(peer_arr(nodes_n_1[1:],n), peer_arr(nodes_n_2[1:],n))]))
                 for i,n in enumerate(nodes[1:]):
                     for j in n['alpha']:
                         if n['alpha'][j] > 0:
