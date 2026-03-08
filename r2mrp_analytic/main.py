@@ -137,7 +137,7 @@ if __name__ == '__main__':
                     if i == 0:
                         continue
                     for k in n['alpha'].keys():
-                        if k == n:
+                        if k == n['num']:
                             continue
                         if args.method == 'old':
                             nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([1 - u['alpha'][k] / math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n, u))
