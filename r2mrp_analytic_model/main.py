@@ -41,7 +41,7 @@ def calc_q(dist):
     for k in range(math.ceil(args.qos * args.nt),args.nt+1):
         logger.debug('k={}'.format(k))
         res += math.comb(args.nt,k) * pow(calc_pd(dist),k) * pow(1 - calc_pd(dist),args.nt-k)
-    logger.info('q_us={}'.format(res))
+    logger.info('q={}'.format(res))
     return res
 
 def calc_b(dist):
@@ -69,9 +69,18 @@ def peer_arr(nodes, node):
             res.append(n)
     return res
 
+def calc_beta(alpha_n, alpha_n_1):
+    delta = alpha_n-alpha_n_1
+    beta = np.ndarray(shape=alpha_n.shape)
+    for v in range(1,args.node):
+        m_v=delta[v,:].sum()
+        for p in range(1,args.node):
+            beta[v,p]=delta[v,p]/(m_v+args.epsilon)
+    return beta
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='r2mrp_analytic', description='Calculate R2MRP-specific data analytically', epilog=':-(')
-    parser.add_argument('-d', '--data', dest='data', choices=['e_p', 'alpha'], help='Data that should be calculated', default='e_p')
+    parser.add_argument('-d', '--data', dest='data', choices=['e_p', 'alpha'], help='Data that should be calculated', default='alpha')
     parser.add_argument('-n', '--node-num', dest='node', type=int, help='Number of nodes', default=100)
     parser.add_argument('-x', '--x-num', dest='x', type=int, help='Number of grid points along axis X', default=10)
     parser.add_argument('-y', '--y-num', dest='y', type=int, help='Number of grid points along axis Y', default=10)
@@ -146,28 +155,36 @@ if __name__ == '__main__':
             o_queue.appendleft(copy.deepcopy(a_queue[0]))
 
             alpha_queue.appendleft(first)
-            beta_first = copy.deepcopy(first)
+            beta = copy.deepcopy(first)
 
-            second = np.zeros(shape=(args.node, args.node))
+            for i in range(2, args.iter):
 
-            a_arr = [0]
-            o_arr = [0]
-            for v in range(1, args.node):
-                a_prod_body = [ 1 - math.fsum(beta_first[u,:]) * calc_pd(calc_dist_2( nodes[u],nodes[v] )) for u in range(1,args.node) if u != v ]
-                a = 1 - math.prod(a_prod_body)
-                a_arr.append(a)
-                o = 1 - math.fsum([ o_elem[v] for o_elem in o_queue]) * a
-                o_arr.append(o)
-                for p in range(1, args.node):
-                    prod_body = [ 1 - beta_first[u,p] * calc_b(calc_dist_2( nodes[u],nodes[v] )) for u in range(1, args.node) if u != v ]
-                    second[v, p] = alpha_queue[1][v,p] + o * (1 - alpha_queue[1][v,p]) * (1 - math.prod(prod_body) )
-            alpha_queue.appendleft(second)
-            o_queue.appendleft(o_arr)
-            a_queue.appendleft(a_arr) # felesleges
+                alpha = np.zeros(shape=(args.node, args.node))
 
-            for i in range(2,args.iter):
-                for v in range(1,args.node):
-                    for p in range()
+                a_arr = [0.0]
+                o_arr = [0.0]
+                for v in range(1, args.node):
+                    if i == 1:
+                        a = calc_pd(calc_dist(nodes[v]))
+                        o = calc_pd(calc_dist(nodes[v]))
+                        a_arr.append(a)
+                        o_arr.append(o)
+
+                    else:
+                        a_prod_body = [ 1 - math.fsum(beta[u,:]) * calc_pd(calc_dist_2( nodes[u],nodes[v] )) for u in range(1,args.node) if u != v ]
+                        a = 1 - math.prod(a_prod_body)
+                        a_arr.append(a)
+                        o = 1 - math.fsum([ o_elem[v] for o_elem in o_queue]) * a
+                        o_arr.append(o)
+
+                    for p in range(1, args.node):
+                        prod_body = [ 1 - beta[u,p] * calc_b(calc_dist_2( nodes[u],nodes[v] )) for u in range(1, args.node) if u != v ]
+                        alpha[v, p] = alpha_queue[1][v,p] + o * (1 - alpha_queue[1][v,p]) * (1 - math.prod(prod_body) )
+                alpha_queue.appendleft(alpha)
+                o_queue.appendleft(o_arr)
+                a_queue.appendleft(a_arr) # felesleges
+                beta = calc_beta(alpha_queue[0],alpha_queue[1])
+
 #
 #            for i,n in enumerate(nodes):
 #                if i == 0:
@@ -214,13 +231,13 @@ if __name__ == '__main__':
 #
 #                    alpha_diff = np.subtract(n_alpha, n_1_alpha)
 #
-                    print('diff L2 norm at '+str(it)+': ' + str(math.sqrt(np.sum(np.power(alpha_diff, 2)))))
-            n_alpha = []
-            n_1_alpha = []
-            for i,j in zip(nodes_n_1[1:], nodes_n_2[1:]):
-                n_alpha += list(i['alpha'].values())
-                n_1_alpha += list(j['alpha'].values())
-
-            alpha_diff = np.subtract(n_alpha,n_1_alpha)
-
-            print('diff L2 norm: '+str(math.sqrt(np.sum(np.power(alpha_diff,2)))))
+#                    print('diff L2 norm at '+str(it)+': ' + str(math.sqrt(np.sum(np.power(alpha_diff, 2)))))
+#            n_alpha = []
+#            n_1_alpha = []
+#            for i,j in zip(nodes_n_1[1:], nodes_n_2[1:]):
+#                n_alpha += list(i['alpha'].values())
+#                n_1_alpha += list(j['alpha'].values())
+#
+#            alpha_diff = np.subtract(n_alpha,n_1_alpha)
+#
+#            print('diff L2 norm: '+str(math.sqrt(np.sum(np.power(alpha_diff,2)))))
