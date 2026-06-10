@@ -174,7 +174,7 @@ if __name__ == '__main__':
                         a_prod_body = [ 1 - math.fsum(beta[u,:]) * calc_pd(calc_dist_2( nodes[u],nodes[v] )) for u in range(1,args.node) if u != v ]
                         a = 1 - math.prod(a_prod_body)
                         a_arr.append(a)
-                        o = 1 - math.fsum([ o_elem[v] for o_elem in o_queue]) * a
+                        o = (1 - math.fsum([ o_elem[v] for o_elem in o_queue])) * a
                         o_arr.append(o)
 
                     for p in range(1, args.node):
