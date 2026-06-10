@@ -57,6 +57,19 @@ def calc_beta(alpha_n, alpha_n_1):
             beta[v,p]=delta[v,p]/(m_v+args.epsilon)
     return beta
 
+def print_alpha_matrix(matrix):
+    n = matrix.shape[0]
+    row_labels = ['Node {}'.format(v) for v in range(n)]
+    col_labels = ['Path {}'.format(p) for p in range(n)]
+    row_hdr_w = max(len(s) for s in row_labels) + 2
+    col_w = max(max(len(s) for s in col_labels), len('0.0000')) + 2
+    header = ' ' * row_hdr_w + ''.join(c.rjust(col_w) for c in col_labels)
+    print(header)
+    for v in range(n):
+        row = row_labels[v].ljust(row_hdr_w)
+        row += ''.join('{:.4f}'.format(matrix[v, p]).rjust(col_w) for p in range(n))
+        print(row)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='r2mrp_analytic', description='Calculate R2MRP-specific data analytically', epilog=':-(')
     parser.add_argument('-d', '--data', dest='data', choices=['e_p', 'alpha'], help='Data that should be calculated', default='alpha')
@@ -157,3 +170,6 @@ if __name__ == '__main__':
                 o_queue.appendleft(o_arr)
                 a_queue.appendleft(a_arr) # felesleges
                 beta = calc_beta(alpha_queue[0],alpha_queue[1])
+
+            print('Last alpha matrix:')
+            print_alpha_matrix(alpha_queue[0])
