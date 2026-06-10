@@ -71,7 +71,7 @@ def peer_arr(nodes, node):
 
 def calc_beta(alpha_n, alpha_n_1):
     delta = alpha_n-alpha_n_1
-    beta = np.ndarray(shape=alpha_n.shape)
+    beta = np.zeros(shape=alpha_n.shape)
     for v in range(1,args.node):
         m_v=delta[v,:].sum()
         for p in range(1,args.node):
@@ -177,7 +177,7 @@ if __name__ == '__main__':
 
                     for p in range(1, args.node):
                         prod_body = [ 1 - beta[u,p] * calc_b(calc_dist_2( nodes[u],nodes[v] )) for u in range(1, args.node) if u != v ]
-                        alpha[v, p] = alpha_queue[1][v,p] + o * (1 - alpha_queue[1][v,p]) * (1 - math.prod(prod_body) )
+                        alpha[v, p] = alpha_queue[0][v,p] + o * (1 - alpha_queue[0][v,p]) * (1 - math.prod(prod_body) )
                 alpha_queue.appendleft(alpha)
                 o_queue.appendleft(o_arr)
                 a_queue.appendleft(a_arr) # felesleges
