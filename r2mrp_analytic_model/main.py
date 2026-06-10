@@ -1,11 +1,6 @@
 #!/bin/env python3
-from copy import deepcopy
-from secrets import choice
-
 import numpy as np
-import matplotlib.pyplot as plt
 import argparse
-from dataclasses import dataclass
 import math
 import logging
 logger = logging.getLogger(__name__)
@@ -47,26 +42,10 @@ def calc_q(dist):
 def calc_b(dist):
     return calc_q(dist) * calc_pd(dist)
 
-def calc_q_us(dist):
-    # \sum_{k=ceil(n * tau)}{n}
-    res = 0.0
-    for k in range(math.ceil(args.qos * args.nt),args.nt+1):
-        logger.debug('k={}'.format(k))
-        res += math.comb(args.nt,k) * pow(calc_pd(dist),k) * pow(1 - calc_pd(dist),args.nt-k)
-    logger.info('q_us={}'.format(res))
-    return calc_pd(dist) * res
-
 def calc_e_p(nodes):
     res = 0.0
     for node in nodes[1:]:
-        res += calc_q_us(calc_dist(node))
-    return res
-
-def peer_arr(nodes, node):
-    res = []
-    for n in nodes:
-        if calc_dist_2(n, node) < args.pr and n['num'] != node['num']:
-            res.append(n)
+        res += calc_b(calc_dist(node))
     return res
 
 def calc_beta(alpha_n, alpha_n_1):
@@ -95,10 +74,6 @@ if __name__ == '__main__':
                         default=0.00001)
     parser.add_argument('-r', '--radio', dest='radio', choices=['log', 'div'], help='Radio channel',
                         default='log')
-    parser.add_argument('-m', '--method', dest='method', choices=['old','new'], default='new',
-                        help='Log level')
-    parser.add_argument('-pr', '--peer-radius', dest='pr', type=float, default=40,
-                        help='Distance of peers')
 
     args = parser.parse_args()
 
@@ -182,60 +157,3 @@ if __name__ == '__main__':
                 o_queue.appendleft(o_arr)
                 a_queue.appendleft(a_arr) # felesleges
                 beta = calc_beta(alpha_queue[0],alpha_queue[1])
-
-#
-#            for i,n in enumerate(nodes):
-#                if i == 0:
-#                    continue
-#                nodes[i]['alpha'] = { j: 0.0 for j in range(1,args.node) }
-#            nodes_n_2 = copy.deepcopy(nodes)
-#
-#            for i, n in enumerate(nodes):
-#                if i == 0:
-#                    continue
-#                nodes[i]['alpha'][n['num']]=calc_q_us(calc_dist(n))
-#            nodes_n_1 = copy.deepcopy(nodes)
-#
-#
-#            print('Starting iteration')
-#            for it in range(args.iter):
-#                print('Iteration step {}.'.format(it))
-#                for i,n in enumerate(nodes_n_1):
-#                    if i == 0:
-#                        continue
-#                    for k in n['alpha'].keys():
-#                        if k == n['num']:
-#                            continue
-#                        if args.method == 'old':
-#                            nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([1 - u['alpha'][k] / math.fsum(u['alpha'].values()) * calc_q_us(calc_dist_2(n, u))
-#                                            if math.fsum(u['alpha'].values()) > 0  else 1 for u in peer_arr(nodes_n_1[1:], n)]))
-#                        else:
-#                            nodes[i]['alpha'][k] = n['alpha'][k] + (1 - n['alpha'][k]) * (1 - math.prod([ 1 - (u['alpha'][k] - u_1['alpha'][k] )/(math.fsum(u['alpha'].values())-math.fsum(u_1['alpha'].values()) + args.epsilon) * calc_q_us(calc_dist_2(n,u))
-#                                                                                                      #if math.fsum(u['alpha'].values())-math.fsum(u_1['alpha'].values()) > 0 and u['adv'] else 1
-#                                                                                                      for u, u_1 in zip(peer_arr(nodes_n_1[1:],n), peer_arr(nodes_n_2[1:],n))]))
-#                for i,n in enumerate(nodes[1:]):
-#                    for j in n['alpha']:
-#                        if n['alpha'][j] > 0:
-#                            nodes[i]['adv'] = False
-#                nodes_n_2 = copy.deepcopy(nodes_n_1)
-#                #print(str(nodes[1]['alpha'][1])+' '+str(nodes[1]['alpha'][1]-nodes_n_1[1]['alpha'][1]))
-#                nodes_n_1 = copy.deepcopy(nodes)
-#                if it%10 == 0:
-#                    n_alpha = []
-#                    n_1_alpha = []
-#                    for i, j in zip(nodes_n_1[1:], nodes_n_2[1:]):
-#                        n_alpha += list(i['alpha'].values())
-#                        n_1_alpha += list(j['alpha'].values())
-#
-#                    alpha_diff = np.subtract(n_alpha, n_1_alpha)
-#
-#                    print('diff L2 norm at '+str(it)+': ' + str(math.sqrt(np.sum(np.power(alpha_diff, 2)))))
-#            n_alpha = []
-#            n_1_alpha = []
-#            for i,j in zip(nodes_n_1[1:], nodes_n_2[1:]):
-#                n_alpha += list(i['alpha'].values())
-#                n_1_alpha += list(j['alpha'].values())
-#
-#            alpha_diff = np.subtract(n_alpha,n_1_alpha)
-#
-#            print('diff L2 norm: '+str(math.sqrt(np.sum(np.power(alpha_diff,2)))))
