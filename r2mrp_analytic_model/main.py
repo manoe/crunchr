@@ -15,7 +15,7 @@ from collections import deque
 
 def calc_pd_log(dist):
     logger.debug('dist={}'.format(dist))
-    res = 1.0 / (1.0 + math.exp(alpha*(dist-args.d0)))
+    res = 1.0 / (1.0 + math.exp(args.alpha*(dist-args.d0)))
     logger.debug('res={}'.format(res))
     return res
 
@@ -101,8 +101,6 @@ if __name__ == '__main__':
                         help='Distance of peers')
 
     args = parser.parse_args()
-
-    alpha = 2.5
 
 
     match args.log_level:
