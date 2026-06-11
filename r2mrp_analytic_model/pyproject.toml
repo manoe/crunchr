@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "r2mrp-analytic-model"
+version = "0.1.0"
+description = "Analytic mean-field model of the R2MRP multi-path routing protocol"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+authors = [{ name = "András Oláh" }]
+keywords = ["wsn", "routing", "r2mrp", "multipath", "mean-field"]
+dependencies = ["numpy>=1.21"]
+
+[tool.setuptools]
+py-modules = ["main"]

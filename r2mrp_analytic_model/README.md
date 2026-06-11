@@ -12,8 +12,38 @@ round-indexed path-membership matrix `alpha` (Chapter 3).
 - Python 3.10+ (the code uses `match`/`case`)
 - [NumPy](https://numpy.org/)
 
+## Installation
+
+It is recommended to install into a virtual environment:
+
 ```bash
-pip install numpy
+python3 -m venv .venv
+source .venv/bin/activate        # on Windows: .venv\Scripts\activate
+```
+
+Then choose one of the following.
+
+### Install the package (recommended)
+
+Installs the project and its dependencies from `pyproject.toml`:
+
+```bash
+pip install .
+```
+
+For development, use an editable install so source changes take effect
+immediately:
+
+```bash
+pip install -e .
+```
+
+### Install dependencies only
+
+If you only want to run `main.py` in place without installing the package:
+
+```bash
+pip install -r requirements.txt
 ```
 
 ## Usage
