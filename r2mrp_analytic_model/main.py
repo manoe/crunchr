@@ -112,8 +112,8 @@ if __name__ == '__main__':
     nodes = {}
     for i in range(args.x):
         for j in range(args.y):
-            if i * args.x + j < args.node:
-                nodes[i * args.x + j]={ 'x': i * args.grid_distance, 'y': j * args.grid_distance}
+            if i * args.y + j < args.node:
+                nodes[i * args.y + j]={ 'x': i * args.grid_distance, 'y': j * args.grid_distance}
 
     match args.data:
         case 'e_p':
