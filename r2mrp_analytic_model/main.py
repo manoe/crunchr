@@ -193,13 +193,19 @@ if __name__ == '__main__':
             match args.graph:
                 case 'spof':
                     p_c0 = []
+                    p_c1 = []
+                    p_c2 = []
                     for gd in args.grid_distance:
                         alpha, nodes = calc_alpha(gd)
                         lambda_arr = calc_lambda(alpha, nodes)
                         p_c0.append(np.mean(np.exp(-lambda_arr[1:])))
+                        p_c1.append(np.mean(lambda_arr[1:] * np.exp(-lambda_arr[1:])))
+                        p_c2.append(np.mean(1 - np.exp(-lambda_arr[1:]) * (1 + lambda_arr[1:])))
 
                     plt.figure()
                     plt.plot(args.grid_distance, p_c0, marker='o', label='P(C=0)')
+                    plt.plot(args.grid_distance, p_c1, marker='o', label='P(C=1)')
+                    plt.plot(args.grid_distance, p_c2, marker='o', label='P(C>=2)')
                     plt.xlabel('Grid distance [m]')
                     plt.ylabel('Probability')
                     plt.legend()
