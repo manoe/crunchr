@@ -72,7 +72,7 @@ def print_alpha_matrix(matrix):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='r2mrp_analytic', description='Calculate R2MRP-specific data analytically', epilog=':-(')
-    parser.add_argument('-d', '--data', dest='data', choices=['e_p', 'alpha'], help='Data that should be calculated', default='alpha')
+    parser.add_argument('-d', '--data', dest='data', choices=['e_p', 'alpha', 'graph'], help='Data that should be calculated', default='alpha')
     parser.add_argument('-n', '--node-num', dest='node', type=int, help='Number of nodes', default=100)
     parser.add_argument('-x', '--x-num', dest='x', type=int, help='Number of grid points along axis X', default=10)
     parser.add_argument('-y', '--y-num', dest='y', type=int, help='Number of grid points along axis Y', default=10)
@@ -120,7 +120,7 @@ if __name__ == '__main__':
             print('Calculating E[P], expected number of paths:')
             logger.info('Node array done, size:{}'.format(len(nodes))+' on a field of {}'.format(args.x)+'x{}'.format(args.y))
             print('E[P]={}'.format(calc_e_p(nodes)))
-        case 'alpha':
+        case 'alpha' | 'graph':
             print('Calculating alpha values')
             print('Setting initial alpha values for each node')
 
@@ -173,3 +173,6 @@ if __name__ == '__main__':
 
             print('Last alpha matrix:')
             print_alpha_matrix(alpha_queue[0])
+
+            if args.data == 'graph':
+                print('Graph mode')
