@@ -57,6 +57,14 @@ def calc_beta(alpha_n, alpha_n_1):
             beta[v,p]=delta[v,p]/(m_v+args.epsilon)
     return beta
 
+def calc_lambda(alpha, nodes):
+    n = alpha.shape[0]
+    p_border = [calc_b(calc_dist(nodes[u])) if u != 0 else 0.0 for u in range(n)]
+    lambda_arr = np.zeros(shape=(n))
+    for v in range(1, n):
+        lambda_arr[v] = math.fsum(p_border[u] * alpha[v, u] for u in range(1, n))
+    return lambda_arr
+
 def print_alpha_matrix(matrix):
     n = matrix.shape[0]
     row_labels = ['Node {}'.format(v) for v in range(n)]
@@ -87,6 +95,8 @@ if __name__ == '__main__':
                         default=0.00001)
     parser.add_argument('-r', '--radio', dest='radio', choices=['log', 'div'], help='Radio channel',
                         default='log')
+    parser.add_argument('-g', '--graph', dest='graph', choices=['spof', 'nw_e_v', 'hop', 'crit'],
+                        default='spof', help='Graph to plot (used when -d graph)')
 
     args = parser.parse_args()
 
@@ -175,4 +185,12 @@ if __name__ == '__main__':
             print_alpha_matrix(alpha_queue[0])
 
             if args.data == 'graph':
-                print('Graph mode')
+                match args.graph:
+                    case 'spof':
+                        print('Graph: spof')
+                    case 'nw_e_v':
+                        print('Graph: nw_e_v')
+                    case 'hop':
+                        print('Graph: hop')
+                    case 'crit':
+                        print('Graph: crit')
