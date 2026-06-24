@@ -78,6 +78,65 @@ def print_alpha_matrix(matrix):
         row += ''.join('{:.4f}'.format(matrix[v, p]).rjust(col_w) for p in range(n))
         print(row)
 
+def build_nodes(distance):
+    nodes = {}
+    for i in range(args.x):
+        for j in range(args.y):
+            if i * args.y + j < args.node:
+                nodes[i * args.y + j] = {'x': i * distance, 'y': j * distance}
+    return nodes
+
+def calc_alpha(distance):
+    nodes = build_nodes(distance)
+
+    alpha_queue = deque()
+    alpha_queue.appendleft(np.zeros(shape=(args.node, args.node)))
+
+    first = np.zeros(shape=(args.node, args.node))
+    for i in range(1, args.node):
+        first[i, i] = calc_b(calc_dist(nodes[i]))
+    a_queue = deque()
+    o_queue = deque()
+
+    a_queue.appendleft(np.zeros(shape=(args.node)))
+    o_queue.appendleft(np.zeros(shape=(args.node)))
+
+    a_arr = [0.0]
+    o_arr = [0.0]
+    for v in range(1, args.node):
+        a = calc_pd(calc_dist(nodes[v]))
+        o = calc_pd(calc_dist(nodes[v]))
+        a_arr.append(a)
+        o_arr.append(o)
+    a_queue.appendleft(a_arr)
+    o_queue.appendleft(o_arr)
+
+    alpha_queue.appendleft(first)
+    beta = copy.deepcopy(first)
+
+    for i in range(2, args.iter):
+
+        alpha = np.zeros(shape=(args.node, args.node))
+
+        a_arr = [0.0]
+        o_arr = [0.0]
+        for v in range(1, args.node):
+            a_prod_body = [ 1 - math.fsum(beta[u,:]) * calc_pd(calc_dist_2( nodes[u],nodes[v] )) for u in range(1,args.node) if u != v ]
+            a = 1 - math.prod(a_prod_body)
+            a_arr.append(a)
+            o = (1 - math.fsum([ o_elem[v] for o_elem in o_queue])) * a
+            o_arr.append(o)
+
+            for p in range(1, args.node):
+                prod_body = [ 1 - beta[u,p] * calc_b(calc_dist_2( nodes[u],nodes[v] )) for u in range(1, args.node) if u != v ]
+                alpha[v, p] = alpha_queue[0][v,p] + o * (1 - alpha_queue[0][v,p]) * (1 - math.prod(prod_body) )
+        alpha_queue.appendleft(alpha)
+        o_queue.appendleft(o_arr)
+        a_queue.appendleft(a_arr) # felesleges
+        beta = calc_beta(alpha_queue[0],alpha_queue[1])
+
+    return alpha_queue[0], nodes
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='r2mrp_analytic', description='Calculate R2MRP-specific data analytically', epilog=':-(')
     parser.add_argument('-d', '--data', dest='data', choices=['e_p', 'alpha', 'graph'], help='Data that should be calculated', default='alpha')
@@ -118,79 +177,24 @@ if __name__ == '__main__':
     else:
         calc_pd = calc_pd_div
 
-    logger.info('Constructing node array')
-    nodes = {}
-    for i in range(args.x):
-        for j in range(args.y):
-            if i * args.y + j < args.node:
-                nodes[i * args.y + j]={ 'x': i * args.grid_distance, 'y': j * args.grid_distance}
-
     match args.data:
         case 'e_p':
             print('Calculating E[P], expected number of paths:')
+            nodes = build_nodes(args.grid_distance)
             logger.info('Node array done, size:{}'.format(len(nodes))+' on a field of {}'.format(args.x)+'x{}'.format(args.y))
             print('E[P]={}'.format(calc_e_p(nodes)))
-        case 'alpha' | 'graph':
+        case 'alpha':
             print('Calculating alpha values')
-            print('Setting initial alpha values for each node')
-
-            alpha_queue = deque()
-            alpha_queue.appendleft( np.zeros(shape=(args.node, args.node)))
-
-            first = np.zeros(shape=(args.node, args.node))
-            for i in range(1, args.node):
-                first[i,i] = calc_b(calc_dist(nodes[i]))
-            a_queue = deque()
-            o_queue = deque()
-
-
-            a_queue.appendleft(np.zeros(shape=(args.node)))
-            o_queue.appendleft(np.zeros(shape=(args.node)))
-
-            a_queue.appendleft(np.array([ calc_pd(calc_dist(nodes[n])) if n != 0 else 0 for n in range(0,args.node) ]) )
-            o_queue.appendleft(copy.deepcopy(a_queue[0]))
-
-            alpha_queue.appendleft(first)
-            beta = copy.deepcopy(first)
-
-            for i in range(2, args.iter):
-
-                alpha = np.zeros(shape=(args.node, args.node))
-
-                a_arr = [0.0]
-                o_arr = [0.0]
-                for v in range(1, args.node):
-                    if i == 1:
-                        a = calc_pd(calc_dist(nodes[v]))
-                        o = calc_pd(calc_dist(nodes[v]))
-                        a_arr.append(a)
-                        o_arr.append(o)
-
-                    else:
-                        a_prod_body = [ 1 - math.fsum(beta[u,:]) * calc_pd(calc_dist_2( nodes[u],nodes[v] )) for u in range(1,args.node) if u != v ]
-                        a = 1 - math.prod(a_prod_body)
-                        a_arr.append(a)
-                        o = (1 - math.fsum([ o_elem[v] for o_elem in o_queue])) * a
-                        o_arr.append(o)
-
-                    for p in range(1, args.node):
-                        prod_body = [ 1 - beta[u,p] * calc_b(calc_dist_2( nodes[u],nodes[v] )) for u in range(1, args.node) if u != v ]
-                        alpha[v, p] = alpha_queue[0][v,p] + o * (1 - alpha_queue[0][v,p]) * (1 - math.prod(prod_body) )
-                alpha_queue.appendleft(alpha)
-                o_queue.appendleft(o_arr)
-                a_queue.appendleft(a_arr) # felesleges
-                beta = calc_beta(alpha_queue[0],alpha_queue[1])
-
+            alpha, nodes = calc_alpha(args.grid_distance)
             print('Last alpha matrix:')
-            print_alpha_matrix(alpha_queue[0])
-
-            if args.data == 'graph':
-                match args.graph:
-                    case 'spof':
-                        print('Graph: spof')
-                    case 'nw_e_v':
-                        print('Graph: nw_e_v')
-                    case 'hop':
-                        print('Graph: hop')
-                    case 'crit':
-                        print('Graph: crit')
+            print_alpha_matrix(alpha)
+        case 'graph':
+            match args.graph:
+                case 'spof':
+                    print('Graph: spof')
+                case 'nw_e_v':
+                    print('Graph: nw_e_v')
+                case 'hop':
+                    print('Graph: hop')
+                case 'crit':
+                    print('Graph: crit')
