@@ -11,7 +11,7 @@ requires-python = ">=3.10"
 license = { text = "Proprietary" }
 authors = [{ name = "András Oláh" }]
 keywords = ["wsn", "routing", "r2mrp", "multipath", "mean-field"]
-dependencies = ["numpy>=1.21"]
+dependencies = ["numpy>=1.21", "matplotlib>=3.5"]
 
 [tool.setuptools]
 py-modules = ["main"]

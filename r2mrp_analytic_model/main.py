@@ -1,5 +1,6 @@
 #!/bin/env python3
 import numpy as np
+import matplotlib.pyplot as plt
 import argparse
 import math
 import logging
@@ -144,7 +145,7 @@ if __name__ == '__main__':
     parser.add_argument('-x', '--x-num', dest='x', type=int, help='Number of grid points along axis X', default=10)
     parser.add_argument('-y', '--y-num', dest='y', type=int, help='Number of grid points along axis Y', default=10)
     parser.add_argument('-l', '--log-level', dest='log_level', choices=['debug','info','none'], default='none', help='Log level')
-    parser.add_argument('-gd','--grid-distance', dest='grid_distance', type=float, help='Grid cell distance in meters', default=20)
+    parser.add_argument('-gd','--grid-distance', dest='grid_distance', type=float, nargs='+', help='Grid cell distance(s) in meters; multiple values are swept for graphs', default=[20])
     parser.add_argument('-q', '--qos', dest='qos', type=float, help='QoS filter value', default=0.8)
     parser.add_argument('-nt', '--num-test', dest='nt', type=int, help='Number of link test messages', default=10)
     parser.add_argument('-rd', '--ref_dist', dest='d0', type=float, help='Reference distance', default=1)
@@ -180,18 +181,30 @@ if __name__ == '__main__':
     match args.data:
         case 'e_p':
             print('Calculating E[P], expected number of paths:')
-            nodes = build_nodes(args.grid_distance)
+            nodes = build_nodes(args.grid_distance[0])
             logger.info('Node array done, size:{}'.format(len(nodes))+' on a field of {}'.format(args.x)+'x{}'.format(args.y))
             print('E[P]={}'.format(calc_e_p(nodes)))
         case 'alpha':
             print('Calculating alpha values')
-            alpha, nodes = calc_alpha(args.grid_distance)
+            alpha, nodes = calc_alpha(args.grid_distance[0])
             print('Last alpha matrix:')
             print_alpha_matrix(alpha)
         case 'graph':
             match args.graph:
                 case 'spof':
-                    print('Graph: spof')
+                    p_c0 = []
+                    for gd in args.grid_distance:
+                        alpha, nodes = calc_alpha(gd)
+                        lambda_arr = calc_lambda(alpha, nodes)
+                        p_c0.append(np.mean(np.exp(-lambda_arr[1:])))
+
+                    plt.figure()
+                    plt.plot(args.grid_distance, p_c0, marker='o', label='P(C=0)')
+                    plt.xlabel('Grid distance [m]')
+                    plt.ylabel('Probability')
+                    plt.legend()
+                    plt.savefig('spof.png')
+                    print('Saved spof.png')
                 case 'nw_e_v':
                     print('Graph: nw_e_v')
                 case 'hop':
