@@ -21,7 +21,7 @@ def calc_pd_div(dist):
     if lres < -1:
         res = 0
     else:
-        res = 1 + lres
+        res = min(1.0, 1 + lres)
     logger.info('res={}'.format(res))
     return res
 
@@ -155,7 +155,7 @@ if __name__ == '__main__':
                         default=0.00001)
     parser.add_argument('-r', '--radio', dest='radio', choices=['log', 'div'], help='Radio channel',
                         default='log')
-    parser.add_argument('-g', '--graph', dest='graph', choices=['spof', 'nw_e_v', 'hop', 'crit'],
+    parser.add_argument('-g', '--graph', dest='graph', choices=['spof', 'e_c', 'var_c', 'nw_e_v', 'hop', 'crit'],
                         default='spof', help='Graph to plot (used when -d graph)')
 
     args = parser.parse_args()
@@ -211,6 +211,34 @@ if __name__ == '__main__':
                     plt.legend()
                     plt.savefig('spof.png')
                     print('Saved spof.png')
+                case 'e_c':
+                    e_c = []
+                    for gd in args.grid_distance:
+                        alpha, nodes = calc_alpha(gd)
+                        e_cv = alpha[1:, :].sum(axis=1)
+                        e_c.append(np.mean(e_cv))
+
+                    plt.figure()
+                    plt.plot(args.grid_distance, e_c, marker='o', label='E[C]')
+                    plt.xlabel('Grid distance [m]')
+                    plt.ylabel('Expected number of disjoint paths E[C]')
+                    plt.legend()
+                    plt.savefig('e_c.png')
+                    print('Saved e_c.png')
+                case 'var_c':
+                    var_c = []
+                    for gd in args.grid_distance:
+                        alpha, nodes = calc_alpha(gd)
+                        e_cv = alpha[1:, :].sum(axis=1)
+                        var_c.append(np.var(e_cv))
+
+                    plt.figure()
+                    plt.plot(args.grid_distance, var_c, marker='o', label='Var_sp(C)')
+                    plt.xlabel('Grid distance [m]')
+                    plt.ylabel('Spatial variance of E[C_v]')
+                    plt.legend()
+                    plt.savefig('var_c.png')
+                    print('Saved var_c.png')
                 case 'nw_e_v':
                     print('Graph: nw_e_v')
                 case 'hop':
